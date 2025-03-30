@@ -13,7 +13,7 @@ class Appointment(Base):
     duration = Column(Integer, nullable=False, default= 30)  # Minutes
     type = Column(Enum(AppointmentType), nullable=False, default=AppointmentType.REGULAR)
     status = Column(Enum(AppointmentStatus), nullable=False, default=AppointmentStatus.SCHEDULED )
-    reason = Column(String,nullable=True, )  # Reason for the appointment
+    reason = Column(String,nullable=True )  # Reason for the appointment
     recurrence_pattern = Column(Enum(RecurrencePattern), nullable=False, default=RecurrencePattern.NONE)  # None for no recurrence
     
     # Relationships

@@ -5,12 +5,12 @@ from .doctor import Doctor
 from .patient import Patient
 from .appointment import Appointment
 from .medical_record import MedicalRecord
-from .medical_record.perscription import Prescription
+from .perscription import Prescription
 from .insurance import Insurance
 from .message import Message
 from .notification import Notification
 from .or_availability import ORAvailability
-from .medical_record.refferal import Referral
+from .refferal import Referral
 
 #  what gets imported with "from models import *"
 __all__ = [

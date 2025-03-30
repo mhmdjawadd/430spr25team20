@@ -27,8 +27,8 @@ def init_db(app):
         
         # Medical records models
         from backend.models.medical_record import MedicalRecord
-        from models.medical_record.perscription import Prescription
-        from models.medical_record.refferal import Referral
+        from models.perscription import Prescription
+        from models.refferal import Referral
         from backend.models.insurance import Insurance
         
         # Create all tables
