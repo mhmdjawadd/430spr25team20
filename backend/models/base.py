@@ -21,13 +21,22 @@ class AppointmentType(enum.Enum):
     RECURRING = "recurring"
     EMERGENCY = "emergency"
 
-class RecordType(enum.Enum):
-    CONDITION = "condition"
-    PRESCRIPTION = "prescription"
-    LAB_RESULT = "lab_result"
-    PROGRESS_NOTE = "progress_note"
+class AppointmentStatus(enum.Enum):
+    SCHEDULED = "scheduled"
+    CONFIRMED = "confirmed"
+    CHECKED_IN = "checked_in"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+    RESCHEDULED = "rescheduled"
+
+class RecurrencePattern(enum.Enum):
+    NONE = "none"
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    BIWEEKLY = "biweekly"
+    MONTHLY = "monthly"
+    QUARTERLY = "quarterly"
+    YEARLY = "yearly"
 
 
-# Create engine and tables
-engine = create_engine('postgresql://user:password@localhost/nabad')
-Base.metadata.create_all(engine)
+

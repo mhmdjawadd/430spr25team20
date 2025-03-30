@@ -9,7 +9,6 @@ class Message(Base):
     message_id = Column(Integer, primary_key=True)
     sender_id = Column(Integer, ForeignKey('users.user_id'), nullable=False)
     receiver_id = Column(Integer, ForeignKey('users.user_id'), nullable=False)
-    appointment_id = Column(Integer, ForeignKey('appointments.appointment_id'))
     content = Column(String, nullable=False)
     sent_at = Column(DateTime, default=datetime.utcnow)
     

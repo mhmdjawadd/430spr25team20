@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime , relationship
 from base import * 
 
 class Referral(Base):
@@ -11,3 +11,5 @@ class Referral(Base):
     patient_id = Column(Integer, ForeignKey('patients.patient_id'), nullable=False)
     reason = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    medical_record= relationship("MedicalRecord", back_populates="referrals")
