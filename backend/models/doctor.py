@@ -6,9 +6,7 @@ class Doctor(Base):
     __tablename__ = 'doctors'
     
     doctor_id = Column(Integer, ForeignKey('users.user_id'), primary_key=True)
-    specialty = Column(Enum(UserRole), nullable=False)
-    license_number = Column(String(50), unique=True, nullable=False)
-    
+    specialty = Column(Enum(UserRole), nullable=False) #  nurse ,  doctor , surgeon , therapist
     # Relationships
     user = relationship("User", back_populates="doctor")
     appointments = relationship("Appointment", back_populates="doctor")

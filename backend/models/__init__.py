@@ -3,10 +3,10 @@ from .base import Base, UserRole, AppointmentType, RecordType ,AppointmentStatus
 from .user import User
 from .doctor import Doctor
 from .patient import Patient
-from .medical_record.appointment import Appointment
-from .medical_record.medical_record import MedicalRecord
+from .appointment import Appointment
+from .medical_record import MedicalRecord
 from .medical_record.perscription import Prescription
-from .medical_record.insurance import Insurance
+from .insurance import Insurance
 from .message import Message
 from .notification import Notification
 from .or_availability import ORAvailability

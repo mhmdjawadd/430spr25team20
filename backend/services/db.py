@@ -20,16 +20,16 @@ def init_db(app):
         from  models.user import User
         from  models.doctor import Doctor
         from  models.patient import Patient
-        from  models.medical_record.appointment import Appointment
+        from  backend.models.appointment import Appointment
         from  models.message import Message
         from  models.notification import Notification
         from  models.or_availability import ORAvailability
         
         # Medical records models
-        from models.medical_record.medical_record import MedicalRecord
+        from backend.models.medical_record import MedicalRecord
         from models.medical_record.perscription import Prescription
         from models.medical_record.refferal import Referral
-        from models.medical_record.insurance import Insurance
+        from backend.models.insurance import Insurance
         
         # Create all tables
         db.create_all()

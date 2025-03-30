@@ -1,2 +1,2 @@
-from .authentication import AuthController
+from .authenticationService import AuthController
 

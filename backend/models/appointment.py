@@ -10,10 +10,11 @@ class Appointment(Base):
     patient_id = Column(Integer, ForeignKey('patients.patient_id'), nullable=False)
     doctor_id = Column(Integer, ForeignKey('doctors.doctor_id'), nullable=False)
     date_time = Column(DateTime, nullable=False)
-    duration = Column(Integer, nullable=False)  # Minutes
-    type = Column(Enum(AppointmentType), nullable=False)
-    status = Column(Enum(AppointmentStatus), nullable=False)
-    recurrence_pattern = Column(Enum(RecurrencePattern), nullable=False)  
+    duration = Column(Integer, nullable=False, default= 30)  # Minutes
+    type = Column(Enum(AppointmentType), nullable=False, default=AppointmentType.REGULAR)
+    status = Column(Enum(AppointmentStatus), nullable=False, default=AppointmentStatus.SCHEDULED )
+    reason = Column(String,nullable=True, )  # Reason for the appointment
+    recurrence_pattern = Column(Enum(RecurrencePattern), nullable=False, default=RecurrencePattern.NONE)  # None for no recurrence
     
     # Relationships
     patient = relationship("Patient", back_populates="appointments")

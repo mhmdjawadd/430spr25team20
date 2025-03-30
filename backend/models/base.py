@@ -1,5 +1,4 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base
 import enum
 
@@ -12,9 +11,7 @@ class UserRole(enum.Enum):
     SURGEON = "surgeon"
     THERAPIST = "therapist"
     RECEPTIONIST = "receptionist"
-    CLINIC_MANAGER = "clinic_manager"
     CAREGIVER = "caregiver"
-    BILLING_STAFF = "billing_staff"
 
 class AppointmentType(enum.Enum):
     REGULAR = "regular"
