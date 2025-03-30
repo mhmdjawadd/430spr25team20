@@ -697,3 +697,142 @@ class AppointmentController:
         response["schedule"] = schedule_items
         
         return jsonify(response), 200
+
+    @staticmethod
+    @jwt_required()
+    def prioritize_appointment():
+        """
+        Prioritize an appointment by potentially rescheduling lower-priority appointments.
+        This is used for emergency situations.
+        """
+        current_user_id = get_jwt_identity()
+        claims = get_jwt()
+        role = claims.get("role")
+        
+        # Only medical staff can prioritize appointments
+        if role not in ["doctor", "surgeon", "nurse"]:
+            return jsonify({
+                "status": "error",
+                "message": "Only medical staff can prioritize appointments"
+            }), 403
+        
+        data = request.get_json()
+        if not data or not data.get('appointment_id'):
+            return jsonify({
+                "status": "error",
+                "message": "Appointment ID is required"
+            }), 400
+        
+        # Get the appointment to prioritize
+        appointment = Appointment.query.get(data['appointment_id'])
+        if not appointment:
+            return jsonify({
+                "status": "error",
+                "message": "Appointment not found"
+            }), 404
+        
+        # If already an emergency appointment, no need to prioritize
+        if appointment.type == AppointmentType.EMERGENCY:
+            return jsonify({
+                "status": "success",
+                "message": "Appointment is already marked as emergency priority"
+            }), 200
+        
+        try:
+            # Update appointment type to emergency
+            appointment.type = AppointmentType.EMERGENCY
+            
+            # If appointment is not today, move it to today if requested
+            reschedule_to_today = data.get('reschedule_to_today', False)
+            if reschedule_to_today and appointment.date_time.date() > datetime.now().date():
+                # Find a suitable time today
+                doctor = Doctor.query.get(appointment.doctor_id)
+                
+                # Get all appointments for this doctor today
+                today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+                today_end = today_start + timedelta(days=1)
+                
+                today_appointments = Appointment.query.filter(
+                    Appointment.doctor_id == doctor.doctor_id,
+                    Appointment.date_time >= today_start,
+                    Appointment.date_time < today_end,
+                    Appointment.appointment_id != appointment.appointment_id,  # Exclude this appointment
+                    Appointment.status.in_([
+                        AppointmentStatus.SCHEDULED,
+                        AppointmentStatus.CONFIRMED
+                    ])
+                ).order_by(Appointment.date_time).all()
+                
+                # Find the first available slot (simple algorithm)
+                current_time = datetime.now()
+                slot_found = False
+                
+                # If there are no other appointments today, use current time
+                if not today_appointments:
+                    new_time = current_time
+                    slot_found = True
+                else:
+                    # Try to fit between existing appointments
+                    for i in range(len(today_appointments)):
+                        if i == 0 and current_time + timedelta(minutes=appointment.duration) <= today_appointments[0].date_time:
+                            # Slot before first appointment
+                            new_time = current_time
+                            slot_found = True
+                            break
+                            
+                        if i < len(today_appointments) - 1:
+                            # Check gap between appointments
+                            appt1_end = today_appointments[i].date_time + timedelta(minutes=today_appointments[i].duration)
+                            appt2_start = today_appointments[i+1].date_time
+                            
+                            if appt1_end + timedelta(minutes=appointment.duration) <= appt2_start:
+                                new_time = appt1_end
+                                slot_found = True
+                                break
+                    
+                    # If no slot found between appointments, add after the last one
+                    if not slot_found:
+                        last_appt = today_appointments[-1]
+                        new_time = last_appt.date_time + timedelta(minutes=last_appt.duration)
+                        slot_found = True
+                
+                if slot_found:
+                    old_time = appointment.date_time
+                    appointment.date_time = new_time
+                    
+                    # Create notification about rescheduling
+                    patient_notification = Notification(
+                        user_id=appointment.patient_id,
+                        appointment_id=appointment.appointment_id,
+                        type="emergency_reschedule",
+                        message=f"Your appointment has been prioritized as urgent and moved from {old_time.strftime('%Y-%m-%d %H:%M')} to today at {new_time.strftime('%H:%M')}",
+                        scheduled_time=datetime.now(),
+                        status="pending"
+                    )
+                    db.session.add(patient_notification)
+            
+            # Create notifications
+            doctor_notification = Notification(
+                user_id=appointment.doctor_id,
+                appointment_id=appointment.appointment_id,
+                type="emergency_priority",
+                message=f"Appointment #{appointment.appointment_id} has been flagged as emergency priority",
+                scheduled_time=datetime.now(),
+                status="pending"
+            )
+            db.session.add(doctor_notification)
+            
+            db.session.commit()
+            
+            return jsonify({
+                "status": "success",
+                "message": "Appointment prioritized successfully",
+                "new_time": appointment.date_time.isoformat() if reschedule_to_today else None
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({
+                "status": "error",
+                "message": f"Failed to prioritize appointment: {str(e)}"
+            }), 500

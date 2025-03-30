@@ -161,3 +161,93 @@ class AvailabilityController:
                 "doctor_id": doctor_id,
                 "available_slots": available_slots_list
             }), 200
+
+    @staticmethod
+    @jwt_required()
+    def get_emergency_slots():
+        """
+        Get slots available for emergency appointments.
+        This prioritizes immediate availability.
+        """
+        # Get query parameters
+        doctor_id = request.args.get('doctor_id')
+        
+        # Get current time
+        now = datetime.now()
+        end_time = now + timedelta(hours=24)  # Next 24 hours
+        
+        # If no doctor_id provided, find all doctors who can handle emergencies
+        if not doctor_id:
+            emergency_doctors = Doctor.query.filter(Doctor.specialty.in_(["DOCTOR", "SURGEON"])).all()
+            doctor_ids = [doctor.doctor_id for doctor in emergency_doctors]
+        else:
+            doctor_ids = [doctor_id]
+        
+        emergency_slots = []
+        
+        for doctor_id in doctor_ids:
+            # Validate doctor exists
+            doctor = Doctor.query.filter_by(doctor_id=doctor_id).first()
+            if not doctor:
+                continue
+                
+            doctor_user = User.query.get(doctor.doctor_id)
+            
+            # Get doctor's current appointment
+            current_appointment = Appointment.query.filter(
+                Appointment.doctor_id == doctor_id,
+                Appointment.date_time <= now,
+                now <= Appointment.date_time + timedelta(minutes=Appointment.duration),
+                Appointment.status.in_([
+                    AppointmentStatus.SCHEDULED,
+                    AppointmentStatus.CONFIRMED,
+                    AppointmentStatus.CHECKED_IN
+                ])
+            ).first()
+            
+            if current_appointment:
+                # Doctor is busy, find the next available slot
+                next_available_time = current_appointment.date_time + timedelta(minutes=current_appointment.duration)
+            else:
+                # Doctor is available now
+                next_available_time = now
+                
+            # Get upcoming appointments to find gaps
+            upcoming_appointments = Appointment.query.filter(
+                Appointment.doctor_id == doctor_id,
+                Appointment.date_time >= next_available_time,
+                Appointment.date_time <= end_time,
+                Appointment.status.in_([
+                    AppointmentStatus.SCHEDULED,
+                    AppointmentStatus.CONFIRMED,
+                    AppointmentStatus.CHECKED_IN
+                ])
+            ).order_by(Appointment.date_time).all()
+            
+            # Current availability slot
+            current_slot = {
+                "doctor_id": doctor_id,
+                "doctor_name": f"Dr. {doctor_user.first_name} {doctor_user.last_name}",
+                "specialty": doctor.specialty.value,
+                "start_time": next_available_time.isoformat(),
+                "is_immediate": next_available_time == now,
+                "can_be_rescheduled": False  # Emergency slots can't be rescheduled
+            }
+            
+            # If there are upcoming appointments, end time is the next appointment
+            if upcoming_appointments:
+                current_slot["end_time"] = upcoming_appointments[0].date_time.isoformat()
+            else:
+                # If no upcoming appointments, available until end of day
+                current_slot["end_time"] = end_time.isoformat()
+                
+            emergency_slots.append(current_slot)
+        
+        # Sort by availability (immediate first, then by start time)
+        emergency_slots.sort(key=lambda x: (not x["is_immediate"], x["start_time"]))
+        
+        return jsonify({
+            "status": "success",
+            "emergency_slots": emergency_slots,
+            "current_time": now.isoformat()
+        }), 200

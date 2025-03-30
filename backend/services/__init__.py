@@ -6,6 +6,7 @@ from .medicalRecordService import MedicalRecordController
 from .prescriptionService import PrescriptionController
 from .conditionService import ConditionController
 from .patientService import PatientController
+from .emergencyService import EmergencyController
 
 __all__ = [
     'AuthController',
@@ -15,5 +16,6 @@ __all__ = [
     'MedicalRecordController',
     'PrescriptionController',
     'ConditionController',
-    'PatientController'
+    'PatientController',
+    'EmergencyController'
 ]

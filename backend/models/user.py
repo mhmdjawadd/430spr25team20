@@ -21,3 +21,7 @@ class User(Base):
     doctor = relationship("Doctor", uselist=False, back_populates="user")
     sent_messages = relationship("Message", foreign_keys="Message.sender_id", back_populates="sender")
     received_messages = relationship("Message", foreign_keys="Message.receiver_id", back_populates="receiver")
+
+    def full_name(self):
+        """Return the user's full name"""
+        return f"{self.first_name} {self.last_name}"

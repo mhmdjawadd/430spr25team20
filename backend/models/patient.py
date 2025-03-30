@@ -16,6 +16,13 @@ class Patient(Base):
     medical_records = relationship("MedicalRecord", back_populates="patient")
     doctor = relationship("Doctor", back_populates="patients")
     chronic_conditions = relationship("ChronicCondition", back_populates="patient")
+    care_plans = relationship("CarePlan", backref="patient_ref")
     
     def __repr__(self):
         return f"<Patient(id={self.patient_id})>"
+        
+    def full_name(self):
+        """Get the patient's full name from the associated user"""
+        if hasattr(self, 'user') and self.user:
+            return f"{self.user.first_name} {self.user.last_name}"
+        return "Unknown Patient"

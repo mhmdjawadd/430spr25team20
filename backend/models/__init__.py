@@ -1,4 +1,4 @@
-from .base import Base, UserRole, AppointmentType, RecordType ,AppointmentStatus ,RecurrencePattern, start_db
+from .base import Base, UserRole, AppointmentType, RecordType, AppointmentStatus, RecurrencePattern, start_db
 
 from .user import User
 from .doctor import Doctor
@@ -11,6 +11,7 @@ from .message import Message
 from .notification import Notification
 from .or_availability import ORAvailability
 from .refferal import Referral
+from .calendar_integration import CalendarIntegration
 
 #  what gets imported with "from models import *"
 __all__ = [
@@ -31,5 +32,6 @@ __all__ = [
     'Notification',
     'ORAvailability',
     'Referral',
+    'CalendarIntegration',
     'start_db'
 ]
