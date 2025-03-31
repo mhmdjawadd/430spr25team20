@@ -1,7 +1,8 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 import os
+from backend.services.therapistService import TherapistController
 from services import AuthController, AppointmentController
 from services.notificationService import NotificationController
 from services.medicalRecordService import MedicalRecordController
@@ -67,14 +68,21 @@ def create_referral():
     """Create a new referral"""
     return AppointmentController.create_referral()
 
+@app.route('/referrals', methods=['POST'])
+@jwt_required()
+def create_new_referral():
+    """Create a new referral to a specialist"""
+    return AppointmentController.create_referral()
+
 @app.route('/referrals', methods=['GET'])
 def get_referrals():
     """Get referrals based on user role"""
     return AppointmentController.get_referrals()
 
 @app.route('/notifications', methods=['GET'])
-def get_notifications():
-    """Get notifications for current user"""
+@jwt_required()
+def get_user_notifications():
+    """Get notifications for the current user"""
     return NotificationController.get_notifications()
 
 @app.route('/notifications/<int:notification_id>/read', methods=['POST'])
@@ -220,6 +228,23 @@ def create_care_plan():
 def update_care_plan():
     """Update an existing care plan"""
     return NurseController.update_care_plan()
+
+# Add these routes for therapy session management
+@app.route('/therapy/sessions', methods=['GET'])
+def get_therapy_sessions():
+    """Get therapy sessions for therapist or patient"""
+    return TherapistController.get_therapy_sessions()
+
+@app.route('/therapy/sessions', methods=['POST'])
+def schedule_therapy_session():
+    """Schedule a new therapy session with optional recurrence"""
+    return TherapistController.schedule_therapy_session()
+
+@app.route('/specialist/referrals', methods=['GET'])
+@jwt_required()
+def get_specialist_referrals():
+    """Get referrals directed to a specialist"""
+    return SpecialistController.get_specialty_referrals()
 
 if __name__ == "__main__":
     app.run(debug=True)

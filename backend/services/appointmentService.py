@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from datetime import datetime, timedelta
 from services.db import db
 from models import User , AppointmentType ,AppointmentStatus , RecurrencePattern , Doctor , Patient, Appointment
-
+from services.reminderService import ReminderService
 
 class AppointmentController:
     
@@ -93,64 +93,78 @@ class AppointmentController:
                 "status": "error",
                 "message": f"Invalid appointment status. Valid statuses are: {valid_statuses}"
             }), 400
+
+        # Check if doctor is available at the requested time
+        doctor_id = data['doctor_id']
+        appointment_duration = data.get('duration', 30)
+        appointment_end_time = appointment_date + timedelta(minutes=appointment_duration)
+        
+        # Check for conflicting appointments
+        conflicting_appointments = Appointment.query.filter(
+            Appointment.doctor_id == doctor_id,
+            Appointment.status != 'CANCELLED',
+            Appointment.date_time < appointment_end_time,
+            (Appointment.date_time + timedelta(minutes=Appointment.duration)) > appointment_date
+        ).all()
+        
+        if conflicting_appointments:
+            return jsonify({
+                "status": "error",
+                "message": "Doctor is not available at the requested time. Please select another time."
+            }), 409
+
         # Create appointment
         new_appointment = Appointment(
-        patient_id=patient.patient_id,
-        doctor_id=data['doctor_id'],
-        date_time=appointment_date,
-        duration=data.get('duration', 30),  # Default to 30 minutes if not specified
-        type=appointment_type,
-        status=appointment_status,
-        recurrence_pattern=recurrence_pattern,
-        reason=data['reason'],
-        
-    )
-        
-        # Save to database
-        try:
-            db.session.add(new_appointment)
-            db.session.commit()
+            patient_id=patient.patient_id,
+            doctor_id=data['doctor_id'],
+            date_time=appointment_date,
+            duration=data.get('duration', 30),  # Default to 30 minutes if not specified
+            type=appointment_type,
+            status=appointment_status,
+            recurrence_pattern=recurrence_pattern,
+            reason=data['reason'],
             
-            # After successfully creating the appointment, handle recurrence if specified
-            if recurrence_pattern and recurrence_pattern != RecurrencePattern.NONE:
-                # Get recurrence count or end date from request data, if provided
-                recurrence_count = data.get('recurrence_count')
-                recurrence_end_date = None
-                if data.get('recurrence_end_date'):
-                    try:
-                        recurrence_end_date = datetime.fromisoformat(data['recurrence_end_date'].replace('Z', '+00:00'))
-                    except ValueError:
-                        # If invalid end date format, just use count
-                        pass
-                        
-                # Generate recurring appointments
-                recurring_appointment_ids = AppointmentController.generate_recurring_appointments(
-                    new_appointment, 
-                    recurrence_pattern,
-                    end_date=recurrence_end_date,
-                    count=recurrence_count
-                )
-                
-                return jsonify({
-                    "status": "success",
-                    "message": "Appointment series created successfully",
-                    "appointment_id": new_appointment.appointment_id,
-                    "recurring_appointment_ids": recurring_appointment_ids
-                }), 201
+        )
+        
+        db.session.add(new_appointment)
+        db.session.commit()
+        
+        # Schedule reminders for this appointment
+        ReminderService.schedule_appointment_reminders(new_appointment.appointment_id)
+        
+        # After successfully creating the appointment, handle recurrence if specified
+        if recurrence_pattern and recurrence_pattern != RecurrencePattern.NONE:
+            # Get recurrence count or end date from request data, if provided
+            recurrence_count = data.get('recurrence_count')
+            recurrence_end_date = None
+            if data.get('recurrence_end_date'):
+                try:
+                    recurrence_end_date = datetime.fromisoformat(data['recurrence_end_date'].replace('Z', '+00:00'))
+                except ValueError:
+                    # If invalid end date format, just use count
+                    pass
+                    
+            # Generate recurring appointments
+            recurring_appointment_ids = AppointmentController.generate_recurring_appointments(
+                new_appointment, 
+                recurrence_pattern,
+                end_date=recurrence_end_date,
+                count=recurrence_count
+            )
             
             return jsonify({
                 "status": "success",
-                "message": "Appointment created successfully",
-                "appointment_id": new_appointment.appointment_id
+                "message": "Appointment series created successfully",
+                "appointment_id": new_appointment.appointment_id,
+                "recurring_appointment_ids": recurring_appointment_ids
             }), 201
-            
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({
-                "status": "error",
-                "message": f"Failed to create appointment: {str(e)}"
-            }), 500
-    
+        
+        return jsonify({
+            "status": "success",
+            "message": "Appointment created successfully",
+            "appointment_id": new_appointment.appointment_id
+        }), 201
+        
     @staticmethod
     @jwt_required()
     def get_appointments():
@@ -465,47 +479,34 @@ class AppointmentController:
             elif recurrence_pattern == RecurrencePattern.BIWEEKLY:
                 next_date = last_date + timedelta(weeks=2)
             elif recurrence_pattern == RecurrencePattern.MONTHLY:
-                # Handle month addition with appropriate date handling
+                # Add one month, handling month boundaries
                 month = last_date.month + 1
-                year = last_date.year + month // 12
-                month = month % 12 if month % 12 else 12
-                try:
-                    next_date = last_date.replace(year=year, month=month)
-                except ValueError:
-                    # Handle case where the day doesn't exist in the next month
-                    # e.g., January 31 -> February 28/29
-                    if month in [4, 6, 9, 11] and last_date.day > 30:
-                        next_date = last_date.replace(year=year, month=month, day=30)
-                    elif month == 2:
-                        # Check for leap year
-                        if (year % 4 == 0 and year % 100 != 0) or year % 400 == 0:
-                            max_day = 29
-                        else:
-                            max_day = 28
-                        next_date = last_date.replace(year=year, month=month, day=min(last_date.day, max_day))
-            elif recurrence_pattern == RecurrencePattern.QUARTERLY:
-                # Add 3 months
-                month = last_date.month + 3
-                year = last_date.year + month // 12
-                month = month % 12 if month % 12 else 12
-                try:
-                    next_date = last_date.replace(year=year, month=month)
-                except ValueError:
-                    # Handle case where the day doesn't exist
-                    if month in [4, 6, 9, 11] and last_date.day > 30:
-                        next_date = last_date.replace(year=year, month=month, day=30)
-                    elif month == 2:
-                        # Check for leap year
-                        if (year % 4 == 0 and year % 100 != 0) or year % 400 == 0:
-                            max_day = 29
-                        else:
-                            max_day = 28
-                        next_date = last_date.replace(year=year, month=month, day=min(last_date.day, max_day))
-            elif recurrence_pattern == RecurrencePattern.YEARLY:
-                next_date = last_date.replace(year=last_date.year + 1)
+                year = last_date.year
+                if month > 12:
+                    month = 1
+                    year += 1
+                next_date = last_date.replace(year=year, month=month)
             else:
-                # No recurrence or unrecognized pattern
+                # Unsupported pattern
                 break
+                
+            # Check if doctor is available for this recurring appointment
+            doctor_id = original_appointment.doctor_id
+            appointment_duration = original_appointment.duration
+            appointment_end_time = next_date + timedelta(minutes=appointment_duration)
+            
+            # Check for conflicting appointments
+            conflicting_appointments = Appointment.query.filter(
+                Appointment.doctor_id == doctor_id,
+                Appointment.status != 'CANCELLED',
+                Appointment.date_time < appointment_end_time,
+                (Appointment.date_time + timedelta(minutes=Appointment.duration)) > next_date
+            ).all()
+            
+            if conflicting_appointments:
+                # Skip this date and try the next one
+                last_date = next_date
+                continue
                 
             # Create the new appointment as a copy of the original
             new_appointment = Appointment(
@@ -836,3 +837,106 @@ class AppointmentController:
                 "status": "error",
                 "message": f"Failed to prioritize appointment: {str(e)}"
             }), 500
+
+    @staticmethod
+    @jwt_required()
+    def update_appointment():
+        """Update an existing appointment"""
+        current_user_id = get_jwt_identity()
+        
+        data = request.get_json()
+        if not data or not data.get('appointment_id'):
+            return jsonify({"status": "error", "message": "Appointment ID required"}), 400
+        
+        appointment = Appointment.query.get(data['appointment_id'])
+        if not appointment:
+            return jsonify({"status": "error", "message": "Appointment not found"}), 404
+        
+        # Store original datetime for comparison
+        original_date_time = appointment.date_time
+        
+        # Update appointment fields
+        if 'date_time' in data:
+            try:
+                appointment.date_time = datetime.fromisoformat(data['date_time'])
+            except ValueError:
+                return jsonify({"status": "error", "message": "Invalid date format"}), 400
+        
+        if 'status' in data:
+            appointment.status = data['status']
+        
+        if 'reason' in data:
+            appointment.reason = data['reason']
+        
+        # Other fields can be updated here
+        
+        try:
+            db.session.commit()
+            
+            # Notify nurse if appointment was rescheduled and a nurse is assigned
+            if appointment.nurse_id and appointment.date_time != original_date_time:
+                # Get patient info for the notification
+                patient = Patient.query.get(appointment.patient_id)
+                patient_user = User.query.get(patient.patient_id) if patient else None
+                patient_name = f"{patient_user.first_name} {patient_user.last_name}" if patient_user else "A patient"
+                
+                # Create notification for the nurse about rescheduled appointment
+                notification = Notification(
+                    user_id=appointment.nurse_id,
+                    appointment_id=appointment.appointment_id,
+                    type="appointment_rescheduled",
+                    message=f"Appointment with {patient_name} has been rescheduled to {appointment.date_time.strftime('%B %d at %I:%M %p')}",
+                    scheduled_time=datetime.now()
+                )
+                db.session.add(notification)
+                db.session.commit()
+            
+            return jsonify({"status": "success", "message": "Appointment updated successfully"}), 200
+        
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"status": "error", "message": str(e)}), 500
+
+    @staticmethod
+    @jwt_required()
+    def cancel_appointment():
+        """Cancel an appointment"""
+        current_user_id = get_jwt_identity()
+        
+        data = request.get_json()
+        if not data or not data.get('appointment_id'):
+            return jsonify({"status": "error", "message": "Appointment ID required"}), 400
+        
+        appointment = Appointment.query.get(data['appointment_id'])
+        if not appointment:
+            return jsonify({"status": "error", "message": "Appointment not found"}), 404
+        
+        # Update status to cancelled
+        appointment.status = AppointmentStatus.CANCELLED
+        
+        try:
+            db.session.commit()
+            
+            # Notify nurse if a nurse is assigned
+            if appointment.nurse_id:
+                # Get patient info for the notification
+                patient = Patient.query.get(appointment.patient_id)
+                patient_user = User.query.get(patient.patient_id) if patient else None
+                patient_name = f"{patient_user.first_name} {patient_user.last_name}" if patient_user else "A patient"
+                
+                # Create notification for the nurse about cancelled appointment
+                notification = Notification(
+                    user_id=appointment.nurse_id,
+                    appointment_id=appointment.appointment_id,
+                    type="appointment_cancelled",
+                    message=f"Appointment with {patient_name} scheduled for {appointment.date_time.strftime('%B %d at %I:%M %p')} has been cancelled",
+                    scheduled_time=datetime.now()
+                )
+                db.session.add(notification)
+                db.session.commit()
+            
+            return jsonify({"status": "success", "message": "Appointment cancelled successfully"}), 200
+        
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"status": "error", "message": str(e)}), 500

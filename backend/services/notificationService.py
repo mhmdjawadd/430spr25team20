@@ -62,29 +62,35 @@ class NotificationController:
     @jwt_required()
     def get_notifications():
         """Get notifications for the current user"""
-        current_user_id = get_jwt_identity()
-        
-        # Get notifications
-        notifications = Notification.query.filter_by(user_id=current_user_id).order_by(
-            Notification.scheduled_time.desc()
-        ).all()
-        
-        notifications_list = []
-        for notification in notifications:
-            notifications_list.append({
-                "notification_id": notification.notification_id,
-                "message": notification.message,
-                "type": notification.type,
-                "status": notification.status,
-                "scheduled_time": notification.scheduled_time.isoformat(),
-                "sent_at": notification.sent_at.isoformat() if notification.sent_at else None,
-                "appointment_id": notification.appointment_id
-            })
-        
-        return jsonify({
-            "status": "success",
-            "notifications": notifications_list
-        }), 200
+        try:
+            user_id = get_jwt_identity()
+            
+            # Get recent notifications for the user
+            notifications = Notification.query.filter_by(
+                user_id=user_id
+            ).order_by(Notification.scheduled_time.desc()).limit(20).all()
+            
+            # Format notifications for response
+            notifications_data = []
+            for notification in notifications:
+                notifications_data.append({
+                    'id': notification.notification_id,
+                    'type': notification.type,
+                    'message': notification.message,
+                    'created_at': notification.created_at.isoformat() if notification.created_at else None,
+                    'is_read': notification.read_at is not None
+                })
+            
+            return jsonify({
+                'status': 'success',
+                'notifications': notifications_data
+            }), 200
+            
+        except Exception as e:
+            return jsonify({
+                'status': 'error',
+                'message': str(e)
+            }), 500
     
     @staticmethod
     @jwt_required()
