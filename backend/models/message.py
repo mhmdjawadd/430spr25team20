@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
-from base import * 
+from .base import * 
 
 class Message(Base):
     __tablename__ = 'messages'

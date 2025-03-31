@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
-from base import *
+from .base import *
 
 
 class MedicalRecord(Base):
@@ -13,9 +13,6 @@ class MedicalRecord(Base):
     # Relationships
     patient = relationship("Patient", back_populates="medical_records") # to see the records per patient
     doctor = relationship("Doctor", back_populates="medical_records") # to see the records oer doctor
-    prescriptions = relationship("Prescription", back_populates="medical_record") #to see precriptions per patient
-    referrals = relationship("Referral", back_populates="medical_record")
-    appointments = relationship("Appointment", back_populates="medical_record")
-    insurance = relationship("Insurance", back_populates="medical_record")
+    
 
 

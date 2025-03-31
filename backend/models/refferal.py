@@ -1,6 +1,7 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime , relationship, Enum
-from base import * 
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime , Enum
+from sqlalchemy.orm import relationship
+from .base import * 
 
 class Referral(Base):
     __tablename__ = 'referrals'

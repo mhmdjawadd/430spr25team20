@@ -1,7 +1,7 @@
 from sqlalchemy import  Column, Integer, String, ForeignKey, JSON, Boolean
 from sqlalchemy.orm import relationship
 
-from base import * 
+from .base import * 
 
 class Insurance(Base):
     __tablename__ = 'insurance'

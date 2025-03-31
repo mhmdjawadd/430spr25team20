@@ -2,8 +2,11 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 import os
-from backend.services.therapistService import TherapistController
+
 from services import AuthController, AppointmentController
+
+"""
+from backend.services.therapistService import TherapistController
 from services.notificationService import NotificationController
 from services.medicalRecordService import MedicalRecordController
 from services.prescriptionService import PrescriptionController
@@ -13,6 +16,7 @@ from services.emergencyService import EmergencyController
 from services.doctorService import DoctorController
 from services.calendarService import CalendarSyncController
 from services.nurseService import NurseController
+"""
 
 # Initialize Flask application
 app = Flask(__name__)

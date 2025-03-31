@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Enum, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
-from base import *
+from .base import *
 
 class Doctor(Base):
     __tablename__ = 'doctors'
