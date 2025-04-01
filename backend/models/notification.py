@@ -8,10 +8,8 @@ class Notification(Base):
     notification_id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.user_id'), nullable=False)
     appointment_id = Column(Integer, ForeignKey('appointments.appointment_id'))
-    type = Column(String(20), nullable=False)
     message = Column(String, nullable=False)
     scheduled_time = Column(DateTime, nullable=False)
-    sent_at = Column(DateTime)
     status = Column(String(20), default='pending')
     
     # Relationships

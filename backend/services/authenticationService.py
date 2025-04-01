@@ -18,6 +18,13 @@ class AuthController:
         if User.query.filter_by(email=data['email']).first():
             return jsonify({"error": "User already exists"}), 409
             
+        # Determine user role - default to PATIENT if not provided
+        role_str = data.get('role', "PATIENT").upper()
+        if role_str not in [role.name for role in UserRole]:
+            return jsonify({"error": f"Invalid role: {role_str}"}), 400
+
+        role = UserRole[role_str]
+        
         # Create new user
         hashed_password = generate_password_hash(data['password'])
         new_user = User(
@@ -25,16 +32,50 @@ class AuthController:
             password_hash=hashed_password,
             first_name=data.get('first_name'),
             last_name=data.get('last_name'),
-            role= UserRole[data.get('role',"PATIENT").upper()],
+            role=role,
             phone=data.get('phone', '')
-            )
+        )
         
         db.session.add(new_user)
+        db.session.flush()  # This assigns the user_id without committing the transaction
+        
+        # Create role-specific record
+        if role in [UserRole.DOCTOR, UserRole.NURSE, UserRole.SURGEON, UserRole.THERAPIST]:
+            # Import here to avoid circular imports
+            from models import Doctor
+            
+            # Validate specialty for doctors
+            specialty = data.get('specialty')
+            if not specialty:
+                specialty = role  # Default to their role as specialty if not provided
+            
+            # Create doctor record
+            doctor = Doctor(
+                doctor_id=new_user.user_id,
+                specialty=specialty
+            )
+            db.session.add(doctor)
+            
+        elif role == UserRole.PATIENT:
+            # Import here to avoid circular imports
+            from models import Patient
+            
+            # Create patient record
+            patient = Patient(
+                patient_id=new_user.user_id,
+                date_of_birth=data.get('date_of_birth'),
+                emergency_contact_name=data.get('emergency_contact_name'),
+                emergency_contact_phone=data.get('emergency_contact_phone'),
+                insurance_id=data.get('insurance_id'),
+            )
+            db.session.add(patient)
+        
+        # Now commit everything
         db.session.commit()
         
-            # Auto-login by creating access token
+        # Auto-login by creating access token
         access_token = create_access_token(
-            identity=new_user, #identity is the 'sub' claim in the JWT
+            identity=new_user,
             expires_delta=timedelta(hours=1),
             additional_claims={
                 "role": new_user.role.name,
@@ -46,7 +87,7 @@ class AuthController:
             "message": "User created successfully",
             "access_token": access_token,
             "user_id": new_user.user_id,
-            "role": new_user.role.name
+            "role": role.name
         }), 201
 
 

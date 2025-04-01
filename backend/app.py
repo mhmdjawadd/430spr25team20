@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 import os
 from services import AuthController
+from services.appointmentService import AppointmentController
 
 """
 from backend.services.therapistService import TherapistController
@@ -31,18 +32,17 @@ jwt = JWTManager(app)
 
 # Initialize database
 from services.db import init_db
-db =init_db(app, True)  # Initialize with our Flask app
+db =init_db(app,True)  # Initialize with our Flask app
 
-# JWT Configuration
 @jwt.user_identity_loader
 def user_identity_lookup(user):
-    return user.user_id
+    return str(user.user_id)  # Convert user_id to a string
 
 @jwt.user_lookup_loader
 def user_lookup_callback(_jwt_header, jwt_data):
     from models.user import User  # Local import to avoid circular imports
     identity = jwt_data["sub"]
-    return User.query.get(identity)
+    return User.query.get(int(identity))  # Convert back to integer when querying
 
 
 
@@ -55,6 +55,26 @@ def login_route():
 def signup_route():
     """User registration endpoint"""
     return AuthController.signup()
+
+@app.route('/appointments', methods=['GET'])
+@jwt_required()
+def get_doctor_availability():
+    """Get available appointment slots for a doctor on a specific date"""
+    return AppointmentController.get_doctor_availability()
+
+@app.route('/appointments', methods=['POST'])
+@jwt_required()
+def book_appointment():
+    """Get available appointment slots for a doctor on a specific date"""
+    return AppointmentController.book_appointment()
+
+
+
+@app.route('/appointments/booked', methods=['GET'])
+@jwt_required()
+def get_user_appointments():
+    """Get all appointments for the logged-in user"""
+    return AppointmentController.get_user_appointments()
 
 
 if __name__ == "__main__":

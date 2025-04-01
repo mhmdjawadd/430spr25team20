@@ -9,8 +9,8 @@ class Patient(Base):
     date_of_birth = Column(DateTime)
     emergency_contact_name = Column(String(100))
     emergency_contact_phone = Column(String(20))
-    phone = Column(String(20))
-    insurance_id = Column(Integer, ForeignKey('insurance.insurance_id'))
+    
+    insurance_id = Column(Integer, ForeignKey('insurance.insurance_id'),nullable=True)
     doctor_id = Column(Integer, ForeignKey('doctors.doctor_id'))  
     
 
