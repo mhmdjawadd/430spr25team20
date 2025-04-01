@@ -9,14 +9,18 @@ class Patient(Base):
     date_of_birth = Column(DateTime)
     emergency_contact_name = Column(String(100))
     emergency_contact_phone = Column(String(20))
+    phone = Column(String(20))
     insurance_id = Column(Integer, ForeignKey('insurance.insurance_id'))
+    doctor_id = Column(Integer, ForeignKey('doctors.doctor_id'))  
     
+
     # Relationships
     user = relationship("User", back_populates="patient")
     medical_records = relationship("MedicalRecord", back_populates="patient")
     doctor = relationship("Doctor", back_populates="patients")
-    chronic_conditions = relationship("ChronicCondition", back_populates="patient")
-    care_plans = relationship("CarePlan", backref="patient_ref")
+    appointments = relationship("Appointment", back_populates="patient")
+    insurance = relationship("Insurance", back_populates="patients")
+
     
     def __repr__(self):
         return f"<Patient(id={self.patient_id})>"

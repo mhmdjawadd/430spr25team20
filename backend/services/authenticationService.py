@@ -2,8 +2,8 @@ from flask import request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from datetime import timedelta
-from models import User 
-from .db import db
+from models import User , UserRole
+from services.db import db
 
 class AuthController:
     @staticmethod
@@ -25,20 +25,19 @@ class AuthController:
             password_hash=hashed_password,
             first_name=data.get('first_name'),
             last_name=data.get('last_name'),
-            role=data.get('role')  ,
-            phone=data.get('phone', ''),
-
-        )
+            role= UserRole[data.get('role',"PATIENT").upper()],
+            phone=data.get('phone', '')
+            )
         
         db.session.add(new_user)
         db.session.commit()
         
             # Auto-login by creating access token
         access_token = create_access_token(
-            identity=new_user.user_id,
+            identity=new_user, #identity is the 'sub' claim in the JWT
             expires_delta=timedelta(hours=1),
             additional_claims={
-                "role": new_user.role,
+                "role": new_user.role.name,
                 "email": new_user.email
             }
         )
@@ -47,7 +46,7 @@ class AuthController:
             "message": "User created successfully",
             "access_token": access_token,
             "user_id": new_user.user_id,
-            "role": new_user.role
+            "role": new_user.role.name
         }), 201
 
 
@@ -67,10 +66,10 @@ class AuthController:
             
         # Create JWT token
         access_token = create_access_token(
-            identity=user.user_id,
+            identity=user,
             expires_delta=timedelta(hours=1),
             additional_claims={
-                "role": user.role,
+                "role": user.role.name,
                 "email": user.email
             }
         )
@@ -78,7 +77,7 @@ class AuthController:
         return jsonify({
             "access_token": access_token,
             "user_id": user.user_id,
-            "role": user.role
+            "role": user.role.name
         }), 200
 
     @staticmethod

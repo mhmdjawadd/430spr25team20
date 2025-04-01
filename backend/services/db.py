@@ -1,13 +1,14 @@
 import os
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 
 # Create SQLAlchemy instance
 db = SQLAlchemy()
 
-def init_db(app):
+def init_db(app , reset = False):
     """Initialize the database with the Flask app"""
     # Configure Flask app for SQLAlchemy
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///nabad.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://myuser:mypassword@localhost:5432/mydatabase')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
     # Initialize app with SQLAlchemy
@@ -15,21 +16,28 @@ def init_db(app):
     
     # Create tables
     with app.app_context():
+        if reset:
+            # Drop all tables if reset is True
+                # This will safely drop all tables respecting dependencies
+            db.session.execute(text("DROP SCHEMA public CASCADE;"))
+            db.session.execute(text("CREATE SCHEMA public;"))
+            db.session.commit()
+            db.drop_all()
+            print("All tables dropped successfully!")
+            
         # Import all models to ensure they're registered with SQLAlchemy
         # Import your models here
         from  models.user import User
         from  models.doctor import Doctor
         from  models.patient import Patient
-        from  backend.models.appointment import Appointment
+        from  models.appointment import Appointment
         from  models.message import Message
         from  models.notification import Notification
         from  models.or_availability import ORAvailability
         
         # Medical records models
-        from backend.models.medical_record import MedicalRecord
-        from models.perscription import Prescription
-        from models.refferal import Referral
-        from backend.models.insurance import Insurance
+        from models.medical_record import MedicalRecord
+        from models.insurance import Insurance
         
         # Create all tables
         db.create_all()

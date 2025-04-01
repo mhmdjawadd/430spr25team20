@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import  Column, Integer, String, DateTime, Enum
 from sqlalchemy.orm import relationship
-from .base import *
+from .base import Base , UserRole
 
 # Tables
 class User(Base):
