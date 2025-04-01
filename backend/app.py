@@ -46,7 +46,6 @@ def user_lookup_callback(_jwt_header, jwt_data):
 
 
 
-
 @app.route('/login', methods=['POST'])
 def login_route():
     """User login endpoint"""
