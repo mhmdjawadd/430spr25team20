@@ -1,9 +1,8 @@
-from .base import Base, UserRole, AppointmentType, AppointmentStatus, RecurrencePattern
-
-from .user import User
+from .base import Base
+from .user import User , UserRole 
 from .doctor import Doctor
 from .patient import Patient
-from .appointment import Appointment
+from .appointment import Appointment , AppointmentType, AppointmentStatus, RecurrencePattern
 from .medical_record import MedicalRecord
 from .insurance import Insurance
 from .message import Message

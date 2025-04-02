@@ -2,6 +2,16 @@ from datetime import datetime
 from sqlalchemy import  Column, Integer, String, DateTime, Enum
 from sqlalchemy.orm import relationship
 from .base import Base , UserRole
+import enum
+# Enums
+class UserRole(enum.Enum):
+    PATIENT = "patient"
+    DOCTOR = "doctor"
+    NURSE = "nurse"
+    SURGEON = "surgeon"
+    THERAPIST = "therapist"
+    RECEPTIONIST = "receptionist"
+    CAREGIVER = "caregiver"
 
 # Tables
 class User(Base):

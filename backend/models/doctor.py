@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Enum, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from .base import *
-
+from .user import UserRole
 class Doctor(Base):
     __tablename__ = 'doctors'
     
@@ -15,7 +15,7 @@ class Doctor(Base):
     patients = relationship("Patient", back_populates="doctor")
     medical_records = relationship("MedicalRecord", back_populates="doctor")
 
-    @classmethod
+    @classmethod # i used this to look over all the docs 
     def get_availability(cls, db_session, name, date):
         """
         Private function to get doctor's real-time availability accounting for booked appointments

@@ -2,6 +2,32 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum, Text
 from sqlalchemy.orm import relationship
 from .base import *
 
+
+class AppointmentType(enum.Enum):
+    REGULAR = "regular"
+    RECURRING = "recurring"
+    EMERGENCY = "emergency"
+
+class AppointmentStatus(enum.Enum):
+    SCHEDULED = "scheduled"
+    CONFIRMED = "confirmed"
+    CHECKED_IN = "checked_in"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+    RESCHEDULED = "rescheduled"
+
+class RecurrencePattern(enum.Enum):
+    NONE = "none"
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    BIWEEKLY = "biweekly"
+    MONTHLY = "monthly"
+    QUARTERLY = "quarterly"
+    YEARLY = "yearly"
+
+
+
+
 class Appointment(Base):
     __tablename__ = 'appointments'
     

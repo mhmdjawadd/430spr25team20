@@ -4,7 +4,6 @@ from datetime import datetime, timedelta, time
 from services.db import db
 from models import User, Doctor, Patient, Appointment, AppointmentStatus, AppointmentType , RecurrencePattern , Notification
 
-
 class AppointmentController:
    
     @staticmethod

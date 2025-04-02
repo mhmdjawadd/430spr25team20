@@ -70,12 +70,6 @@ def book_appointment():
 
 
 
-@app.route('/appointments/booked', methods=['GET'])
-@jwt_required()
-def get_user_appointments():
-    """Get all appointments for the logged-in user"""
-    return AppointmentController.get_user_appointments()
-
 
 if __name__ == "__main__":
     app.run(debug=True)
