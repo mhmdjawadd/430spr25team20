@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Mediplus</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #f5f6fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .register-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            width: 500px;
+            max-width: 100%;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo img {
+            width: 200px;
+        }
+
+        h2 {
+            color: #2C3E50;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2C3E50;
+            font-weight: 500;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .input-with-icon input,
+        .input-with-icon select {
+            width: 100%;
+            padding: 12px 12px 12px 35px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .role-specific-fields {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #e0e0e0;
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 12px;
+            background: #1A76D1;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .register-btn:hover {
+            background: #1557a0;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .login-link a {
+            color: #1A76D1;
+            text-decoration: none;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo">
+            <img src="img/nabad.png" alt="Mediplus">
+        </div>
+        
+        <h2>Create Account</h2>
+        
+        <form id="registrationForm" onsubmit="handleRegister(event)">
+            <div class="form-group">
+                <label for="role">Role</label>
+                <select name="role" id="role" required onchange="toggleRoleFields()">
+                    <option value="">Select Role</option>
+                    <option value="patient">Patient</option>
+                    <option value="doctor">Doctor</option>
+                    <option value="nurse">Nurse</option>
+                    <option value="receptionist">Receptionist</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Full Name</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-user"></i>
+                    <input type="text" name="fullName" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" name="email" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="password" required>
+                </div>
+            </div>
+
+       
+            <div id="doctorFields" style="display: none;">
+                <div class="form-group">
+                    <label for="specialization">Specialization</label>
+                    <select name="specialization" id="specialization">
+                        <option value="">Select Specialization</option>
+                        <option value="cardiology">Cardiology</option>
+                        <option value="dermatology">Dermatology</option>
+                        <option value="pediatrics">Pediatrics</option>
+                        <option value="neurology">Neurology</option>
+                        <option value="orthopedics">Orthopedics</option>
+                        <option value="general">General Medicine</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="licenseNumber">License Number</label>
+                    <input type="text" id="licenseNumber" name="licenseNumber">
+                </div>
+            </div>
+
+       
+            <div id="nurseFields" style="display: none;">
+                <div class="form-group">
+                    <label>Nursing Specialization</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-stethoscope"></i>
+                        <select name="nurseSpecialization">
+                            <option value="">Select Specialization</option>
+                            <option value="general">General Care</option>
+                            <option value="pediatric">Pediatric Nursing</option>
+                            <option value="emergency">Emergency Care</option>
+                            <option value="surgical">Surgical Nursing</option>
+                            <option value="icu">Intensive Care</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Department</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-hospital"></i>
+                        <select name="nurseDepartment">
+                            <option value="">Select Department</option>
+                            <option value="emergency">Emergency</option>
+                            <option value="icu">Intensive Care</option>
+                            <option value="pediatric">Pediatrics</option>
+                            <option value="surgical">Surgery</option>
+                            <option value="general">General Ward</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>License Number</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" name="licenseNumber" placeholder="Enter nursing license number">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Years of Experience</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-clock"></i>
+                        <input type="number" name="experience" min="0" placeholder="Years of experience">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="register-btn">Create Account</button>
+        </form>
+
+        <div class="login-link">
+            Already have an account? <a href="login.html">Login</a>
+        </div>
+    </div>
+
+    <script>
+        function toggleRoleFields() {
+            const role = document.getElementById('role').value;
+            const doctorFields = document.getElementById('doctorFields');
+            const nurseFields = document.getElementById('nurseFields');
+           
+            doctorFields.style.display = 'none';
+            if (nurseFields) nurseFields.style.display = 'none';
+            
+         
+            switch(role) {
+                case 'doctor':
+                    doctorFields.style.display = 'block';
+                    break;
+                case 'nurse':
+                    if (nurseFields) nurseFields.style.display = 'block';
+                    break;
+            }
+        }
+
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const role = document.getElementById('role').value;
+            
+        
+            if (role === 'doctor') {
+                const specialization = document.getElementById('specialization').value;
+                const licenseNumber = document.getElementById('licenseNumber').value;
+                
+                if (!specialization || !licenseNumber) {
+                    alert('Please fill in all doctor-specific fields');
+                    return;
+                }
+            }
+            
+         
+            alert('Registration successful! Please login.');
+            
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+</html>
