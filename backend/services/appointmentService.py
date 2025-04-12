@@ -585,3 +585,116 @@ class AppointmentController:
             "errors": results["errors"],
             "details": results["details"]
         }), 200
+
+    @staticmethod
+    @jwt_required()
+    def cancel_appointment():
+        """
+        Cancel an existing appointment and notify relevant parties
+        
+        Request body:
+        {
+            "appointment_id": int,
+            "reason": string (optional),
+            "notify_availabilities": boolean (optional, defaults to true)
+        }
+        """
+        # Get the current user
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+        
+        if not current_user:
+            return jsonify({"error": "User not found"}), 404
+            
+        # Get request data
+        data = request.get_json()
+        appointment_id = data.get('appointment_id')
+        reason = data.get('reason', 'No reason provided')
+        notify_availabilities = data.get('notify_availabilities', True)
+        
+        # Validate required fields
+        if not appointment_id:
+            return jsonify({"error": "Missing required field: appointment_id"}), 400
+            
+        # Get the appointment
+        appointment = Appointment.query.get(appointment_id)
+        if not appointment:
+            return jsonify({"error": "Appointment not found"}), 404
+            
+        # Check authorization - only the patient, doctor, or receptionist can cancel
+        is_authorized = (current_user.user_id == appointment.patient_id or
+                        current_user.user_id == appointment.doctor_id or
+                        current_user.role == UserRole.RECEPTIONIST)
+                        
+        if not is_authorized:
+            return jsonify({"error": "Unauthorized to cancel this appointment"}), 403
+            
+        # Check if appointment is already cancelled
+        if appointment.status == AppointmentStatus.CANCELLED:
+            return jsonify({
+                "message": "This appointment is already cancelled",
+                "appointment_id": appointment.appointment_id
+            }), 400
+            
+        # Update appointment status
+        appointment.status = AppointmentStatus.CANCELLED
+        
+        try:
+            # Get patient and doctor information for notifications
+            patient = Patient.query.get(appointment.patient_id) 
+            doctor_user = User.query.get(appointment.doctor_id)
+            
+            if patient and doctor_user:
+                # Create cancellation notification for patient
+                patient_notification = Notification(
+                    user_id=patient.patient_id,
+                    appointment_id=appointment.appointment_id,
+                    message=f"Appointment with Dr. {doctor_user.first_name} {doctor_user.last_name} on {appointment.date_time.strftime('%Y-%m-%d at %H:%M')} has been cancelled. Reason: {reason}",
+                    scheduled_time=datetime.now()
+                )
+                db.session.add(patient_notification)
+                
+                # Create cancellation notification for doctor
+                doctor_notification = Notification(
+                    user_id=doctor_user.user_id,
+                    appointment_id=appointment.appointment_id,
+                    message=f"Appointment with {patient.full_name()} on {appointment.date_time.strftime('%Y-%m-%d at %H:%M')} has been cancelled. Reason: {reason}",
+                    scheduled_time=datetime.now()
+                )
+                db.session.add(doctor_notification)
+                
+                # If patient has a caregiver, notify them too
+                if patient.caregiver_id:
+                    caregiver_notification = Notification(
+                        user_id=patient.caregiver_id,
+                        appointment_id=appointment.appointment_id,
+                        message=f"Appointment for {patient.full_name()} with Dr. {doctor_user.first_name} {doctor_user.last_name} on {appointment.date_time.strftime('%Y-%m-%d at %H:%M')} has been cancelled.",
+                        scheduled_time=datetime.now()
+                    )
+                    db.session.add(caregiver_notification)
+            
+            # Commit changes
+            db.session.commit()
+            
+            # If requested, notify other patients about the availability
+            response_data = {
+                "message": "Appointment cancelled successfully",
+                "appointment_id": appointment.appointment_id,
+                "patient": patient.full_name() if patient else "Unknown",
+                "doctor": f"Dr. {doctor_user.first_name} {doctor_user.last_name}" if doctor_user else "Unknown",
+                "date_time": appointment.date_time.strftime("%Y-%m-%d %H:%M")
+            }
+            
+            # Import here to avoid circular imports
+            if notify_availabilities and current_user.role in [UserRole.DOCTOR, UserRole.RECEPTIONIST, UserRole.NURSE]:
+                from services.reminderService import ReminderController
+                
+                # Create availability notifications in a separate request
+                # This avoids making this transaction too large
+                response_data["notify_availabilities"] = True
+            
+            return jsonify(response_data), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"error": f"Failed to cancel appointment: {str(e)}"}), 500

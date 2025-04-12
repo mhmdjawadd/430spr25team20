@@ -7,7 +7,6 @@ from .medical_record import MedicalRecord
 from .insurance import Insurance
 from .message import Message
 from .notification import Notification
-from .or_availability import ORAvailability
 from .referral import Referral
 
 
@@ -27,6 +26,5 @@ __all__ = [
     'Insurance',
     'Message',
     'Notification',
-    'ORAvailability',
     'Referral',
 ]

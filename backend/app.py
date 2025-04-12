@@ -8,6 +8,7 @@ from services.insuranceService import InsuranceController
 from services.caregiverService import CaregiverController
 from services.messagingService import MessagingController
 from services.notificationService import NotificationController
+from services.reminderService import ReminderController
 
 """
 from backend.services.therapistService import TherapistController
@@ -83,6 +84,12 @@ def get_recurring_appointments(appointment_id):
 def auto_schedule_appointments():
     """Automatically schedule recurring appointments (receptionist only)"""
     return AppointmentController.auto_schedule_appointments()
+
+@app.route('/appointments/cancel', methods=['PUT'])
+@jwt_required()
+def cancel_appointment():
+    """Cancel an existing appointment and notify all parties"""
+    return AppointmentController.cancel_appointment()
 
 # Insurance routes
 @app.route('/insurance', methods=['GET'])
@@ -171,6 +178,25 @@ def get_notifications():
 def mark_notification_read(notification_id):
     """Mark a notification as read"""
     return NotificationController.mark_notification_read(notification_id)
+
+# Reminder routes - NEW
+@app.route('/reminders/schedule', methods=['POST'])
+@jwt_required()
+def schedule_appointment_reminders():
+    """Schedule reminders for upcoming appointments"""
+    return ReminderController.schedule_appointment_reminders()
+
+@app.route('/reminders/availability', methods=['POST'])
+@jwt_required()
+def notify_cancellation_availability():
+    """Notify patients about cancellations and last-minute availabilities"""
+    return ReminderController.notify_cancellation_availabilities()
+
+@app.route('/caregivers/appointment-reminders', methods=['GET'])
+@jwt_required()
+def get_caregiver_appointment_reminders():
+    """Get all appointment reminders for elderly patients of a caregiver"""
+    return ReminderController.get_caregiver_appointment_reminders()
 
 # Referral routes
 @app.route('/referrals', methods=['POST'])
