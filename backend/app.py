@@ -4,6 +4,7 @@ from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 import os
 from services import AuthController
 from services.appointmentService import AppointmentController
+from services.insuranceService import InsuranceController
 
 """
 from backend.services.therapistService import TherapistController
@@ -45,7 +46,7 @@ def user_lookup_callback(_jwt_header, jwt_data):
     return User.query.get(int(identity))  # Convert back to integer when querying
 
 
-
+# Authentication routes
 @app.route('/login', methods=['POST'])
 def login_route():
     """User login endpoint"""
@@ -56,6 +57,7 @@ def signup_route():
     """User registration endpoint"""
     return AuthController.signup()
 
+# Appointment routes
 @app.route('/appointments', methods=['GET'])
 @jwt_required()
 def get_doctor_availability():
@@ -65,10 +67,27 @@ def get_doctor_availability():
 @app.route('/appointments', methods=['POST'])
 @jwt_required()
 def book_appointment():
-    """Get available appointment slots for a doctor on a specific date"""
+    """Book an appointment with a doctor"""
     return AppointmentController.book_appointment()
 
+# Insurance routes
+@app.route('/insurance', methods=['GET'])
+@jwt_required()
+def get_insurance():
+    """Get insurance information for a patient"""
+    return InsuranceController.get_patient_insurance()
 
+@app.route('/insurance', methods=['POST'])
+@jwt_required()
+def update_insurance():
+    """Update insurance information for a patient"""
+    return InsuranceController.update_patient_insurance()
+
+@app.route('/insurance/verify', methods=['POST'])
+@jwt_required()
+def verify_insurance():
+    """Verify insurance coverage for a specific doctor/service"""
+    return InsuranceController.verify_coverage()
 
 
 if __name__ == "__main__":

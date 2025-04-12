@@ -11,13 +11,14 @@ class Patient(Base):
     emergency_contact_phone = Column(String(20))
     doctor_id = Column(Integer, ForeignKey('doctors.doctor_id'))  
     bill = Column(Integer, default=0)  # Total bill amount
+    insurance_id = Column(Integer, ForeignKey('insurance.patient_id'))  # Link to insurance
 
     # Relationships
     user = relationship("User", back_populates="patient")
     medical_records = relationship("MedicalRecord", back_populates="patient")
     doctor = relationship("Doctor", back_populates="patients")
     appointments = relationship("Appointment", back_populates="patient")
-    
+    insurance = relationship("Insurance", back_populates="patient", uselist=False)
     
     def __repr__(self):
         return f"<Patient(id={self.patient_id})>"

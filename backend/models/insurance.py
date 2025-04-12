@@ -14,16 +14,16 @@ class Insurance(Base):
     
     patient_id = Column(Integer, ForeignKey('patients.patient_id'), primary_key=True)
     coverage_type = Column(Enum(InsuranceCoverage), nullable=False)
-    
+        
     # Relationships
-    patients = relationship("Patient", back_populates="insurance")
+    patient = relationship("Patient", back_populates="insurance")
     
     def calculate_coverage(self,  doctor_specialty, base_cost):
         """
         Calculate the coverage amount based on insurance type and service
         
         Args:
-            service_type: Type of appointment/service
+service_type: Type of appointment/service
             doctor_specialty: Specialty of the doctor
             base_cost: The original cost of the service
             

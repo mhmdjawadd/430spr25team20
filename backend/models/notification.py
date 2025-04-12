@@ -10,7 +10,6 @@ class Notification(Base):
     appointment_id = Column(Integer, ForeignKey('appointments.appointment_id'))
     message = Column(String, nullable=False)
     scheduled_time = Column(DateTime, nullable=False)
-    status = Column(String(20), default='pending')
     
     # Relationships
     user = relationship("User")
