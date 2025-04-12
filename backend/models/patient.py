@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from .base import Base
 
@@ -12,13 +12,16 @@ class Patient(Base):
     doctor_id = Column(Integer, ForeignKey('doctors.doctor_id'))  
     bill = Column(Integer, default=0)  # Total bill amount
     insurance_id = Column(Integer, ForeignKey('insurance.patient_id'))  # Link to insurance
+    caregiver_id = Column(Integer, ForeignKey('users.user_id'))  # Link to caregiver user
+    needs_caregiver = Column(Boolean, default=False)  # Flag for patients who need caregivers
 
     # Relationships
-    user = relationship("User", back_populates="patient")
+    user = relationship("User", back_populates="patient", foreign_keys=[patient_id])
     medical_records = relationship("MedicalRecord", back_populates="patient")
     doctor = relationship("Doctor", back_populates="patients")
     appointments = relationship("Appointment", back_populates="patient")
     insurance = relationship("Insurance", back_populates="patient", uselist=False)
+    caregiver = relationship("User", foreign_keys=[caregiver_id])
     
     def __repr__(self):
         return f"<Patient(id={self.patient_id})>"

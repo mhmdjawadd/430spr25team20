@@ -5,6 +5,7 @@ import os
 from services import AuthController
 from services.appointmentService import AppointmentController
 from services.insuranceService import InsuranceController
+from services.caregiverService import CaregiverController
 
 """
 from backend.services.therapistService import TherapistController
@@ -89,6 +90,42 @@ def verify_insurance():
     """Verify insurance coverage for a specific doctor/service"""
     return InsuranceController.verify_coverage()
 
+# Caregiver routes
+@app.route('/caregivers/assign', methods=['POST'])
+@jwt_required()
+def assign_caregiver():
+    """Assign a caregiver to a patient"""
+    return CaregiverController.assign_caregiver()
+
+@app.route('/caregivers/patients', methods=['GET'])
+@jwt_required()
+def get_caregiver_patients():
+    """Get all patients for a caregiver"""
+    return CaregiverController.get_caregiver_patients()
+
+@app.route('/patients/<int:patient_id>/caregiver', methods=['GET'])
+@jwt_required()
+def get_patient_caregiver(patient_id):
+    """Get caregiver information for a patient"""
+    return CaregiverController.get_patient_caregiver(patient_id)
+
+@app.route('/emergency/alert', methods=['POST'])
+@jwt_required()
+def send_emergency_alert():
+    """Send an emergency alert to a patient's caregiver"""
+    return CaregiverController.send_emergency_alert()
+
+@app.route('/patients/<int:patient_id>/medical', methods=['GET'])
+@jwt_required()
+def get_patient_medical_data(patient_id):
+    """Get a patient's medical data for caregiver access"""
+    return CaregiverController.get_patient_medical_data(patient_id)
+
+@app.route('/caregivers/emergency-alerts', methods=['GET'])
+@jwt_required()
+def get_caregiver_emergency_alerts():
+    """Get all emergency alerts for a caregiver"""
+    return CaregiverController.get_emergency_alerts()
 
 if __name__ == "__main__":
     app.run(debug=True)
