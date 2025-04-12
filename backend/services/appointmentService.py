@@ -2,7 +2,8 @@ from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from datetime import datetime, timedelta, time
 from services.db import db
-from models import User, Doctor, Patient, Appointment, AppointmentStatus, AppointmentType, RecurrencePattern, Notification, Insurance
+from models import User, Doctor, Patient, Appointment, AppointmentStatus, AppointmentType, RecurrencePattern, Notification, Insurance, UserRole
+from services.referralService import ReferralController
 import calendar
 
 class AppointmentController:
@@ -172,6 +173,21 @@ class AppointmentController:
         doctor = Doctor.query.get(data["doctor_id"])
         if not doctor:
             return jsonify({"error": "Doctor not found"}), 404
+            
+        # Get doctor's user record to check specialty
+        doctor_user = User.query.get(doctor.doctor_id)
+        if not doctor_user:
+            return jsonify({"error": "Doctor user record not found"}), 404
+            
+        # Check if appointment with specialist (surgeon or therapist) requires a referral
+        if doctor_user.role in [UserRole.SURGEON, UserRole.THERAPIST]:
+            # Check if patient has a valid referral to this specialist
+            has_referral = ReferralController.patient_has_valid_referral(patient_id, doctor.doctor_id)
+            if not has_referral:
+                return jsonify({
+                    "error": "Cannot book appointment with this specialist. A referral from a general doctor is required.",
+                    "message": "Please consult with a general doctor first to get a referral."
+                }), 403
         
         # Parse appointment datetime
         try:

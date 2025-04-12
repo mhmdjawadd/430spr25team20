@@ -14,6 +14,8 @@ class Doctor(Base):
     or_availability = relationship("ORAvailability", back_populates="surgeon")
     patients = relationship("Patient", back_populates="doctor")
     medical_records = relationship("MedicalRecord", back_populates="doctor")
+    sent_referrals = relationship("Referral", foreign_keys="Referral.referring_doctor_id", back_populates="referring_doctor")
+    received_referrals = relationship("Referral", foreign_keys="Referral.specialist_id", back_populates="specialist")
 
     @classmethod # i used this to look over all the docs 
     def get_availability(cls, db_session, name, date):

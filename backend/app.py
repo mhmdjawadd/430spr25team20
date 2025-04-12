@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 import os
-from services import AuthController
+from services import AuthController, ReferralController
 from services.appointmentService import AppointmentController
 from services.insuranceService import InsuranceController
 from services.caregiverService import CaregiverController
@@ -171,6 +171,55 @@ def get_notifications():
 def mark_notification_read(notification_id):
     """Mark a notification as read"""
     return NotificationController.mark_notification_read(notification_id)
+
+# Referral routes
+@app.route('/referrals', methods=['POST'])
+@jwt_required()
+def create_referral_route():
+    """Create a new referral from a doctor to a specialist"""
+    return ReferralController.create_referral()
+
+@app.route('/referrals/received', methods=['GET'])
+@jwt_required()
+def get_received_referrals_route():
+    """Get all referrals received by the current specialist"""
+    return ReferralController.get_received_referrals()
+
+@app.route('/referrals/sent', methods=['GET'])
+@jwt_required()
+def get_sent_referrals_route():
+    """Get all referrals sent by the current doctor"""
+    return ReferralController.get_sent_referrals()
+
+@app.route('/referrals/<int:referral_id>', methods=['GET'])
+@jwt_required()
+def get_referral_details_route(referral_id):
+    """Get detailed information about a specific referral"""
+    return ReferralController.get_referral_details(referral_id)
+
+@app.route('/referrals/<int:referral_id>/status', methods=['PUT'])
+@jwt_required()
+def update_referral_status_route(referral_id):
+    """Update the status of a referral (accept, reject, complete, etc.)"""
+    return ReferralController.update_referral_status(referral_id)
+
+@app.route('/patients/<int:patient_id>/referrals', methods=['GET'])
+@jwt_required()
+def get_patient_referrals_route(patient_id):
+    """Get all referrals for a specific patient"""
+    return ReferralController.get_patient_referrals(patient_id)
+
+@app.route('/specialists', methods=['GET'])
+@jwt_required()
+def get_specialists_list_route():
+    """Get a list of specialists available for referrals"""
+    return ReferralController.get_specialists_list()
+
+@app.route('/referrals/<int:referral_id>/messages', methods=['POST'])
+@jwt_required()
+def add_message_to_referral_route(referral_id):
+    """Add a communication message to an existing referral"""
+    return ReferralController.add_message_to_referral(referral_id)
 
 if __name__ == "__main__":
     app.run(debug=True)

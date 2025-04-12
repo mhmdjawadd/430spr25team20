@@ -8,6 +8,7 @@ from .insurance import Insurance
 from .message import Message
 from .notification import Notification
 from .or_availability import ORAvailability
+from .referral import Referral
 
 
 #  what gets imported with "from models import *"
@@ -27,5 +28,5 @@ __all__ = [
     'Message',
     'Notification',
     'ORAvailability',
-    
+    'Referral',
 ]
