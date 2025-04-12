@@ -6,10 +6,11 @@ from services import AuthController
 from services.appointmentService import AppointmentController
 from services.insuranceService import InsuranceController
 from services.caregiverService import CaregiverController
+from services.messagingService import MessagingController
+from services.notificationService import NotificationController
 
 """
 from backend.services.therapistService import TherapistController
-from services.notificationService import NotificationController
 from services.medicalRecordService import MedicalRecordController
 from services.prescriptionService import PrescriptionController
 from services.conditionService import ConditionController
@@ -138,6 +139,38 @@ def get_patient_medical_data(patient_id):
 def get_caregiver_emergency_alerts():
     """Get all emergency alerts for a caregiver"""
     return CaregiverController.get_emergency_alerts()
+
+# Messaging routes
+@app.route('/messages', methods=['POST'])
+@jwt_required()
+def send_message_route():
+    """Send a message to another user"""
+    return MessagingController.send_message()
+
+@app.route('/messages/conversations', methods=['GET'])
+@jwt_required()
+def get_conversations_route():
+    """Get all conversations for the current user"""
+    return MessagingController.get_conversations()
+
+@app.route('/messages/<int:user_id>', methods=['GET'])
+@jwt_required()
+def get_messages_route(user_id):
+    """Get all messages between the current user and another user"""
+    return MessagingController.get_messages(user_id)
+
+# Notification routes
+@app.route('/notifications', methods=['GET'])
+@jwt_required()
+def get_notifications():
+    """Get all notifications for the current user"""
+    return NotificationController.get_user_notifications()
+
+@app.route('/notifications/<int:notification_id>/read', methods=['POST'])
+@jwt_required()
+def mark_notification_read(notification_id):
+    """Mark a notification as read"""
+    return NotificationController.mark_notification_read(notification_id)
 
 if __name__ == "__main__":
     app.run(debug=True)
