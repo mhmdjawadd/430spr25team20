@@ -71,6 +71,18 @@ def book_appointment():
     """Book an appointment with a doctor"""
     return AppointmentController.book_appointment()
 
+@app.route('/appointments/recurring/<int:appointment_id>', methods=['GET'])
+@jwt_required()
+def get_recurring_appointments(appointment_id):
+    """Get all recurring appointments in a series"""
+    return AppointmentController.get_recurring_appointments(appointment_id)
+
+@app.route('/appointments/auto-schedule', methods=['POST'])
+@jwt_required()
+def auto_schedule_appointments():
+    """Automatically schedule recurring appointments (receptionist only)"""
+    return AppointmentController.auto_schedule_appointments()
+
 # Insurance routes
 @app.route('/insurance', methods=['GET'])
 @jwt_required()
