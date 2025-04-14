@@ -135,7 +135,27 @@
                     <option value="receptionist">Receptionist</option>
                 </select>
             </div>
-
+            
+            
+                <!-- Fields for Patient only (Initially hidden) -->
+                <div id="patientFields" style="display: none;">
+                    <div class="form-group">
+                        <label for="dob">Date of Birth</label>
+                        <input type="date" id="dob" name="dob">
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="emergencyContactName">Emergency Contact Name</label>
+                        <input type="text" id="emergencyContactName" name="emergencyContactName" placeholder="Emergency Contact Name">
+                    </div>
+            
+                    <div class="form-group">
+                        <label for="emergencyContactPhone">Emergency Contact Phone</label>
+                        <input type="tel" id="emergencyContactPhone" name="emergencyContactPhone" placeholder="Emergency Contact Phone">
+                    </div>
+                </div>
+            
+           
             <div class="form-group">
                 <label>Full Name</label>
                 <div class="input-with-icon">
@@ -242,6 +262,7 @@
             const role = document.getElementById('role').value;
             const doctorFields = document.getElementById('doctorFields');
             const nurseFields = document.getElementById('nurseFields');
+            const patientFields = document.getElementById('patientFields');
            
             doctorFields.style.display = 'none';
             if (nurseFields) nurseFields.style.display = 'none';
@@ -250,13 +271,49 @@
             switch(role) {
                 case 'doctor':
                     doctorFields.style.display = 'block';
+                    patientFields.style.display = 'none';
                     break;
                 case 'nurse':
                     if (nurseFields) nurseFields.style.display = 'block';
+                    patientFields.style.display = 'none';
+                    break;
+                case 'patient':
+                    patientFields.style.display = 'block';
                     break;
             }
         }
 
+function handleRegister(event) {
+    event.preventDefault();
+    
+    const role = document.getElementById('role').value;
+    const fullName = document.querySelector('input[name="fullName"]').value;
+    const email = document.querySelector('input[name="email"]').value;
+    const password = document.querySelector('input[name="password"]').value;
+
+    let dob = null, emergencyContactName = null, emergencyContactPhone = null;
+
+    if (role === 'patient') {
+        dob = document.getElementById('dob') ? document.getElementById('dob').value : null;
+        emergencyContactName = document.getElementById('emergencyContactName') ? document.getElementById('emergencyContactName').value : null;
+        emergencyContactPhone = document.getElementById('emergencyContactPhone') ? document.getElementById('emergencyContactPhone').value : null;
+    }
+
+    // Log the captured data (for debugging or further processing)
+    console.log("Role:", role);
+    console.log("Full Name:", fullName);
+    console.log("Email:", email);
+    console.log("Password:", password);
+
+    if (role === 'patient') {
+        console.log("Date of Birth:", dob);
+        console.log("Emergency Contact Name:", emergencyContactName);
+        console.log("Emergency Contact Phone:", emergencyContactPhone);
+    }
+
+    // You can add logic here to send this data to a server or process it further
+    alert('Form submitted successfully!');
+}
         document.getElementById('registrationForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
