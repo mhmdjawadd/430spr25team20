@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages - Mediplus</title>
+  <!-- Google Fonts: Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      background: #f8f9fa;
+    }
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+    .sidebar {
+      width: 250px;
+      background: linear-gradient(180deg, #0066cc, #0052a3);
+      padding: 20px;
+      color: white;
+    }
+    .sidebar h2 {
+      margin-bottom: 20px;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar ul li {
+      padding: 10px;
+      margin-bottom: 10px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .sidebar ul li:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-header {
+      background: white;
+      padding: 15px 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .chat-body {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background: #eef1f6;
+    }
+    .message {
+      margin-bottom: 15px;
+      max-width: 70%;
+      padding: 10px 15px;
+      border-radius: 10px;
+      position: relative;
+    }
+    .message.doctor {
+      background: #d1ecf1;
+      align-self: flex-start;
+    }
+    .message.patient {
+      background: #cce5ff;
+      align-self: flex-end;
+    }
+    .chat-footer {
+      display: flex;
+      padding: 15px;
+      background: white;
+      border-top: 1px solid #ddd;
+    }
+    .chat-footer input {
+      flex: 1;
+      padding: 10px 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .chat-footer button {
+      padding: 10px 20px;
+      background: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+    .chat-footer button:hover {
+      background: #005bb5;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Sidebar for message threads -->
+    <div class="sidebar">
+      <h2>Conversations</h2>
+      <ul>
+        <li onclick="loadConversation('John Doe')">John Doe</li>
+        <li onclick="loadConversation('Jane Smith')">Jane Smith</li>
+        <li onclick="loadConversation('Ali Mansour')">Ali Mansour</li>
+      </ul>
+    </div>
+
+    <!-- Chat area -->
+    <div class="chat-area">
+      <div class="chat-header">
+        <h3 id="chatWith">Chat with John Doe</h3>
+      </div>
+      <div class="chat-body" id="chatBody">
+        <div class="message doctor">Hello John, how are you feeling today?</div>
+        <div class="message patient">Hi Doctor, I’m feeling much better. Thank you!</div>
+      </div>
+      <div class="chat-footer">
+        <input type="text" placeholder="Type your message..." id="messageInput">
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const chatBody = document.getElementById('chatBody');
+      const message = input.value.trim();
+      if (!message) return;
+
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'message doctor';
+      msgDiv.innerText = message;
+      chatBody.appendChild(msgDiv);
+      input.value = '';
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function loadConversation(name) {
+      document.getElementById('chatWith').innerText = `Chat with ${name}`;
+      document.getElementById('chatBody').innerHTML = `
+        <div class="message doctor">Hello ${name}, how can I help you?</div>
+      `;
+    }
+  </script>
+
+</body>
+</html>
