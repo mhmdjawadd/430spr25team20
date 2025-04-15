@@ -2,7 +2,7 @@ from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime, timedelta
 from services.db import db
-from models import User, Patient, Appointment, Notification, UserRole, AppointmentStatus
+from models import User, Patient, Appointment, Notification, UserRole
 from sqlalchemy import and_, or_, func
 
 class ReminderController:
@@ -29,7 +29,7 @@ class ReminderController:
         upcoming_appointments = Appointment.query.filter(
             Appointment.date_time > now,
             Appointment.date_time < one_day_from_now,
-            Appointment.status != AppointmentStatus.CANCELLED
+            
         ).all()
         
         notifications_created = 0
@@ -148,7 +148,7 @@ class ReminderController:
             cancelled_appointments = Appointment.query.filter(
                 Appointment.doctor_id == doctor_id,
                 func.date(Appointment.date_time) == date_obj,
-                Appointment.status == AppointmentStatus.CANCELLED
+                
             ).all()
             
             if not cancelled_appointments:
@@ -239,7 +239,7 @@ class ReminderController:
         appointments = Appointment.query.filter(
             Appointment.patient_id.in_(patient_ids),
             Appointment.date_time > now,
-            Appointment.status != AppointmentStatus.CANCELLED
+            
         ).order_by(Appointment.date_time).all()
         
         # Format the appointment data

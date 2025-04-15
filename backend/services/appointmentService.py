@@ -2,7 +2,7 @@ from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from datetime import datetime, timedelta, time
 from services.db import db
-from models import User, Doctor, Patient, Appointment, AppointmentStatus, AppointmentType, RecurrencePattern, Notification, Insurance, UserRole
+from models import User, Doctor, Patient, Appointment, AppointmentType, RecurrencePattern, Notification, Insurance, UserRole
 from services.referralService import ReferralController
 import calendar
 
@@ -111,7 +111,7 @@ class AppointmentController:
                 date_time=next_date,
                 type=AppointmentType.RECURRING,  # Mark as part of a recurring series
                 recurrence_pattern=recurrence_pattern,
-                status=AppointmentStatus.SCHEDULED,
+                
                 base_cost=initial_appointment.base_cost,
                 insurance_verified=initial_appointment.insurance_verified,
                 insurance_coverage_amount=initial_appointment.insurance_coverage_amount,
@@ -242,7 +242,7 @@ class AppointmentController:
             Appointment.doctor_id == doctor.doctor_id,
             Appointment.date_time >= appointment_datetime.replace(hour=0, minute=0, second=0),  # Start of day
             Appointment.date_time < appointment_datetime.replace(hour=23, minute=59, second=59),  # End of day
-            Appointment.status != AppointmentStatus.CANCELLED  # Don't count cancelled appointments
+            
         ).all()
         
         # Check for conflicts
@@ -279,7 +279,7 @@ class AppointmentController:
             patient_id=patient.patient_id,
             doctor_id=doctor.doctor_id,
             date_time=appointment_datetime,
-            status=AppointmentStatus.SCHEDULED,
+            
             type=appointment_type,
             recurrence_pattern=recurrence_pattern,
             base_cost=base_cost,
@@ -452,7 +452,7 @@ class AppointmentController:
             ).filter(
                 Appointment.type == AppointmentType.RECURRING,
                 Appointment.recurrence_pattern != RecurrencePattern.NONE,
-                Appointment.status != AppointmentStatus.CANCELLED
+                
             ).group_by(
                 Appointment.patient_id,
                 Appointment.doctor_id,
@@ -499,7 +499,7 @@ class AppointmentController:
                         Appointment.doctor_id == doctor_id,
                         Appointment.date_time >= next_date.replace(hour=0, minute=0, second=0),
                         Appointment.date_time < next_date.replace(hour=23, minute=59, second=59),
-                        Appointment.status != AppointmentStatus.CANCELLED
+                        
                     ).all()
                     
                     # Check for conflicts
@@ -524,7 +524,7 @@ class AppointmentController:
                         patient_id=patient_id,
                         doctor_id=doctor_id,
                         date_time=next_date,
-                        status=AppointmentStatus.SCHEDULED,
+                        
                         type=AppointmentType.RECURRING,
                         recurrence_pattern=recurrence_pattern,
                         base_cost=last_appointment.base_cost,
@@ -629,15 +629,9 @@ class AppointmentController:
         if not is_authorized:
             return jsonify({"error": "Unauthorized to cancel this appointment"}), 403
             
-        # Check if appointment is already cancelled
-        if appointment.status == AppointmentStatus.CANCELLED:
-            return jsonify({
-                "message": "This appointment is already cancelled",
-                "appointment_id": appointment.appointment_id
-            }), 400
+        
             
-        # Update appointment status
-        appointment.status = AppointmentStatus.CANCELLED
+        
         
         try:
             # Get patient and doctor information for notifications

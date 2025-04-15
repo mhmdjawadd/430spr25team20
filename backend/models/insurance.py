@@ -14,9 +14,11 @@ class Insurance(Base):
     
     patient_id = Column(Integer, ForeignKey('patients.patient_id'), primary_key=True)
     coverage_type = Column(Enum(InsuranceCoverage), nullable=False)
+    provider_name = Column(String(100), nullable=True)  # Added provider name
+    policy_number = Column(String(50), nullable=True)   # Added policy number
         
-    # Relationships
-    patient = relationship("Patient", back_populates="insurance")
+    # Relationships - explicitly define foreign keys
+    patient = relationship("Patient", back_populates="insurance", foreign_keys=[patient_id])
     
     def calculate_coverage(self,  doctor_specialty, base_cost):
         """

@@ -2,9 +2,9 @@ from .base import Base
 from .user import User , UserRole 
 from .doctor import Doctor
 from .patient import Patient
-from .appointment import Appointment , AppointmentType, AppointmentStatus, RecurrencePattern
+from .appointment import Appointment , AppointmentType, RecurrencePattern
 from .medical_record import MedicalRecord
-from .insurance import Insurance
+from .insurance import Insurance , InsuranceCoverage
 from .message import Message
 from .notification import Notification
 from .referral import Referral
@@ -12,11 +12,11 @@ from .referral import Referral
 
 #  what gets imported with "from models import *"
 __all__ = [
+    "InsuranceCoverage",
     'Base',
     'UserRole',
     'AppointmentType', 
     'medical_record',
-    'AppointmentStatus',
     'RecurrencePattern',
     'User',
     'Doctor',

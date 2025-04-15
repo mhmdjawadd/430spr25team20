@@ -10,17 +10,6 @@ from services.messagingService import MessagingController
 from services.notificationService import NotificationController
 from services.reminderService import ReminderController
 
-"""
-from backend.services.therapistService import TherapistController
-from services.medicalRecordService import MedicalRecordController
-from services.prescriptionService import PrescriptionController
-from services.conditionService import ConditionController
-from services.availabilityService import AvailabilityController
-from services.emergencyService import EmergencyController
-from services.doctorService import DoctorController
-from services.calendarService import CalendarSyncController
-from services.nurseService import NurseController
-"""
 
 # Initialize Flask application
 app = Flask(__name__)
@@ -36,7 +25,7 @@ jwt = JWTManager(app)
 
 # Initialize database
 from services.db import init_db
-db =init_db(app,True)  # Initialize with our Flask app
+db =init_db(app)  # Initialize with our Flask app
 
 @jwt.user_identity_loader
 def user_identity_lookup(user):
@@ -59,6 +48,38 @@ def login_route():
 def signup_route():
     """User registration endpoint"""
     return AuthController.signup()
+
+# Doctor routes
+@app.route('/doctors', methods=['GET', 'OPTIONS'])
+@jwt_required(optional=True)
+def get_doctors():
+    """Get a list of all doctors"""
+    from models.user import User
+    from models.doctor import Doctor
+    from models.user import UserRole
+    from flask import jsonify
+    
+    try:
+        # Query all doctors
+        doctors = Doctor.query.all()
+        
+        # Format the response
+        result = []
+        for doctor in doctors:
+            user = User.query.filter_by(user_id=doctor.doctor_id).first()
+            if user:
+                result.append({
+                    'id': doctor.doctor_id,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'email': user.email,
+                    "specialty": doctor.specialty.name,
+                    
+                })
+        
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # Appointment routes
 @app.route('/appointments', methods=['GET'])

@@ -33,7 +33,7 @@ def init_db(app , reset = False):
         from  models.appointment import Appointment
         from  models.message import Message
         from  models.notification import Notification
-        from  models.or_availability import ORAvailability
+        
         
         # Medical records models
         from models.medical_record import MedicalRecord

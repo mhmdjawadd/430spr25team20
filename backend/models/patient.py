@@ -20,8 +20,8 @@ class Patient(Base):
     medical_records = relationship("MedicalRecord", back_populates="patient")
     doctor = relationship("Doctor", back_populates="patients")
     appointments = relationship("Appointment", back_populates="patient")
-    insurance = relationship("Insurance", back_populates="patient", uselist=False)
-    caregiver = relationship("User", foreign_keys=[caregiver_id])
+    insurance = relationship("Insurance", back_populates="patient", uselist=False, foreign_keys="Insurance.patient_id")
+    
     
     def __repr__(self):
         return f"<Patient(id={self.patient_id})>"
