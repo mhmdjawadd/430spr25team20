@@ -88,6 +88,54 @@ def get_doctor_availability():
     """Get available appointment slots for a doctor on a specific date"""
     return AppointmentController.get_doctor_availability()
 
+@app.route('/appointments/timeslots', methods=['GET'])
+def get_available_timeslots():
+    """Get available time slots for a specific doctor on a specific date"""
+    from models.doctor import Doctor
+    from flask import request, jsonify
+    
+    try:
+        doctor_id = request.args.get('doctor_id')
+        date = request.args.get('date')
+        
+        if not doctor_id or not date:
+            return jsonify({"error": "Missing doctor_id or date parameter"}), 400
+            
+        # Convert date string to date object
+        from datetime import datetime
+        try:
+            date_obj = datetime.strptime(date, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+            
+        # Get doctor availability using the Doctor model method
+        from services.db import db
+        availability = Doctor.get_availability(db.session, None, date_obj)
+        
+        # Find the specific doctor in the returned list
+        doctor_data = None
+        for doctor in availability:
+            if str(doctor["doctor_id"]) == str(doctor_id):
+                doctor_data = doctor
+                break
+                
+        if not doctor_data:
+            return jsonify([])
+            
+        # Convert the data into time slots format
+        time_slots = []
+        for slot in doctor_data.get("available_slots", []):
+            time_slots.append({
+                "start": slot.get("start"),
+                "end": slot.get("end")
+            })
+            
+        return jsonify(time_slots)
+        
+    except Exception as e:
+        print(f"Error getting time slots: {str(e)}")
+        return jsonify({"error": f"Failed to get time slots: {str(e)}"}), 500
+
 @app.route('/appointments', methods=['POST'])
 @jwt_required()
 def book_appointment():
