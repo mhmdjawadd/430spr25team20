@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Mediplus</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #f5f6fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .register-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            width: 500px;
+            max-width: 100%;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo img {
+            width: 200px;
+        }
+
+        h2 {
+            color: #2C3E50;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2C3E50;
+            font-weight: 500;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .input-with-icon input,
+        .input-with-icon select {
+            width: 100%;
+            padding: 12px 12px 12px 35px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .role-specific-fields {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #e0e0e0;
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 12px;
+            background: #1A76D1;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .register-btn:hover {
+            background: #1557a0;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .login-link a {
+            color: #1A76D1;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        /* Alert styles */
+        .alert {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        /* Spinner for loading state */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+            display: none;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo">
+            <img src="img/nabad.png" alt="Mediplus">
+        </div>
+        
+        <h2>Create Account</h2>
+        
+        <!-- Alert for showing messages -->
+        <div id="alertBox" class="alert"></div>
+        
+        <form id="registrationForm">
+            <div class="form-group">
+                <label for="role">Role</label>
+                <select name="role" id="role" required onchange="toggleRoleFields()">
+                    <option value="">Select Role</option>
+                    <option value="patient">Patient</option>
+                    <option value="doctor">Doctor</option>
+                    <option value="nurse">Nurse</option>
+                    <option value="receptionist">Receptionist</option>
+                </select>
+            </div>
+            
+            <!-- Fields for Patient only (Initially hidden) -->
+            <div id="patientFields" style="display: none;">
+                <div class="form-group">
+                    <label for="dob">Date of Birth</label>
+                    <input type="date" id="dob" name="dob">
+                </div>
+        
+                <div class="form-group">
+                    <label for="emergencyContactName">Emergency Contact Name</label>
+                    <input type="text" id="emergencyContactName" name="emergencyContactName" placeholder="Emergency Contact Name">
+                </div>
+        
+                <div class="form-group">
+                    <label for="emergencyContactPhone">Emergency Contact Phone</label>
+                    <input type="tel" id="emergencyContactPhone" name="emergencyContactPhone" placeholder="Emergency Contact Phone">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="firstName">First Name</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="firstName" name="firstName" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="lastName">Last Name</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="lastName" name="lastName" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" name="email" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" name="password" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                </div>
+            </div>
+
+            <!-- Doctor specific fields -->
+            <div id="doctorFields" style="display: none;">
+                <div class="form-group">
+                    <label for="specialization">Specialization</label>
+                    <select name="specialization" id="specialization">
+                        <option value="">Select Specialization</option>
+                        <option value="doctor">Doctor</option>
+                        <option value="nurse">Nurse</option>
+                        <option value="therapist">Therapist</option>
+                        <option value="surgeon">Surgeon</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="licenseNumber">License Number</label>
+                    <input type="text" id="licenseNumber" name="licenseNumber">
+                </div>
+            </div>
+
+            <!-- Nurse specific fields -->
+            <div id="nurseFields" style="display: none;">
+                <div class="form-group">
+                    <label for="nurseSpecialization">Nursing Specialization</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-stethoscope"></i>
+                        <select name="nurseSpecialization" id="nurseSpecialization">
+                            <option value="">Select Specialization</option>
+                            <option value="general">General Care</option>
+                            <option value="pediatric">Pediatric Nursing</option>
+                            <option value="emergency">Emergency Care</option>
+                            <option value="surgical">Surgical Nursing</option>
+                            <option value="icu">Intensive Care</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="nurseDepartment">Department</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-hospital"></i>
+                        <select name="nurseDepartment" id="nurseDepartment">
+                            <option value="">Select Department</option>
+                            <option value="emergency">Emergency</option>
+                            <option value="icu">Intensive Care</option>
+                            <option value="pediatric">Pediatrics</option>
+                            <option value="surgical">Surgery</option>
+                            <option value="general">General Ward</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="nurseLicenseNumber">License Number</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" id="nurseLicenseNumber" name="nurseLicenseNumber" placeholder="Enter nursing license number">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="nurseExperience">Years of Experience</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-clock"></i>
+                        <input type="number" id="nurseExperience" name="nurseExperience" min="0" placeholder="Years of experience">
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" id="registerBtn" class="register-btn">
+                <span class="spinner" id="registerSpinner"></span>
+                Create Account
+            </button>
+        </form>
+
+        <div class="login-link">
+            Already have an account? <a href="login.html">Login</a>
+        </div>
+    </div>
+
+    <!-- Include authentication API -->
+    <script src="js/auth-api.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is already logged in
+            if (isAuthenticated()) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Toggle role-specific fields
+            function toggleRoleFields() {
+                const role = document.getElementById('role').value;
+                const doctorFields = document.getElementById('doctorFields');
+                const nurseFields = document.getElementById('nurseFields');
+                const patientFields = document.getElementById('patientFields');
+                
+                doctorFields.style.display = 'none';
+                nurseFields.style.display = 'none';
+                patientFields.style.display = 'none';
+                
+                switch(role) {
+                    case 'doctor':
+                        doctorFields.style.display = 'block';
+                        break;
+                    case 'nurse':
+                        nurseFields.style.display = 'block';
+                        break;
+                    case 'patient':
+                        patientFields.style.display = 'block';
+                        break;
+                }
+            }
+            
+            // Make toggleRoleFields available globally
+            window.toggleRoleFields = toggleRoleFields;
+            
+            // Registration form submission
+            document.getElementById('registrationForm').addEventListener('submit', async function(event) {
+                event.preventDefault();
+                
+                // Get common form fields
+                const role = document.getElementById('role').value;
+                const firstName = document.getElementById('firstName').value;
+                const lastName = document.getElementById('lastName').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                // Validate form
+                if (!role || !firstName || !lastName || !email || !password || !confirmPassword) {
+                    showAlert('Please fill in all required fields', 'error');
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    showAlert('Passwords do not match', 'error');
+                    return;
+                }
+                
+                // Show loading state
+                const registerBtn = document.getElementById('registerBtn');
+                const registerSpinner = document.getElementById('registerSpinner');
+                registerBtn.disabled = true;
+                registerSpinner.style.display = 'inline-block';
+                
+                // Prepare userData based on role
+                const userData = {
+                    role: role.toUpperCase(),
+                    first_name: firstName,
+                    last_name: lastName,
+                    email: email,
+                    password: password
+                };
+                
+                // Add role-specific fields
+                if (role === 'doctor') {
+                    const specialization = document.getElementById('specialization').value;
+                    const licenseNumber = document.getElementById('licenseNumber').value;
+                    
+                    if (!specialization || !licenseNumber) {
+                        showAlert('Please fill in all doctor-specific fields', 'error');
+                        registerBtn.disabled = false;
+                        registerSpinner.style.display = 'none';
+                        return;
+                    }
+                    
+                    userData.specialization = specialization;
+                    userData.license_number = licenseNumber;
+                } 
+                else if (role === 'nurse') {
+                    const nurseSpecialization = document.getElementById('nurseSpecialization').value;
+                    const nurseDepartment = document.getElementById('nurseDepartment').value;
+                    const nurseLicenseNumber = document.getElementById('nurseLicenseNumber').value;
+                    const nurseExperience = document.getElementById('nurseExperience').value;
+                    
+                    if (!nurseSpecialization || !nurseDepartment || !nurseLicenseNumber) {
+                        showAlert('Please fill in all nurse-specific fields', 'error');
+                        registerBtn.disabled = false;
+                        registerSpinner.style.display = 'none';
+                        return;
+                    }
+                    
+                    userData.specialization = nurseSpecialization;
+                    userData.department = nurseDepartment;
+                    userData.license_number = nurseLicenseNumber;
+                    userData.years_experience = nurseExperience;
+                }
+                else if (role === 'patient') {
+                    const dob = document.getElementById('dob').value;
+                    const emergencyContactName = document.getElementById('emergencyContactName').value;
+                    const emergencyContactPhone = document.getElementById('emergencyContactPhone').value;
+                    
+                    if (dob) {
+                        userData.date_of_birth = dob;
+                    }
+                    
+                    if (emergencyContactName && emergencyContactPhone) {
+                        userData.emergency_contact = {
+                            name: emergencyContactName,
+                            phone: emergencyContactPhone
+                        };
+                    }
+                }
+                
+                try {
+                    // Call the API to register the user
+                    const response = await registerUser(userData);
+                    
+                    // Show success message
+                    showAlert('Registration successful! Redirecting to home page...', 'success');
+                    
+                    // Redirect to index page after a delay since user is now authenticated
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                    
+                } catch (error) {
+                    showAlert(error.message || 'Registration failed. Please try again.', 'error');
+                    registerBtn.disabled = false;
+                    registerSpinner.style.display = 'none';
+                }
+            });
+            
+            // Function to display alerts
+            function showAlert(message, type) {
+                const alertBox = document.getElementById('alertBox');
+                alertBox.textContent = message;
+                alertBox.style.display = 'block';
+                
+                if (type === 'error') {
+                    alertBox.className = 'alert alert-danger';
+                } else if (type === 'success') {
+                    alertBox.className = 'alert alert-success';
+                }
+                
+                // Auto-dismiss success messages
+                if (type === 'success') {
+                    setTimeout(() => {
+                        alertBox.style.display = 'none';
+                    }, 3000);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

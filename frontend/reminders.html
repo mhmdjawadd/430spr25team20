@@ -1,0 +1,897 @@
+<!doctype html>
+<html class="no-js" lang="zxx">
+    <head>
+        <!-- Meta Tags -->
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="keywords" content="Site keywords here">
+		<meta name="description" content="">
+		<meta name='copyright' content=''>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		
+		<!-- Title -->
+        <title>Reminder Preferences - Mediplus Medical Center</title>
+		
+		<!-- Favicon -->
+        <link rel="icon" href="img/favicon.png">
+	
+		<link href="https://fonts.googleapis.com/css?family=Poppins:200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="css/bootstrap.min.css">
+		<!-- Nice Select CSS -->
+		<link rel="stylesheet" href="css/nice-select.css">
+		<!-- Font Awesome CSS -->
+        <link rel="stylesheet" href="css/font-awesome.min.css">
+		<!-- icofont CSS -->
+        <link rel="stylesheet" href="css/icofont.css">
+		<!-- Slicknav -->
+		<link rel="stylesheet" href="css/slicknav.min.css">
+		<!-- Owl Carousel CSS -->
+        <link rel="stylesheet" href="css/owl-carousel.css">
+		<!-- Datepicker CSS -->
+		<link rel="stylesheet" href="css/datepicker.css">
+		<!-- Animate CSS -->
+        <link rel="stylesheet" href="css/animate.min.css">
+		<!-- Magnific Popup CSS -->
+        <link rel="stylesheet" href="css/magnific-popup.css">
+		
+		<!-- Medipro CSS -->
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="css/responsive.css">
+
+        
+        <style>
+         
+            .reminder-section {
+                max-width: 1200px;
+                margin: 40px auto;
+                padding: 0 20px;
+            }
+
+      
+            .preference-card {
+                background: white;
+                border-radius: 16px;
+                padding: 30px;
+                margin-bottom: 30px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+                transition: transform 0.3s ease;
+            }
+
+            .preference-card:hover {
+                transform: translateY(-5px);
+            }
+
+        
+            .section-title {
+                text-align: center;
+                margin-bottom: 50px;
+            }
+
+            .section-title h2 {
+                font-size: 32px;
+                color: #1a1a1a;
+                margin-bottom: 15px;
+            }
+
+            .section-title p {
+                color: #666;
+                font-size: 18px;
+            }
+
+           
+            .form-group {
+                margin-bottom: 25px;
+            }
+
+            .form-group label {
+                display: block;
+                font-size: 16px;
+                color: #1a1a1a;
+                margin-bottom: 10px;
+                font-weight: 500;
+            }
+
+            .form-control {
+                width: 100%;
+                padding: 12px 15px;
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                font-size: 16px;
+                transition: all 0.3s ease;
+            }
+
+            .form-control:focus {
+                border-color: #0066cc;
+                box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+                outline: none;
+            }
+
+            .checkbox-wrapper {
+                display: flex;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+
+            .custom-checkbox {
+                width: 22px;
+                height: 22px;
+                margin-right: 10px;
+                accent-color: #0066cc;
+            }
+
+    
+            .section-icon {
+                font-size: 24px;
+                color: #0066cc;
+                margin-right: 10px;
+                vertical-align: middle;
+            }
+
+    
+            .card-header {
+                display: flex;
+                align-items: center;
+                margin-bottom: 25px;
+            }
+
+            .card-header h3 {
+                font-size: 24px;
+                color: #1a1a1a;
+                margin: 0;
+            }
+
+            
+            .tips-list {
+                list-style: none;
+                padding: 0;
+            }
+
+            .tips-list li {
+                display: flex;
+                align-items: center;
+                margin-bottom: 15px;
+                color: #666;
+                font-size: 16px;
+            }
+
+            .tips-list li i {
+                color: #28a745;
+                margin-right: 10px;
+                font-size: 18px;
+            }
+
+            /* Save Button */
+            .save-btn {
+                background: #0066cc;
+                color: white;
+                border: none;
+                padding: 15px 30px;
+                border-radius: 8px;
+                font-size: 18px;
+                font-weight: 500;
+                cursor: pointer;
+                width: 100%;
+                transition: all 0.3s ease;
+            }
+
+            .save-btn:hover {
+                background: #0052a3;
+                transform: translateY(-2px);
+            }
+
+            .success-message {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: #28a745;
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                font-size: 16px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                display: none;
+                animation: slideIn 0.3s ease;
+            }
+
+            @keyframes slideIn {
+                from { transform: translateY(100px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+
+        
+            @media (max-width: 768px) {
+                .preference-card {
+                    padding: 20px;
+                }
+
+                .section-title h2 {
+                    font-size: 28px;
+                }
+
+                .card-header h3 {
+                    font-size: 20px;
+                }
+            }
+
+            .reminder-icon {
+                position: relative;
+            }
+
+            .reminder-icon a {
+                display: flex;
+                align-items: center;
+                padding: 8px 15px;
+            }
+
+            .reminder-icon i {
+                font-size: 20px;
+                color: #0066cc;
+                transition: transform 0.3s ease;
+            }
+
+            .reminder-icon:hover i {
+                transform: scale(1.1);
+            }
+
+            .reminder-tooltip {
+                position: absolute;
+                bottom: -30px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #333;
+                color: white;
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                white-space: nowrap;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+            }
+
+            .reminder-icon:hover .reminder-tooltip {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .reminder-icon.has-reminders::after {
+                content: '';
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                width: 8px;
+                height: 8px;
+                background: #e74c3c;
+                border-radius: 50%;
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.2); }
+                100% { transform: scale(1); }
+            }
+
+            
+            .reminder-section {
+                padding: 80px 0;
+                background: #f8f9fa;
+            }
+
+            .section-divider {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .section-title {
+                margin-bottom: 50px;
+            }
+
+            .section-title h2 {
+                font-size: 32px;
+                margin-bottom: 15px;
+                color: #1a1a1a;
+            }
+
+            .section-title p {
+                color: #666;
+            }
+
+            .reminder-steps {
+                display: flex;
+                justify-content: center;
+                margin-bottom: 40px;
+                gap: 20px;
+            }
+
+            .step {
+                padding: 10px 20px;
+                border-radius: 6px;
+                color: #666;
+                cursor: pointer;
+            }
+
+            .step.active {
+                background: #0066cc;
+                color: white;
+            }
+
+            .reminder-form {
+                background: white;
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            .form-select,
+            .form-control {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                font-size: 16px;
+            }
+
+            .btn-next {
+                width: 100%;
+                padding: 18px 30px;
+                background: #0066cc;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 18px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                margin-top: 20px;
+            }
+
+            .btn-next:hover {
+                background: #0052a3;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(0, 102, 204, 0.2);
+            }
+
+            .working-hours {
+                background: #0066cc;
+                padding: 30px;
+                border-radius: 12px;
+                color: white;
+            }
+
+            .working-hours h3 {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            .timing .day {
+                display: flex;
+                justify-content: space-between;
+                padding: 10px 0;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+
+           
+            .calendar-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+
+            .calendar-controls {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .calendar-grid {
+                background: #f8f9fa;
+                border-radius: 8px;
+                padding: 20px;
+            }
+
+            .appointment-slot {
+                padding: 10px;
+                border-bottom: 1px solid #eee;
+            }
+
+            .notification-time {
+                font-size: 12px;
+                color: #666;
+                display: block;
+                margin-top: 5px;
+            }
+
+            .btn-nav {
+                background: none;
+                border: 1px solid #ddd;
+                padding: 8px 12px;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+
+            .btn-nav:hover {
+                background: #f8f9fa;
+            }
+            .logout-btn{
+        color: #1a1a1a;
+        font-size: 16px;
+        font-weight: 500;
+        transition: color 0.3s;
+        margin-top: 20px;
+    }
+
+    .logout-btn:hover {
+        color: #0066cc;
+        text-decoration: underline;
+    }
+        </style>
+		
+    </head>
+    <body>
+	
+		
+        <div class="preloader">
+            <div class="loader">
+                <div class="loader-outter"></div>
+                <div class="loader-inner"></div>
+                <div class="indicator"> 
+                    <svg width="16px" height="12px">
+                        <polyline id="back" points="1 6 4 6 6 11 10 1 12 6 15 6"></polyline>
+                        <polyline id="front" points="1 6 4 6 6 11 10 1 12 6 15 6"></polyline>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+		<header class="header">
+			
+			<div class="header-inner">
+				<div class="container">
+					<div class="inner">
+						<div class="row">
+							<div class="col-lg-3 col-md-3 col-12">
+								
+								<div class="logo">
+									<a href="index.html"><img src="img/nabad.png" alt="#"></a>
+								</div>
+								
+								<div class="mobile-nav"></div>
+								
+							</div>
+							<div class="col-lg-7 col-md-9 col-12">
+								
+								<div class="main-menu">
+									<nav class="navigation">
+										<ul class="nav menu">
+											<li><a href="index.html">Home</a></li>
+											<li><a href="doctors.html">Doctors</a></li>
+											<li><a href="services.html">Services</a></li>
+											<li><a href="contact.html">Contact Us</a></li>
+                                            <li></li><a href="login.html" class="logout-btn" onclick="handleLogout()">
+                                                <i class="fas fa-door-open"></i> 
+                                            </a></li>
+											
+										</ul>
+									</nav>
+								</div>
+							
+							</div>
+							<div class="col-lg-2 col-12">
+								<div class="get-quote">
+									<span id="userGreeting">Welcome!</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+		</header>
+		
+		<div class="breadcrumbs overlay">
+			<div class="container">
+				<div class="bread-inner">
+					<div class="row">
+						<div class="col-12">
+							<h2>Reminder Preferences</h2>
+							<ul class="bread-list">
+								<li><a href="index.html">Home</a></li>
+								<li><i class="icofont-simple-right"></i></li>
+								<li><a href="appointment.html">Appointments</a></li>
+								<li><i class="icofont-simple-right"></i></li>
+								<li class="active">Reminder Preferences</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		
+		
+		<section class="reminder-section">
+			<div class="container">
+				
+				<div class="section-divider">
+					<img src="img/section-img.png" alt="divider">
+				</div>
+				<div class="section-title text-center">
+					<h2>Choose your reminder preferences</h2>
+					<p>Select how and when you'd like to receive appointment reminders</p>
+				</div>
+
+				<div class="reminder-steps">
+					<div class="step active">1. Notification Methods</div>
+					<div class="step">2. Timing Preferences</div>
+					<div class="step">3. Confirm Settings</div>
+				</div>
+
+				
+				<div class="row">
+					
+					<div class="col-lg-8">
+						<div class="reminder-form">
+							
+							<div class="form-group">
+								<select class="form-control" id="notificationType">
+									<option value="email">Email Notifications</option>
+									<option value="sms">SMS Notifications</option>
+								</select>
+							</div>
+
+							<div class="form-group">
+								<input type="email" class="form-control" id="emailInput" placeholder="Enter your email" value="">
+							</div>
+
+							<div class="form-group">
+								<input type="tel" class="form-control" id="phoneInput" placeholder="Enter your phone number" value="">
+							</div>
+
+							<div class="form-group">
+								<select class="form-control" id="reminderTiming">
+									<option value="1">1 day before</option>
+									<option value="2">2 days before</option>
+									<option value="3">3 days before</option>
+									<option value="7">1 week before</option>
+								</select>
+							</div>
+
+							<button type="button" class="btn-next" onclick="nextStep()">Next Step</button>
+						</div>
+					</div>
+
+				
+					<div class="col-lg-4">
+						<div class="working-hours">
+							<h3>Working Hours</h3>
+							<div class="hours-list">
+								<div class="hour-item">
+									<span>Monday - Friday</span>
+									<span>8.00-20.00</span>
+								</div>
+								<div class="hour-item">
+									<span>Saturday</span>
+									<span>9.00-18.30</span>
+								</div>
+								<div class="hour-item">
+									<span>Sunday</span>
+									<span>9.00-15.00</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		
+		<footer id="footer" class="footer">
+		
+			<div class="footer-top">
+				<div class="container">
+					<div class="row">
+						<div class="col-lg-3 col-md-6 col-12">
+							<div class="single-footer">
+								<h2>About Us</h2>
+								<p>Lorem ipsum dolor sit am consectetur adipisicing elit do eiusmod tempor incididunt ut labore dolore magna.</p>
+								
+								<ul class="social">
+									<li><a href="#"><i class="icofont-facebook"></i></a></li>
+									<li><a href="#"><i class="icofont-google-plus"></i></a></li>
+									<li><a href="#"><i class="icofont-twitter"></i></a></li>
+									<li><a href="#"><i class="icofont-vimeo"></i></a></li>
+									<li><a href="#"><i class="icofont-pinterest"></i></a></li>
+								</ul>
+							
+							</div>
+						</div>
+						<div class="col-lg-3 col-md-6 col-12">
+							<div class="single-footer f-link">
+								<h2>Quick Links</h2>
+								<div class="row">
+									<div class="col-lg-6 col-md-6 col-12">
+										<ul>
+											<li><a href="index.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Home</a></li>
+											<li><a href="about.html"><i class="fa fa-caret-right" aria-hidden="true"></i>About Us</a></li>
+											<li><a href="services.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Services</a></li>
+											<li><a href="cases.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Our Cases</a></li>
+											<li><a href="contact.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Contact Us</a></li>
+											<li><a href="login.html">Log In</a></li>
+											<li><a href="register.html">Register</a></li>	
+										</ul>
+									</div>
+									<div class="col-lg-6 col-md-6 col-12">
+										<ul>
+											<li><a href="doctors.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Doctors</a></li>
+											<li><a href="appointment.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Book Appointment</a></li>
+											<li><a href="testimonials.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Testimonials</a></li>
+											<li><a href="faq.html"><i class="fa fa-caret-right" aria-hidden="true"></i>FAQ</a></li>
+											<li><a href="blog.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Blog</a></li>	
+										</ul>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-3 col-md-6 col-12">
+							<div class="single-footer">
+								<h2>Open Hours</h2>
+								<p>Lorem ipsum dolor sit ame consectetur adipisicing elit do eiusmod tempor incididunt.</p>
+								<ul class="time-sidual">
+									<li class="day">Monday - Fridayp <span>8.00-20.00</span></li>
+									<li class="day">Saturday <span>9.00-18.30</span></li>
+									<li class="day">Monday - Thusday <span>9.00-15.00</span></li>
+								</ul>
+							</div>
+						</div>
+						<div class="col-lg-3 col-md-6 col-12">
+							<div class="single-footer">
+								<h2>Newsletter</h2>
+								<p>subscribe to our newsletter to get allour news in your inbox.. Lorem ipsum dolor sit amet, consectetur adipisicing elit,</p>
+								<form action="mail/mail.php" method="get" target="_blank" class="newsletter-inner">
+									<input name="email" placeholder="Email Address" class="common-input" onfocus="this.placeholder = ''"
+										onblur="this.placeholder = 'Your email address'" required="" type="email">
+									<button class="button"><i class="icofont icofont-paper-plane"></i></button>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="copyright">
+				<div class="container">
+					<div class="row">
+						<div class="col-lg-12 col-md-12 col-12">
+							<div class="copyright-content">
+								<p>© Copyright 2018  |  All Rights Reserved by <a href="https://www.wpthemesgrid.com" target="_blank">wpthemesgrid.com</a> </p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		
+		</footer>
+	
+        <script src="js/jquery.min.js"></script>
+		
+		<script src="js/jquery-migrate-3.0.0.js"></script>
+		
+		<script src="js/jquery-ui.min.js"></script>
+		
+        <script src="js/easing.js"></script>
+		
+		<script src="js/colors.js"></script>
+		
+		<script src="js/popper.min.js"></script>
+		
+		<script src="js/bootstrap-datepicker.js"></script>
+		
+        <script src="js/jquery.nav.js"></script>
+		
+		<script src="js/slicknav.min.js"></script>
+	
+        <script src="js/jquery.scrollUp.min.js"></script>
+		
+		<script src="js/niceselect.js"></script>
+		
+		<script src="js/tilt.jquery.min.js"></script>
+		
+        <script src="js/owl-carousel.js"></script>
+		
+		<script src="js/jquery.counterup.min.js"></script>
+	
+		<script src="js/steller.js"></script>
+	
+		<script src="js/wow.min.js"></script>
+		
+		<script src="js/jquery.magnific-popup.min.js"></script>
+	
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.3/waypoints.min.js"></script>
+		
+		<script src="js/bootstrap.min.js"></script>
+	
+		<script src="js/main.js"></script>
+
+    
+        <script>
+            let currentStep = 1;
+            
+            function nextStep() {
+                
+                const notificationType = document.getElementById('notificationType').value;
+                const email = document.getElementById('emailInput').value;
+                const phone = document.getElementById('phoneInput').value;
+                const timing = document.getElementById('reminderTiming').value;
+
+                
+                if (!validateStep(notificationType, email, phone, timing)) {
+                    return;
+                }
+
+              
+                savePreferences(notificationType, email, phone, timing);
+
+                
+                currentStep++;
+                updateStepDisplay();
+            }
+
+            function validateStep(notificationType, email, phone, timing) {
+                if (notificationType === 'email' && !email) {
+                    alert('Please enter your email address');
+                    return false;
+                }
+                if (notificationType === 'sms' && !phone) {
+                    alert('Please enter your phone number');
+                    return false;
+                }
+                if (!timing) {
+                    alert('Please select reminder timing');
+                    return false;
+                }
+                return true;
+            }
+
+            function savePreferences(notificationType, email, phone, timing) {
+                const preferences = {
+                    notificationType,
+                    email,
+                    phone,
+                    timing
+                };
+                localStorage.setItem('reminderPreferences', JSON.stringify(preferences));
+            }
+
+            function updateStepDisplay() {
+                const steps = document.querySelectorAll('.step');
+                steps.forEach((step, index) => {
+                    if (index + 1 === currentStep) {
+                        step.classList.add('active');
+                    } else {
+                        step.classList.remove('active');
+                    }
+                });
+
+               
+                if (currentStep > 3) {
+                    window.location.href = 'index.html';
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const savedPreferences = JSON.parse(localStorage.getItem('reminderPreferences') || '{}');
+                if (savedPreferences.notificationType) {
+                    document.getElementById('notificationType').value = savedPreferences.notificationType;
+                }
+                if (savedPreferences.email) {
+                    document.getElementById('emailInput').value = savedPreferences.email;
+                }
+                if (savedPreferences.phone) {
+                    document.getElementById('phoneInput').value = savedPreferences.phone;
+                }
+                if (savedPreferences.timing) {
+                    document.getElementById('reminderTiming').value = savedPreferences.timing;
+                }
+            });
+
+			document.addEventListener('DOMContentLoaded', function() {
+				const userGreetingElement = document.getElementById('userGreeting');
+				
+				// Try to get the current user data
+				const currentUser = getCurrentUser();
+				
+				if (currentUser) {
+					// Set display name with better fallbacks
+					let displayName;
+					if (currentUser.first_name) {
+						displayName = currentUser.first_name;
+					} else if (currentUser.email) {
+						// Use part of the email before @ as a friendly name
+						displayName = currentUser.email.split('@')[0];
+					} else {
+						displayName = "User";
+					}
+					userGreetingElement.innerHTML = `<i class="fas fa-user-circle"></i> Hi, ${displayName}!`;
+				} else {
+					// Default greeting if no user data at all
+					userGreetingElement.innerHTML = `<i class="fas fa-user-circle"></i> Hi, Guest!`;
+				}
+			});
+
+            document.addEventListener('DOMContentLoaded', function() {
+                // Get the user's name from local storage
+                const userName = localStorage.getItem('userName');
+                const userGreeting = document.getElementById('userGreeting');
+                
+                // Set the greeting based on the time of day and user name
+                if (userGreeting) {
+                    const hour = new Date().getHours();
+                    let greeting = "Welcome";
+                    
+                    if (hour < 12) {
+                        greeting = "Good morning";
+                    } else if (hour < 18) {
+                        greeting = "Good afternoon";
+                    } else {
+                        greeting = "Good evening";
+                    }
+                    
+                    // Display the greeting with the user's name if available
+                    if (userName) {
+                        userGreeting.textContent = `${greeting}, ${userName}!`;
+                    } else {
+                        userGreeting.textContent = `${greeting}!`;
+                    }
+                }
+            });
+            
+            // Function to handle logout
+            function handleLogout() {
+                localStorage.removeItem('userName');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('isLoggedIn');
+                window.location.href = 'login.html';
+            }
+        </script>
+
+        <script>
+            // User greeting functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                // Get the stored user name from localStorage
+                const userName = localStorage.getItem('userName');
+                
+                // Find the userGreeting element
+                const userGreetingElement = document.getElementById('userGreeting');
+                
+                if (userGreetingElement) {
+                    // If user name exists in localStorage, display personalized greeting
+                    if (userName) {
+                        userGreetingElement.textContent = `Hello, ${userName}!`;
+                    } else {
+                        userGreetingElement.textContent = 'Welcome!';
+                    }
+                }
+            });
+
+            // Logout functionality
+            function handleLogout() {
+                // Clear user data from localStorage
+                localStorage.removeItem('userName');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('userId');
+                localStorage.removeItem('token');
+                
+                // Redirect to login page
+                window.location.href = 'login.html';
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,79 @@
+
+.reminder-preferences {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 5px;
+    margin-top: 20px;
+}
+
+.reminder-preferences h4 {
+    color: #1A76D1;
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.reminder-preferences .form-group {
+    margin-bottom: 15px;
+}
+
+.reminder-preferences label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.reminder-preferences label input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.reminder-preferences input[type="email"],
+.reminder-preferences input[type="tel"],
+.reminder-preferences input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 5px;
+}
+
+.reminder-preferences input[type="email"]:focus,
+.reminder-preferences input[type="tel"]:focus,
+.reminder-preferences input[type="text"]:focus {
+    border-color: #1A76D1;
+    outline: none;
+    box-shadow: 0 0 5px rgba(26, 118, 209, 0.2);
+}
+
+#caregiverDetails {
+    padding: 15px;
+    background: #fff;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+.reminder-preferences .btn {
+    background: #1A76D1;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.reminder-preferences .btn:hover {
+    background: #1557a0;
+}
+
+
+@media (max-width: 768px) {
+    .reminder-preferences {
+        padding: 15px;
+    }
+    
+    .reminder-preferences h4 {
+        font-size: 16px;
+    }
+} 

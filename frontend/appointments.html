@@ -1,0 +1,721 @@
+<!doctype html>
+<html class="no-js" lang="zxx">
+    <head>
+      
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="keywords" content="Site keywords here">
+		<meta name="description" content="">
+		<meta name='copyright' content=''>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		
+		
+        <title>Book Appointment - Mediplus Medical Center</title>
+		
+	
+        <link rel="icon" href="img/favicon.png">
+		
+		<!-- Google Fonts -->
+		<link href="https://fonts.googleapis.com/css?family=Poppins:200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&display=swap" rel="stylesheet">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="css/bootstrap.min.css">
+		<!-- Nice Select CSS -->
+		<link rel="stylesheet" href="css/nice-select.css">
+		<!-- Font Awesome CSS -->
+        <link rel="stylesheet" href="css/font-awesome.min.css">
+		<!-- icofont CSS -->
+        <link rel="stylesheet" href="css/icofont.css">
+		<!-- Slicknav -->
+		<link rel="stylesheet" href="css/slicknav.min.css">
+		<!-- Owl Carousel CSS -->
+        <link rel="stylesheet" href="css/owl-carousel.css">
+		<!-- Datepicker CSS -->
+		<link rel="stylesheet" href="css/datepicker.css">
+		<!-- Animate CSS -->
+        <link rel="stylesheet" href="css/animate.min.css">
+		<!-- Magnific Popup CSS -->
+        <link rel="stylesheet" href="css/magnific-popup.css">
+		
+		<!-- Medipro CSS -->
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="css/responsive.css">
+
+        <style>
+            
+            .appointment-tabs {
+                margin-bottom: 30px;
+            }
+            .appointment-tabs .nav-tabs {
+                border: none;
+                margin-bottom: 20px;
+            }
+            .appointment-tabs .nav-tabs .nav-item {
+                margin-right: 10px;
+            }
+            .appointment-tabs .nav-tabs .nav-link {
+                border: 2px solid #1A76D1;
+                border-radius: 5px;
+                padding: 12px 25px;
+                font-weight: 600;
+                color: #1A76D1;
+                background: transparent;
+            }
+            .appointment-tabs .nav-tabs .nav-link.active {
+                background: #1A76D1;
+                color: #fff;
+            }
+            .time-slots {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 10px;
+                margin: 20px 0;
+            }
+            .time-slot {
+                padding: 10px;
+                text-align: center;
+                border: 2px solid #1A76D1;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            .time-slot:hover {
+                background: #1A76D1;
+                color: #fff;
+            }
+            .time-slot.booked {
+                background: #ccc;
+                border-color: #ccc;
+                cursor: not-allowed;
+            }
+            .time-slot.selected {
+                background: #1A76D1;
+                color: #fff;
+                border-color: #0056b3;
+            }
+            .recurring-options {
+                margin: 20px 0;
+                padding: 20px;
+                background: #f8f9fa;
+                border-radius: 5px;
+            }
+            .calendar-preview {
+                margin-top: 20px;
+                padding: 20px;
+                background: #fff;
+                border-radius: 5px;
+                box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            }
+            .confirmation-summary {
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 5px;
+                margin-top: 20px;
+            }
+            .confirmation-summary h4 {
+                color: #1A76D1;
+                margin-bottom: 15px;
+            }
+            .summary-item {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10px;
+            }
+            .appointment-success {
+                text-align: center;
+                padding: 40px 20px;
+                display: none;
+            }
+            .appointment-success i {
+                font-size: 60px;
+                color: #28a745;
+                margin-bottom: 20px;
+            }
+			.logout-btn{
+                color: #1a1a1a;
+                font-size: 16px;
+                font-weight: 500;
+                transition: color 0.3s;
+                margin-top: 20px;
+            }
+
+            .logout-btn:hover {
+                color: #0066cc;
+                text-decoration: underline;
+            }
+            
+            /* User greeting styles */
+            .user-greeting {
+                background-color: #1A76D1;
+                color: white;
+                padding: 10px 0;
+                text-align: right;
+            }
+            
+            .user-greeting .container {
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+            }
+            
+            #userGreeting {
+                font-size: 16px;
+                font-weight: 500;
+            }
+            
+            #userGreeting i {
+                margin-right: 5px;
+            }
+        </style>
+		
+    </head>
+    <body>
+	
+        <div class="preloader">
+            <div class="loader">
+                <div class="loader-outter"></div>
+                <div class="loader-inner"></div>
+                <div class="indicator"> 
+                    <svg width="16px" height="12px">
+                        <polyline id="back" points="1 6 4 6 6 11 10 1 12 6 15 6"></polyline>
+                        <polyline id="front" points="1 6 4 6 6 11 10 1 12 6 15 6"></polyline>
+                    </svg>
+                </div>
+            </div>
+        </div>
+      
+		<header class="header">
+		
+			<div class="user-greeting">
+				<div class="container">
+					<div id="userGreeting">
+						<!-- User greeting will be inserted here via JavaScript -->
+					</div>
+				</div>
+			</div>
+			
+			<div class="header-inner">
+				<div class="container">
+					<div class="inner">
+						<div class="row">
+							<div class="col-lg-3 col-md-3 col-12">
+								
+								<div class="logo">
+									<a href="index.html"><img src="img/nabad.png" alt="#"></a>
+								</div>
+								
+								<div class="mobile-nav"></div>
+								
+							</div>
+							<div class="col-lg-9 col-md-9 col-12">
+								
+								<div class="main-menu">
+									<nav class="navigation">
+										<ul class="nav menu">
+											<li><a href="index.html">Home</a></li>
+											<li><a href="doctors.html">Doctors</a></li>
+											<li><a href="services.html">Services</a></li>
+											<li><a href="contact.html">Contact Us</a></li>
+											<li class="reminder-icon">
+												<a href="reminder-preferences.html">
+													<i class="fa fa-bell"></i>
+													<span class="reminder-tooltip"></span>
+												</a>
+											</li>
+											<li></li><a href="login.html" class="logout-btn" onclick="handleLogout()">
+                                                <i class="fas fa-door-open"></i> 
+                                            </a></li>
+										</ul>
+									</nav>
+								</div>
+							
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+		</header>
+		
+		<div class="breadcrumbs overlay">
+			<div class="container">
+				<div class="bread-inner">
+					<div class="row">
+						<div class="col-12">
+							<h2>Book Your Appointment</h2>
+							<ul class="bread-list">
+								<li><a href="index.html">Home</a></li>
+								<li><i class="icofont-simple-right"></i></li>
+								<li class="active">Book Appointment</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<section class="appointment single-page">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="section-title">
+							<h2>Schedule Your Visit</h2>
+							<img src="img/section-img.png" alt="#">
+							<p>Choose your preferred date, time and doctor for your appointment</p>
+						</div>
+					</div>
+				</div>
+				
+                <!-- Error container for displaying API and validation errors -->
+                <div id="errorContainer"></div>
+                
+				<div class="row">
+					<div class="col-lg-8 col-md-12 col-12">
+						
+						<div class="appointment-tabs">
+							<ul class="nav nav-tabs" role="tablist">
+								<li class="nav-item">
+									<a class="nav-link active" data-toggle="tab" href="#step1">1. Select Date & Doctor</a>
+								</li>
+								<li class="nav-item">
+									<a class="nav-link" data-toggle="tab" href="#step2">2. Choose Time</a>
+								</li>
+								<li class="nav-item">
+									<a class="nav-link" data-toggle="tab" href="#step3">3. Confirm Details</a>
+								</li>
+							</ul>
+							
+							<div class="tab-content">
+							
+								<div id="step1" class="tab-pane active">
+									<form class="form" action="#">
+										<div class="row">
+											<div class="col-lg-6">
+												<div class="form-group">
+													<input type="text" id="datepicker" class="form-control" placeholder="Select Date">
+												</div>
+											</div>
+											<div class="col-lg-6">
+												<div class="form-group">
+													<select class="form-control-exclude-nice-select form-control" name="doctor" id="doctorSelect">
+														<script type="module">
+															console.log('Debug script loaded');
+															
+															// Try importing directly to test module loading
+															import { getAllDoctors } from './js/appointments/appointment-api.js';
+															
+															// Add event listener to test doctor dropdown directly
+															document.addEventListener('DOMContentLoaded', async function() {
+															 
+																try {
+															 
+																	const doctors = await getAllDoctors();
+																   
+																	// Check if doctorSelect element exists
+																	const doctorSelectEl = document.getElementById('doctorSelect');
+																	
+																	if (doctorSelectEl) {
+																		// Manually populate the dropdown
+																		doctorSelectEl.innerHTML = '<option value="">Select Doctor</option>';
+																		
+																		doctors.forEach(doctor => {
+																			const option = document.createElement('option');
+																			option.value = doctor.id;
+																			option.textContent = `${doctor.first_name} ${doctor.last_name} (${doctor.specialty})`;
+																			doctorSelectEl.appendChild(option);
+																			console.log(`Added doctor: ${doctor.first_name} ${doctor.last_name}`);
+																		});
+																		// Ensure the dropdown is visible
+																		doctorSelectEl.style.display = 'block';
+																	}
+																} catch (error) {
+																	console.error('Debug script error:', error);
+																}
+															});
+														</script>
+													</select>
+													
+												</div>
+											</div>
+										</div>
+										<button type="button" class="btn" data-step-nav="2">Next Step</button>
+									</form>
+								</div>
+								
+								
+								<div id="step2" class="tab-pane fade">
+									<h4>Available Time Slots</h4>
+									<div class="time-slots" id="timeSlots">
+										
+										
+									</div>
+									
+									<div class="recurring-options">
+										<h4>Recurring Appointment</h4>
+										<div class="form-group">
+											<label>
+												<input type="checkbox" id="recurring"> Make this a recurring appointment
+											</label>
+										</div>
+										<div id="recurringOptions" style="display: none;">
+											<select class="form-control" name="recurrence_pattern">
+												<option value="WEEKLY">Weekly</option>
+												<option value="BIWEEKLY">Bi-weekly</option>
+												<option value="MONTHLY">Monthly</option>
+											</select>
+											<div class="form-group mt-3">
+												<label>Number of sessions:</label>
+												<input type="number" class="form-control" name="sessions" min="2" max="12" value="4">
+											</div>
+										</div>
+									</div>
+									
+                                    <div class="form-group mt-4">
+                                        <label for="appointmentNotes">Notes (optional):</label>
+                                        <textarea id="appointmentNotes" class="form-control" rows="3" 
+                                          placeholder="Add any special requirements or information for the doctor"></textarea>
+                                    </div>
+                                    
+									<button type="button" class="btn mr-2" data-step-nav="1">Previous</button>
+									<button type="button" class="btn" data-step-nav="3">Next Step</button>
+								</div>
+								
+								
+								<div id="step3" class="tab-pane fade">
+									<div class="confirmation-summary">
+										<h4>Appointment Summary</h4>
+										<div class="summary-item">
+											<span>Date:</span>
+											<strong id="summaryDate">Not selected</strong>
+										</div>
+										<div class="summary-item">
+											<span>Time:</span>
+											<strong id="summaryTime">Not selected</strong>
+										</div>
+										<div class="summary-item">
+											<span>Doctor:</span>
+											<strong id="summaryDoctor">Not selected</strong>
+										</div>
+										<div class="summary-item">
+											<span>Department:</span>
+											<strong id="summaryDepartment">Not selected</strong>
+										</div>
+                                        <div class="summary-item" id="summaryRecurringContainer" style="display:none;">
+											<span>Recurring:</span>
+											<strong id="summaryRecurring">No</strong>
+										</div>
+									</div>
+									
+									<div class="reminder-preferences mt-4">
+										<h4>Reminder Preferences</h4>
+										<div class="form-group">
+											<label>
+												<input type="checkbox" id="emailReminder" checked> Email Reminders
+											</label>
+											<input type="email" class="form-control" id="emailAddress" placeholder="Enter your email">
+										</div>
+										<div class="form-group">
+											<label>
+												<input type="checkbox" id="smsReminder"> SMS Reminders
+											</label>
+											<input type="tel" class="form-control" id="phoneNumber" placeholder="Enter your phone number">
+										</div>
+										<div class="form-group">
+											<label>
+												<input type="checkbox" id="calendarReminder"> Add to Calendar
+											</label>
+										</div>
+										<div class="form-group">
+											<label>
+												<input type="checkbox" id="caregiverReminders"> Include Caregiver
+											</label>
+											<div id="caregiverDetails" style="display: none;">
+												<input type="text" class="form-control mb-2" id="caregiverName" placeholder="Caregiver's Name">
+												<input type="email" class="form-control mb-2" id="caregiverEmail" placeholder="Caregiver's Email">
+												<input type="tel" class="form-control" id="caregiverPhone" placeholder="Caregiver's Phone">
+											</div>
+										</div>
+									</div>
+									
+									<button type="button" class="btn mr-2" data-step-nav="2">Previous</button>
+									<button type="button" class="btn" id="confirmBtn" onclick="confirmAppointment()">Confirm Appointment</button>
+								</div>
+							</div>
+						</div>
+                        
+                        <!-- Success message will be shown here after booking -->
+                        <div id="appointmentSuccess" class="appointment-success" style="display:none;">
+                            <i class="fas fa-check-circle"></i>
+                            <h3>Appointment Booked Successfully!</h3>
+                            <p id="successDetails"></p>
+                            <button class="btn" id="newAppointmentBtn">Book Another Appointment</button>
+                        </div>
+					</div>
+					
+					<div class="col-lg-4 col-md-12 col-12">
+						<div class="appointment-image">
+							<img src="img/contact-img.png" alt="#">
+						</div>
+					
+						<div class="work-hour">
+							<h3>Working Hours</h3>
+							<ul class="time-sidual">
+								<li class="day">Monday - Friday <span>8.00-20.00</span></li>
+								<li class="day">Saturday <span>9.00-18.30</span></li>
+								<li class="day">Sunday <span>9.00-15.00</span></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		
+		<footer id="footer" class="footer ">
+			
+			<div class="footer-top">
+				<div class="container">
+					<div class="row">
+						<div class="col-lg-3 col-md-6 col-12">
+							<div class="single-footer">
+								<h2>About Us</h2>
+								<p>Lorem ipsum dolor sit am consectetur adipisicing elit do eiusmod tempor incididunt ut labore dolore magna.</p>
+							
+								<ul class="social">
+									<li><a href="#"><i class="icofont-facebook"></i></a></li>
+									<li><a href="#"><i class="icofont-google-plus"></i></a></li>
+									<li><a href="#"><i class="icofont-twitter"></i></a></li>
+									<li><a href="#"><i class="icofont-vimeo"></i></a></li>
+									<li><a href="#"><i class="icofont-pinterest"></i></a></li>
+								</ul>
+								
+							</div>
+						</div>
+						<div class="col-lg-3 col-md-6 col-12">
+							<div class="single-footer f-link">
+								<h2>Quick Links</h2>
+								<div class="row">
+									<div class="col-lg-6 col-md-6 col-12">
+										<ul>
+											<li><a href="index.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Home</a></li>
+											<li><a href="doctors.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Doctors</a></li>
+											<li><a href="services.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Services</a></li>
+											<li><a href="contact.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Contact Us</a></li>	
+										</ul>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-3 col-md-6 col-12">
+							<div class="single-footer">
+								<h2>Open Hours</h2>
+								<ul class="time-sidual">
+									<li class="day">Monday - Friday <span>8.00-20.00</span></li>
+									<li class="day">Saturday <span>9.00-18.30</span></li>
+									<li class="day">Sunday <span>9.00-15.00</span></li>
+								</ul>
+							</div>
+						</div>
+						<div class="col-lg-3 col-md-6 col-12">
+							<div class="single-footer">
+								<h2>Newsletter</h2>
+								<p>Subscribe to our newsletter to get all our news in your inbox.</p>
+								<form action="mail/mail.php" method="get" target="_blank" class="newsletter-inner">
+									<input name="email" placeholder="Email Address" class="common-input" type="email">
+									<button class="button"><i class="icofont icofont-paper-plane"></i></button>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="copyright">
+				<div class="container">
+					<div class="row">
+						<div class="col-lg-12 col-md-12 col-12">
+							<div class="copyright-content">
+								<p>© Copyright 2024 | All Rights Reserved</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		
+		</footer>
+		
+		
+		
+        <script src="js/jquery.min.js"></script>
+		
+		<script src="js/jquery-migrate-3.0.0.js"></script>
+		
+		<script src="js/jquery-ui.min.js"></script>
+		
+        <script src="js/easing.js"></script>
+		
+		<script src="js/colors.js"></script>
+	
+		<script src="js/popper.min.js"></script>
+		
+		<script src="js/bootstrap-datepicker.js"></script>
+		
+        <script src="js/jquery.nav.js"></script>
+		
+		<script src="js/slicknav.min.js"></script>
+		
+        <script src="js/jquery.scrollUp.min.js"></script>
+	
+		<script src="js/niceselect.js"></script>
+		
+		<script src="js/tilt.jquery.min.js"></script>
+	
+        <script src="js/owl-carousel.js"></script>
+	
+		<script src="js/jquery.counterup.min.js"></script>
+
+		<script src="js/steller.js"></script>
+		
+		<script src="js/wow.min.js"></script>
+	
+		<script src="js/jquery.magnific-popup.min.js"></script>
+		
+		<script src="js/bootstrap.min.js"></script>
+		
+		<script src="js/main.js"></script>
+        
+        <!-- Auth related scripts -->
+        <script src="js/auth.js"></script>
+        <script src="js/auth-api.js"></script>
+
+        <!-- Test script for direct API testing -->
+        <script src="js/appointments/test-api.js"></script>
+        
+        <!-- Appointment API and UI handling -->
+        <script type="module">
+            // Import and run initialization directly
+            import { initAppointmentHandler } from './js/appointments/appointment-handler.js';
+            
+            // Run immediately when imported
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('DOM loaded, initializing appointment handler from inline script');
+                initAppointmentHandler();
+            });
+        </script>
+
+        <script>
+			document.addEventListener('DOMContentLoaded', function() {
+				const userGreetingElement = document.getElementById('userGreeting');
+				
+				// Try to get the current user data
+				const currentUser = getCurrentUser();
+				
+				if (currentUser) {
+					// Set display name with better fallbacks
+					let displayName;
+					if (currentUser.first_name) {
+						displayName = currentUser.first_name;
+					} else if (currentUser.email) {
+						// Use part of the email before @ as a friendly name
+						displayName = currentUser.email.split('@')[0];
+					} else {
+						displayName = "User";
+					}
+					userGreetingElement.innerHTML = `<i class="fas fa-user-circle"></i> Hi, ${displayName}!`;
+				} else {
+					// Default greeting if no user data at all
+					userGreetingElement.innerHTML = `<i class="fas fa-user-circle"></i> Hi, Guest!`;
+				}
+			});
+
+            function handleLogout() {
+                if (confirm('Are you sure you want to logout?')) {
+                    // Use the logoutUser function from auth-api.js
+                    logoutUser();
+                    
+                    // Redirect to login page
+                    window.location.href = 'login.html'; 
+                }
+            }
+        </script>
+
+        <!-- Debugging script -->
+        
+        <!-- Tab Navigation Script -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Get all tab navigation buttons
+                const tabButtons = document.querySelectorAll('[data-step-nav]');
+                
+                // Add click event listeners to each button
+                tabButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const stepNumber = this.getAttribute('data-step-nav');
+                        console.log('Navigating to step:', stepNumber);
+                        
+                        // Hide all tab panes
+                        document.querySelectorAll('.tab-pane').forEach(pane => {
+                            pane.classList.remove('active', 'show');
+                            pane.classList.add('fade');
+                        });
+                        
+                        // Show the target tab pane
+                        const targetPane = document.getElementById('step' + stepNumber);
+                        if (targetPane) {
+                            targetPane.classList.add('active', 'show');
+                            targetPane.classList.remove('fade');
+                        }
+                        
+                        // Update the tab navigation
+                        document.querySelectorAll('.nav-link').forEach(link => {
+                            link.classList.remove('active');
+                        });
+                        
+                        const navLink = document.querySelector(`.nav-link[href="#step${stepNumber}"]`);
+                        if (navLink) {
+                            navLink.classList.add('active');
+                        }
+                        
+                        // Update appointment summary if going to confirmation tab
+                        if (stepNumber === '3') {
+                            // Call updateSummary if available
+                            if (typeof updateSummary === 'function') {
+                                updateSummary();
+                            }
+                        }
+                    });
+                });
+                
+                // Direct tab link navigation
+                document.querySelectorAll('.nav-tabs .nav-link').forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const tabId = this.getAttribute('href').substring(1);
+                        const stepNumber = tabId.replace('step', '');
+                        
+                        // Find and click the corresponding button programmatically
+                        const button = document.querySelector(`[data-step-nav="${stepNumber}"]`);
+                        if (button) {
+                            button.click();
+                        } else {
+                            // If no button exists, handle the tab change manually
+                            document.querySelectorAll('.tab-pane').forEach(pane => {
+                                pane.classList.remove('active', 'show');
+                                pane.classList.add('fade');
+                            });
+                            
+                            document.getElementById(tabId).classList.add('active', 'show');
+                            document.getElementById(tabId).classList.remove('fade');
+                            
+                            document.querySelectorAll('.nav-link').forEach(navLink => {
+                                navLink.classList.remove('active');
+                            });
+                            
+                            this.classList.add('active');
+                        }
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>

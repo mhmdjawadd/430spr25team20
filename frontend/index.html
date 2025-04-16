@@ -1,0 +1,887 @@
+<!doctype html>
+<html class="no-js" lang="zxx">
+    <head>
+      
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="keywords" content="Site keywords here">
+		<meta name="description" content="">
+		<meta name='copyright' content=''>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		
+		
+        <title>Mediplus - Free Medical and Doctor Directory HTML Template.</title>
+		
+		
+        <link rel="icon" href="img/favicon.png">
+		
+		<!-- Google Fonts -->
+		<link href="https://fonts.googleapis.com/css?family=Poppins:200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="css/bootstrap.min.css">
+		<!-- Nice Select CSS -->
+		<link rel="stylesheet" href="css/nice-select.css">
+		<!-- Font Awesome CSS -->
+        <link rel="stylesheet" href="css/font-awesome.min.css">
+		<!-- icofont CSS -->
+        <link rel="stylesheet" href="css/icofont.css">
+		<!-- Slicknav -->
+		<link rel="stylesheet" href="css/slicknav.min.css">
+		<!-- Owl Carousel CSS -->
+        <link rel="stylesheet" href="css/owl-carousel.css">
+		<!-- Datepicker CSS -->
+		<link rel="stylesheet" href="css/datepicker.css">
+		<!-- Animate CSS -->
+        <link rel="stylesheet" href="css/animate.min.css">
+		<!-- Magnific Popup CSS -->
+        <link rel="stylesheet" href="css/magnific-popup.css">
+		
+		<!-- Medipro CSS -->
+        <link rel="stylesheet" href="css/normalize.css">
+        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="css/responsive.css">
+        <style>
+          .logout-btn{
+        color: #1a1a1a;
+        font-size: 16px;
+        font-weight: 500;
+        transition: color 0.3s;
+        margin-top: 20px;
+    }
+
+    .logout-btn:hover {
+        color: #0066cc;
+        text-decoration: underline;
+    }
+    
+    /* User greeting styles */
+    .user-greeting {
+        background-color: #1A76D1;
+        color: white;
+        padding: 10px 0;
+        text-align: right;
+    }
+    
+    .user-greeting .container {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+    }
+    
+    #userGreeting {
+        font-size: 16px;
+        font-weight: 500;
+    }
+    
+    #userGreeting i {
+        margin-right: 5px;
+    }
+
+	.message-widget {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #0066cc;
+      color: white;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: background-color 0.3s;
+	  font-size: 30px; 
+    }
+
+    .message-widget a {
+      color: white;
+      font-size: 24px;
+      text-decoration: none;
+    }
+
+    .message-widget:hover {
+      background-color: #005bb5;
+    }
+
+    .message-widget i {
+      font-size: 24px;
+    }
+        </style>
+		
+    </head>
+    <body>
+	
+	
+        <div class="preloader">
+            <div class="loader">
+                <div class="loader-outter"></div>
+                <div class="loader-inner"></div>
+
+                <div class="indicator"> 
+                    <svg width="16px" height="12px">
+                        <polyline id="back" points="1 6 4 6 6 11 10 1 12 6 15 6"></polyline>
+                        <polyline id="front" points="1 6 4 6 6 11 10 1 12 6 15 6"></polyline>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <!-- Widget HTML -->
+<div class="message-widget">
+  <a href="messages.html">
+    <i class="fas fa-comments"></i> Chat with Doctor
+  </a>
+</div>
+		<header class="header">
+		
+			<div class="user-greeting">
+				<div class="container">
+					<div id="userGreeting">
+						<!-- User greeting will be inserted here via JavaScript -->
+					</div>
+				</div>
+			</div>
+			
+			<div class="header-inner">
+				<div class="container">
+					<div class="inner">
+						<div class="row">
+							<div class="col-lg-3 col-md-3 col-12">
+								
+								<div class="logo">
+									<a href="index.html"><img src="img/nabad.png" alt="#"></a>
+								</div>
+								
+								<div class="mobile-nav"></div>
+								
+							</div>
+							<div class="col-lg-9 col-md-9 col-12">
+								
+								<div class="main-menu">
+									<nav class="navigation">
+										<ul class="nav menu">
+											<li><a href="doctors.html">Doctors</a></li>
+											<li><a href="services.html">Services</a></li>
+											<li><a href="appointments.html">Book Appointment</a></li>
+											<li><a href="contact.html">Contact Us</a></li>
+											<li class="reminder-icon">
+												<a href="reminder-preferences.html">
+													<i class="fa fa-bell"></i>
+													<span class="reminder-tooltip"></span>
+												</a>
+											</li>
+                                            <li></li><a href="login.html" class="logout-btn" onclick="handleLogout()">
+                                                <i class="fas fa-door-open"></i> 
+                                            </a></li>
+`										</ul>
+									</nav>
+								</div>
+							
+								
+								
+								
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+		</header>
+		
+		<section class="slider">
+			<div class="hero-slider">
+				
+				<div class="single-slider" style="background-image:url('img/slider2.jpg')">
+					<div class="container">
+						<div class="row">
+							<div class="col-lg-7">
+								<div class="text">
+									<h1>We Provide Medical Services That You Can Trust!</h1>
+									<p>Experience exceptional healthcare at our state-of-the-art medical center. Our team of board-certified physicians and specialists are committed to delivering personalized care with compassion and expertise.</p>
+									<div class="button">
+										<a href="appointments.html" class="btn">Get Appointment</a>
+										<a href="#about-us" class="btn primary">Learn More</a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			
+				<div class="single-slider" style="background-image:url('img/slider.jpg')">
+					<div class="container">
+						<div class="row">
+							<div class="col-lg-7">
+								<div class="text">
+									<h1>Expert Medical Care When You Need It Most</h1>
+									<p>Our team of experienced healthcare professionals is dedicated to providing comprehensive medical services with state-of-the-art technology and personalized care.</p>
+									<div class="button">
+										<a href="appointments.html" class="btn">Get Appointment</a>
+										<a href="doctors.html" class="btn primary">About Us</a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			
+				<div class="single-slider" style="background-image:url('img/slider3.jpg')">
+					<div class="container">
+						<div class="row">
+							<div class="col-lg-7">
+								<div class="text">
+									<h1>Advanced Healthcare for Your Family</h1>
+									<p>Discover our comprehensive range of medical services designed to meet all your family's healthcare needs, from preventive care to specialized treatments.</p>
+									<div class="button">
+										<a href="appointments.html" class="btn">Get Appointment</a>
+										<a href="contact.html" class="btn primary">Contact Now</a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+		
+			</div>
+		</section>
+		
+		<section class="schedule">
+			<div class="container">
+				<div class="schedule-inner">
+					<div class="row">
+						<div class="col-lg-4 col-md-6 col-12 ">
+						
+							<div class="single-schedule first">
+								<div class="inner">
+									<div class="icon">
+										<i class="fa fa-ambulance"></i>
+									</div>
+									<div class="single-content">
+										<h4>Emergency Cases</h4>
+										<p>24/7 emergency care with rapid response teams and fully equipped trauma center. Call (555) 123-4567 for immediate assistance.</p>
+										<a href="contact.html">LEARN MORE<i class="fa fa-long-arrow-right"></i></a>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-4 col-md-6 col-12">
+						
+							<div class="single-schedule middle">
+								<div class="inner">
+									<div class="icon">
+										<i class="icofont-prescription"></i>
+									</div>
+									<div class="single-content">
+										<h4>Doctors Timetable</h4>
+										<p>Find and schedule appointments with our specialists. Extended hours available for your convenience, including evenings and weekends.</p>
+										<a href="doctors.html">LEARN MORE<i class="fa fa-long-arrow-right"></i></a>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-4 col-md-12 col-12">
+							
+							<div class="single-schedule last">
+								<div class="inner">
+									<div class="icon">
+										<i class="icofont-ui-clock"></i>
+									</div>
+									<div class="single-content">
+										<h4>Opening Hours</h4>
+										<ul class="time-sidual">
+											<li class="day">Monday - Friday <span>8:00 AM - 8:00 PM</span></li>
+											<li class="day">Saturday <span>9:00 AM - 6:30 PM</span></li>
+											<li class="day">Sunday <span>10:00 AM - 4:00 PM</span></li>
+										</ul>
+										<a href="contact.html">LEARN MORE<i class="fa fa-long-arrow-right"></i></a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		
+		<section class="Feautes section">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="section-title">
+							<h2>We Are Always Ready to Help You & Your Family</h2>
+							<img src="img/section-img.png" alt="#">
+							<p>Our dedicated medical team provides comprehensive healthcare services 24/7, ensuring your family receives the best possible care when you need it most.</p>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-4 col-12">
+						
+						<div class="single-features">
+							<div class="signle-icon">
+								<i class="icofont icofont-ambulance-cross"></i>
+							</div>
+							<h3>Emergency Help</h3>
+							<p>24/7 emergency services with rapid response teams and fully equipped trauma center for immediate medical attention.</p>
+						</div>
+						
+					</div>
+					<div class="col-lg-4 col-12">
+						
+						<div class="single-features">
+							<div class="signle-icon">
+								<i class="icofont icofont-medical-sign-alt"></i>
+							</div>
+							<h3>Qualified Doctors</h3>
+							<p>Expert team of board-certified specialists with extensive experience in their respective fields of medicine.</p>
+						</div>
+						
+					</div>
+					<div class="col-lg-4 col-12">
+						
+						<div class="single-features last">
+							<div class="signle-icon">
+								<i class="icofont icofont-stethoscope"></i>
+							</div>
+							<h3>Modern Equipment</h3>
+							<p>Advanced medical technology and equipment for accurate diagnosis and effective treatment procedures.</p>
+						</div>
+						
+					</div>
+				</div>
+			</div>
+		</section>
+		
+		<div id="fun-facts" class="fun-facts section overlay">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-3 col-md-6 col-12">
+						
+						<div class="single-fun">
+							<i class="icofont icofont-home"></i>
+							<div class="content">
+								<span class="counter">50</span>
+								<p>Private Rooms</p>
+							</div>
+						</div>
+						
+					</div>
+					<div class="col-lg-3 col-md-6 col-12">
+						
+						<div class="single-fun">
+							<i class="icofont icofont-user-alt-3"></i>
+							<div class="content">
+								<span class="counter">45</span>
+								<p>Expert Doctors</p>
+							</div>
+						</div>
+						
+					</div>
+					<div class="col-lg-3 col-md-6 col-12">
+						
+						<div class="single-fun">
+							<i class="icofont icofont-simple-smile"></i>
+							<div class="content">
+								<span class="counter">12500</span>
+								<p>Happy Patients</p>
+							</div>
+						</div>
+					
+					</div>
+					<div class="col-lg-3 col-md-6 col-12">
+						
+						<div class="single-fun">
+							<i class="icofont icofont-table"></i>
+							<div class="content">
+								<span class="counter">15</span>
+								<p>Years of Experience</p>
+							</div>
+						</div>
+				
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<section class="why-choose section" >
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="section-title">
+							<h2>We Offer Different Services To Improve Your Health</h2>
+							<img src="img/section-img.png" alt="#">
+							<p>From preventive care to specialized treatments, our range of medical services is designed to address all your healthcare needs under one roof.</p>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-6 col-12">
+						
+						<div class="choose-left">
+							<h3>Who We Are</h3>
+							<p>We are a leading healthcare provider committed to delivering exceptional medical services with a patient-centered approach. Our state-of-the-art facilities and experienced medical team ensure you receive the highest quality care.</p>
+							<div class="row">
+								<div class="col-lg-6">
+									<ul class="list">
+										<li><i class="fa fa-check"></i>Board-Certified Physicians</li>
+										<li><i class="fa fa-check"></i>State-of-the-Art Technology</li>
+										<li><i class="fa fa-check"></i>24/7 Emergency Care</li>
+									</ul>
+								</div>
+								<div class="col-lg-6">
+									<ul class="list">
+										<li><i class="fa fa-check"></i>Personalized Treatment Plans</li>
+										<li><i class="fa fa-check"></i>Comprehensive Services</li>
+										<li><i class="fa fa-check"></i>Patient-Centered Care</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					
+					</div>
+					<div class="col-lg-6 col-12">
+						
+						<div class="choose-right">
+							<div class="video-image">
+								
+								<div class="promo-video">
+									<div class="waves-block">
+										<div class="waves wave-1"></div>
+										<div class="waves wave-2"></div>
+										<div class="waves wave-3"></div>
+									</div>
+								</div>
+							
+								<a href="https://www.youtube.com/watch?v=RFVXy6CRVR4" class="video video-popup mfp-iframe"><i class="fa fa-play"></i></a>
+							</div>
+						</div>
+						
+					</div>
+				</div>
+			</div>
+		</section>
+		
+		
+		
+		<section class="call-action overlay" data-stellar-background-ratio="0.5">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12 col-md-12 col-12">
+						<div class="content">
+							<h2>Need Urgent Medical Care? Call Us at (555) 123-4567</h2>
+							<p>Our emergency department is available 24/7 with experienced medical staff ready to provide immediate care. Don't wait - your health is our priority.</p>
+							<div class="button">
+								<a href="appointments.html" class="btn">Book Appointment</a>
+								<a href="contact.html" class="btn second">Contact Now</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		
+		
+		
+		<section class="services section">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="section-title">
+							<h2>We Offer Different Services To Improve Your Health</h2>
+							<img src="img/section-img.png" alt="#">
+							<p>From preventive care to specialized treatments, our range of medical services is designed to address all your healthcare needs under one roof.</p>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-4 col-md-6 col-12">
+					
+						<div class="single-service">
+							<i class="icofont icofont-prescription"></i>
+							<h4><a href="service-details.html">Primary Care</a></h4>
+							<p>Comprehensive primary healthcare services including preventive care, routine check-ups, vaccinations, and management of chronic conditions.</p>	
+						</div>
+						
+					</div>
+					<div class="col-lg-4 col-md-6 col-12">
+						>
+						<div class="single-service">
+							<i class="icofont icofont-tooth"></i>
+							<h4><a href="service-details.html">Dental Services</a></h4>
+							<p>Complete dental care including cleanings, fillings, crowns, implants, and cosmetic dentistry using advanced dental technology.</p>	
+						</div>
+						
+					</div>
+					<div class="col-lg-4 col-md-6 col-12">
+						
+						<div class="single-service">
+							<i class="icofont icofont-heart-alt"></i>
+							<h4><a href="service-details.html">Cardiology</a></h4>
+							<p>Expert cardiac care including diagnostics, treatment, and rehabilitation services for heart conditions by experienced cardiologists.</p>	
+						</div>
+						
+					</div>
+					<div class="col-lg-4 col-md-6 col-12">
+						
+						<div class="single-service">
+							<i class="icofont icofont-listening"></i>
+							<h4><a href="service-details.html">ENT Treatment</a></h4>
+							<p>Specialized care for ear, nose, and throat conditions, including hearing tests, sinus treatments, and advanced surgical procedures.</p>	
+						</div>
+					
+					</div>
+					<div class="col-lg-4 col-md-6 col-12">
+						
+						<div class="single-service">
+							<i class="icofont icofont-eye-alt"></i>
+							<h4><a href="service-details.html">Ophthalmology</a></h4>
+							<p>Comprehensive eye care services including vision tests, treatment of eye diseases, and surgical procedures by skilled ophthalmologists.</p>	
+						</div>
+						
+					</div>
+					<div class="col-lg-4 col-md-6 col-12">
+						
+						<div class="single-service">
+							<i class="icofont icofont-blood"></i>
+							<h4><a href="service-details.html">Laboratory Services</a></h4>
+							<p>State-of-the-art diagnostic laboratory offering comprehensive blood work, pathology services, and rapid test results.</p>	
+						</div>
+					
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="blog section" id="blog">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="section-title">
+							<h2>Keep up with Our Most Recent Medical News.</h2>
+							<img src="img/section-img.png" alt="#">
+							<p>Stay informed about the latest healthcare developments, medical breakthroughs, and wellness tips from our expert medical team.</p>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-lg-4 col-md-6 col-12">
+						
+						<div class="single-news">
+							<div class="news-head">
+								<img src="img/blog1.jpg" alt="#">
+							</div>
+							<div class="news-body">
+								<div class="news-content">
+									<div class="date">22 Aug, 2020</div>
+									<h2><a href="blog-single.html">We have annnocuced our new product.</a></h2>
+									<p class="text">Lorem ipsum dolor a sit ameti, consectetur adipisicing elit, sed do eiusmod tempor incididunt sed do incididunt sed.</p>
+								</div>
+							</div>
+						</div>
+						
+					</div>
+					<div class="col-lg-4 col-md-6 col-12">
+						
+						<div class="single-news">
+							<div class="news-head">
+								<img src="img/blog2.jpg" alt="#">
+							</div>
+							<div class="news-body">
+								<div class="news-content">
+									<div class="date">15 Jul, 2020</div>
+									<h2><a href="blog-single.html">Top five way for solving teeth problems.</a></h2>
+									<p class="text">Lorem ipsum dolor a sit ameti, consectetur adipisicing elit, sed do eiusmod tempor incididunt sed do incididunt sed.</p>
+								</div>
+							</div>
+						</div>
+						
+					</div>
+					<div class="col-lg-4 col-md-6 col-12">
+						
+						<div class="single-news">
+							<div class="news-head">
+								<img src="img/blog3.jpg" alt="#">
+							</div>
+							<div class="news-body">
+								<div class="news-content">
+									<div class="date">05 Jan, 2020</div>
+									<h2><a href="blog-single.html">We provide highly business soliutions.</a></h2>
+									<p class="text">Lorem ipsum dolor a sit ameti, consectetur adipisicing elit, sed do eiusmod tempor incididunt sed do incididunt sed.</p>
+								</div>
+							</div>
+						</div>
+						
+					</div>
+				</div>
+			</div>
+		</section>
+		
+		<div class="clients overlay">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12 col-md-12 col-12">
+						<div class="owl-carousel clients-slider">
+							<div class="single-clients">
+								<img src="img/client1.png" alt="#">
+							</div>
+							<div class="single-clients">
+								<img src="img/client2.png" alt="#">
+							</div>
+							<div class="single-clients">
+								<img src="img/client3.png" alt="#">
+							</div>
+							<div class="single-clients">
+								<img src="img/client4.png" alt="#">
+							</div>
+							<div class="single-clients">
+								<img src="img/client5.png" alt="#">
+							</div>
+							<div class="single-clients">
+								<img src="img/client1.png" alt="#">
+							</div>
+							<div class="single-clients">
+								<img src="img/client2.png" alt="#">
+							</div>
+							<div class="single-clients">
+								<img src="img/client3.png" alt="#">
+							</div>
+							<div class="single-clients">
+								<img src="img/client4.png" alt="#">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<section class="newsletter section">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-6 col-12">
+					
+						<div class="subscribe-text">
+							<h6>Stay Updated with Health Tips</h6>
+							<p>Subscribe to our newsletter for the latest health insights, medical news, and exclusive patient resources.</p>
+						</div>
+						
+					</div>
+					<div class="col-lg-6 col-12">
+					
+						<div class="subscribe-form">
+							<form action="mail/mail.php" method="get" target="_blank" class="newsletter-inner">
+								<input name="EMAIL" placeholder="Enter your email address" class="common-input" onfocus="this.placeholder = ''"
+									onblur="this.placeholder = 'Enter your email address'" required="" type="email">
+								<button class="btn">Subscribe</button>
+							</form>
+						</div>
+						
+					</div>
+				</div>
+			</div>
+		</section>
+		
+		<footer id="footer" class="footer">
+			
+			<div class="footer-top">
+				<div class="container">
+					<div class="row">
+						<div class="col-lg-3 col-md-6 col-12">
+							<div class="single-footer">
+								<h2>About Us</h2>
+								<p>We are a leading healthcare provider committed to delivering exceptional medical services with compassion and expertise. Our state-of-the-art facilities and experienced team ensure the highest quality patient care.</p>
+								
+								<ul class="social">
+									<li><a href="#"><i class="icofont-facebook"></i></a></li>
+									<li><a href="#"><i class="icofont-twitter"></i></a></li>
+									<li><a href="#"><i class="icofont-instagram"></i></a></li>
+									<li><a href="#"><i class="icofont-linkedin"></i></a></li>
+								</ul>
+								
+							</div>
+						</div>
+						<div class="col-lg-3 col-md-6 col-12">
+							<div class="single-footer f-link">
+								<h2>Quick Links</h2>
+								<div class="row">
+									<div class="col-lg-6 col-md-6 col-12">
+										<ul>
+											<li><a href="index.html"><i class="fa fa-caret-right"></i>Home</a></li>
+											<li><a href="doctors.html"><i class="fa fa-caret-right"></i>Our Doctors</a></li>
+											<li><a href="services.html"><i class="fa fa-caret-right"></i>Our Services</a></li>
+											<li><a href="appointments.html"><i class="fa fa-caret-right"></i>Appointments</a></li>
+										</ul>
+									</div>
+									<div class="col-lg-6 col-md-6 col-12">
+										<ul>
+											<li><a href="#"><i class="fa fa-caret-right"></i>Privacy Policy</a></li>
+											<li><a href="#"><i class="fa fa-caret-right"></i>Terms & Conditions</a></li>
+											<li><a href="contact.html"><i class="fa fa-caret-right"></i>Contact Us</a></li>
+											<li><a href="#"><i class="fa fa-caret-right"></i>FAQ</a></li>
+										</ul>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-3 col-md-6 col-12">
+							<div class="single-footer">
+								<h2>Open Hours</h2>
+								<p>Visit us during our working hours for consultations and treatments.</p>
+								<ul class="time-sidual">
+									<li class="day">Monday - Friday <span>8:00 AM - 8:00 PM</span></li>
+									<li class="day">Saturday <span>9:00 AM - 6:30 PM</span></li>
+									<li class="day">Sunday <span>10:00 AM - 4:00 PM</span></li>
+								</ul>
+							</div>
+						</div>
+						<div class="col-lg-3 col-md-6 col-12">
+							<div class="single-footer">
+								<h2>Newsletter</h2>
+								<p>Subscribe to receive health tips, latest news, and exclusive updates about our services.</p>
+								<form action="mail/mail.php" method="get" target="_blank" class="newsletter-inner">
+									<input name="email" placeholder="Email Address" class="common-input" onfocus="this.placeholder = ''"
+										onblur="this.placeholder = 'Email Address'" required="" type="email">
+									<button class="button"><i class="icofont icofont-paper-plane"></i></button>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="message-widget">
+				<a href="./messaging.html">
+				  <i class="fas fa-comments" ></i> Chat with Doctor
+				</a>
+			  </div>
+			<div class="copyright">
+				<div class="container">
+					<div class="row">
+						<div class="col-lg-12 col-md-12 col-12">
+							<div class="copyright-content">
+								<p>© 2024 MediPlus Healthcare. All Rights Reserved.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		
+		</footer>
+	
+		
+	
+        <script src="js/jquery.min.js"></script>
+
+		<script src="js/jquery-migrate-3.0.0.js"></script>
+		
+		<script src="js/jquery-ui.min.js"></script>
+	
+        <script src="js/easing.js"></script>
+		
+		<script src="js/colors.js"></script>
+		
+		<script src="js/popper.min.js"></script>
+	
+		<script src="js/bootstrap-datepicker.js"></script>
+		
+        <script src="js/jquery.nav.js"></script>
+		
+		<script src="js/slicknav.min.js"></script>
+		
+        <script src="js/jquery.scrollUp.min.js"></script>
+		
+		<script src="js/niceselect.js"></script>
+		
+		<script src="js/tilt.jquery.min.js"></script>
+	
+        <script src="js/owl-carousel.js"></script>
+		
+		<script src="js/jquery.counterup.min.js"></script>
+		
+		<script src="js/steller.js"></script>
+		
+		<script src="js/wow.min.js"></script>
+		
+		<script src="js/jquery.magnific-popup.min.js"></script>
+		
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.3/waypoints.min.js"></script>
+		
+		<script src="js/bootstrap.min.js"></script>
+		
+		<script src="js/main.js"></script>
+		<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+		<script src="js/auth-api.js"></script>
+		<script>
+			document.addEventListener('DOMContentLoaded', function() {
+				const userGreetingElement = document.getElementById('userGreeting');
+				
+				// Try to get the current user data
+				const currentUser = getCurrentUser();
+				
+				if (currentUser) {
+					// Set display name with better fallbacks
+					let displayName;
+					if (currentUser.first_name) {
+						displayName = currentUser.first_name;
+					} else if (currentUser.email) {
+						// Use part of the email before @ as a friendly name
+						displayName = currentUser.email.split('@')[0];
+					} else {
+						displayName = "User";
+					}
+					userGreetingElement.innerHTML = `<i class="fas fa-user-circle"></i> Hi, ${displayName}!`;
+				} else {
+					// Default greeting if no user data at all
+					userGreetingElement.innerHTML = `<i class="fas fa-user-circle"></i> Hi, Guest!`;
+				}
+				
+				// Debug info to help diagnose further issues
+				console.log('User data from localStorage:', currentUser);
+			});
+		</script>
+		<script>
+			// Add this function to show user data when needed
+			function checkUserData() {
+				const token = localStorage.getItem('authToken');
+				const userData = localStorage.getItem('user');
+				
+				console.log('Current authToken:', token);
+				console.log('Current user data:', userData ? JSON.parse(userData) : null);
+				
+				// If we have a token, also decode and show payload
+				if (token) {
+					try {
+						const parts = token.split('.');
+						if (parts.length === 3) {
+							const payload = parts[1];
+							const decodedPayload = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+							console.log('Token payload decoded:', JSON.parse(decodedPayload));
+						}
+					} catch (e) {
+						console.error('Failed to decode token:', e);
+					}
+				}
+				
+				return 'Check browser console for user data details';
+			}
+			
+			// Optional: Run the check automatically when page loads
+			document.addEventListener('DOMContentLoaded', function() {
+				checkUserData();
+			});
+		</script>
+    </body>
+</html> 
+<script>
+     function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // Use the logoutUser function to delete token
+                logoutUser();
+                showNotification('Logging out...');
+                
+                setTimeout(() => {
+                    window.location.href = 'login.html'; 
+                }, 1000);
+            }
+        }
+</script>
