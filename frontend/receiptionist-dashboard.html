@@ -1,1 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receptionist Dashboard - Mediplus</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
 
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: #f8f9fa;
+        }
+
+   
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #0066cc 0%, #0052a3 100%);
+            padding: 30px;
+            color: white;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .sidebar h1 {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 40px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar a i {
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .logout-btn {
+            margin-top: auto !important;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: 20px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 0, 0, 0.1) !important;
+            border-color: rgba(255, 0, 0, 0.2);
+            color: #fff !important;
+        }
+
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+       
+        .dashboard-header {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .welcome-section h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .action-button {
+            padding: 12px 20px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .action-button:hover {
+            background: #0052a3;
+            transform: translateY(-2px);
+        }
+
+ 
+        .calendar-section {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+      
+        .status-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .status-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .status-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .patient-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status-checked-in { background: #28a745; }
+        .status-waiting { background: #ffc107; }
+        .status-no-show { background: #dc3545; }
+
+    
+        .notifications-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .notification-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .notification-item i {
+            font-size: 20px;
+            color: #0066cc;
+        }
+
+      
+        .appointment-form {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #0066cc;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+        }
+
+    
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .time-slot {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .time-slot:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+
+        .time-slot.available {
+            border-left: 4px solid #28a745;
+        }
+
+        .time-slot.booked {
+            border-left: 4px solid #dc3545;
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+       
+        .notification-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0066cc;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,102,204,0.2);
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+       
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 550px;
+            margin: 30px auto;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        .modal-header {
+            background: #0066cc;
+            color: white;
+            padding: 20px 25px;
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .form-container {
+            padding: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-group.half {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 16px;
+        }
+
+        .input-with-icon input,
+        .input-with-icon select {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .input-with-icon input:focus,
+        .input-with-icon select:focus {
+            border-color: #0066cc;
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+        }
+
+        .form-actions {
+            padding: 20px 25px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+            border-radius: 0 0 16px 16px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-secondary,
+        .btn-primary {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary {
+            background: white;
+            border: 2px solid #e0e0e0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            border-color: #666;
+            color: #333;
+        }
+
+        .btn-primary {
+            background: #0066cc;
+            border: none;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0052a3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0,102,204,0.2);
+        }
+
+        .close-modal {
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            opacity: 1;
+            transform: rotate(90deg);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .stat-item i {
+            font-size: 24px;
+            color: #0066cc;
+            background: rgba(0,102,204,0.1);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-label {
+            display: block;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .upcoming-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .appointment-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .time-badge {
+            background: #0066cc;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .appointment-info h4 {
+            margin: 0;
+            color: #333;
+        }
+
+        .appointment-info p {
+            margin: 5px 0 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status.confirmed {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status.pending {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .patient-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .patient-info h4 {
+            margin: 0;
+            color: #333;
+        }
+
+        .patient-info p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .wait-time {
+            display: inline-block;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .wait-time.late {
+            color: #dc3545;
+        }
+
+        .btn-action {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #0066cc;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-action:hover {
+            background: #0052a3;
+            transform: translateY(-1px);
+        }
+
+        .btn-action.warning {
+            background: #dc3545;
+        }
+
+        .btn-action.warning:hover {
+            background: #c82333;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .status-checked-in { background: #28a745; }
+        .status-waiting { background: #ffc107; }
+        .status-late { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h1>Receptionist Dashboard</h1>
+        <a href="#appointments" class="active"><i class="fas fa-calendar-alt"></i> Appointments</a>
+        <a href="#checkin"><i class="fas fa-clipboard-check"></i> Check-in</a>
+        <a href="#calendar"><i class="fas fa-calendar-week"></i> Calendar</a>
+        <a href="#notifications"><i class="fas fa-bell"></i> Notifications</a>
+        <a href="#patients"><i class="fas fa-users"></i> Patients</a>
+        <a href="#" class="logout-btn" onclick="handleLogout()">
+            <i class="fas fa-door-open"></i> Logout
+        </a>
+    </div>
+
+    <div class="main-content">
+        <div class="dashboard-header">
+            <div class="welcome-section">
+                <h1>Welcome Back, Sarah</h1>
+                <p class="date-time">Loading...</p>
+            </div>
+            <div class="quick-actions">
+                <button class="action-button" onclick="openNewAppointment()">
+                    <i class="fas fa-plus"></i> New Appointment
+                </button>
+                <button class="action-button" onclick="openCheckIn()">
+                    <i class="fas fa-user-check"></i> Patient Check-in
+                </button>
+            </div>
+        </div>
+
+       
+        <div class="status-board">
+            <div class="status-card">
+                <h3>Today's Schedule</h3>
+                <div class="stats">
+                    <div class="stat-item">
+                        <i class="fas fa-calendar-check"></i>
+                        <div class="stat-info">
+                            <span class="stat-label">Total Appointments</span>
+                            <span class="stat-value">1</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-user-check"></i>
+                        <div class="stat-info">
+                            <span class="stat-label">Checked-in</span>
+                            <span class="stat-value">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-clock"></i>
+                        <div class="stat-info">
+                            <span class="stat-label">Waiting</span>
+                            <span class="stat-value">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-user-times"></i>
+                        <div class="stat-info">
+                            <span class="stat-label">No-shows</span>
+                            <span class="stat-value">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="status-card">
+                <h3>Next Appointments</h3>
+                <div class="upcoming-list">
+                    <div class="appointment-item">
+                        <div class="time-badge">10:30 AM</div>
+                        <div class="appointment-info">
+                            <h4>James Wilson</h4>
+                            <p>Dr. Smith - Cardiology</p>
+                        </div>
+                        <span class="status confirmed">Confirmed</span>
+                    </div>
+                    <div class="appointment-item">
+                        <div class="time-badge">11:00 AM</div>
+                        <div class="appointment-info">
+                            <h4>Emma Davis</h4>
+                            <p>Dr. Johnson - General</p>
+                        </div>
+                        <span class="status pending">Pending</span>
+                    </div>
+                    <div class="appointment-item">
+                        <div class="time-badge">11:30 AM</div>
+                        <div class="appointment-info">
+                            <h4>Michael Brown</h4>
+                            <p>Dr. Williams - Pediatrics</p>
+                        </div>
+                        <span class="status confirmed">Confirmed</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+   
+        <div class="calendar-section">
+            <h2>Appointment Calendar</h2>
+            <div id="appointmentCalendar"></div>
+        </div>
+
+        
+        <div class="status-board">
+            <div class="status-card waiting-room">
+                <h3>Waiting Room</h3>
+                <div class="patient-list">
+                    <div class="patient-status">
+                        <span class="status-indicator status-checked-in"></span>
+                        <div class="patient-info">
+                            <h4>John Doe</h4>
+                            <p>Dr. Smith - Arrived: 10:15 AM</p>
+                            <span class="wait-time">Waiting: 15 mins</span>
+                        </div>
+                        <button class="btn-action">Start Session</button>
+                    </div>
+                    <div class="patient-status">
+                        <span class="status-indicator status-waiting"></span>
+                        <div class="patient-info">
+                            <h4>Jane Smith</h4>
+                            <p>Dr. Johnson - Arrived: 10:25 AM</p>
+                            <span class="wait-time">Waiting: 5 mins</span>
+                        </div>
+                        <button class="btn-action">Start Session</button>
+                    </div>
+                    <div class="patient-status">
+                        <span class="status-indicator status-late"></span>
+                        <div class="patient-info">
+                            <h4>Robert Wilson</h4>
+                            <p>Dr. Williams - Expected: 10:00 AM</p>
+                            <span class="wait-time late">Late: 30 mins</span>
+                        </div>
+                        <button class="btn-action warning">Mark No-Show</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+       
+        <div class="notifications-panel">
+            <h2>Recent Notifications</h2>
+            <div class="notification-list">
+                <div class="notification-item">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div class="notification-content">
+                        <h4>Schedule Conflict</h4>
+                        <p>Overlapping appointments detected for Dr. Smith at 2:00 PM</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="notificationToast" class="notification-toast"></div>
+
+    
+    <div id="appointmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Schedule New Appointment</h2>
+                <span class="close-modal" onclick="closeModal('appointmentModal')">&times;</span>
+            </div>
+            <form id="appointmentForm">
+                <div class="form-container">
+                    <div class="form-group">
+                        <label>Patient Name</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="patientName" placeholder="Enter patient name" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Doctor</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-user-md"></i>
+                            <select id="doctorSelect" required>
+                                <option value="">Select Doctor</option>
+                                <option value="dr-smith">Dr. Smith - Surgery</option>
+                                <option value="dr-johnson">Dr. Johnson - Cardiology</option>
+                                <option value="dr-williams">Dr. Williams - Pediatrics</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label>Date</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-calendar"></i>
+                                <input type="date" id="appointmentDate" required>
+                            </div>
+                        </div>
+                        <div class="form-group half">
+                            <label>Time</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-clock"></i>
+                                <select id="appointmentTime" required>
+                                    <option value="">Select Time</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Appointment Type</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-notes-medical"></i>
+                            <select id="appointmentType" required>
+                                <option value="">Select Type</option>
+                                <option value="consultation">Consultation</option>
+                                <option value="follow-up">Follow-up</option>
+                                <option value="procedure">Procedure</option>
+                                <option value="emergency">Emergency</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('appointmentModal')">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-check"></i> Schedule Appointment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    
+    <div id="checkInModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Patient Check-in</h2>
+                <span class="close-modal" onclick="closeModal('checkInModal')">&times;</span>
+            </div>
+            <form id="checkInForm">
+                <div class="form-group">
+                    <label>Patient Name or ID</label>
+                    <input type="text" id="checkInPatient" required>
+                </div>
+                <div class="form-group">
+                    <label>Appointment Time</label>
+                    <select id="checkInAppointment" required>
+                        <option value="">Select Appointment</option>
+                    
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal('checkInModal')">Cancel</button>
+                    <button type="submit" class="btn-primary">Complete Check-in</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        
+        const dashboardData = {
+            appointments: [],
+            waitingList: [],
+            notifications: []
+        };
+
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit', 
+                minute: '2-digit'
+            };
+            document.querySelector('.date-time').textContent = now.toLocaleDateString('en-US', options);
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+  
+        function openNewAppointment() {
+            openModal('appointmentModal');
+            populateTimeSlots();
+        }
+
+        function populateTimeSlots() {
+            const timeSelect = document.getElementById('appointmentTime');
+            timeSelect.innerHTML = '<option value="">Select Time</option>';
+            
+            
+            for (let hour = 9; hour < 17; hour++) {
+                const time = `${hour.toString().padStart(2, '0')}:00`;
+                timeSelect.innerHTML += `<option value="${time}">${time}</option>`;
+            }
+        }
+
+        
+        function openCheckIn() {
+            openModal('checkInModal');
+            populateAppointments();
+        }
+
+        function populateAppointments() {
+            const appointmentSelect = document.getElementById('checkInAppointment');
+            appointmentSelect.innerHTML = '<option value="">Select Appointment</option>';
+            
+           
+            dashboardData.appointments.forEach(apt => {
+                appointmentSelect.innerHTML += `
+                    <option value="${apt.id}">${apt.time} - ${apt.patientName} (${apt.doctor})</option>
+                `;
+            });
+        }
+
+       
+        function showNotification(message, type = 'info') {
+            const toast = document.getElementById('notificationToast');
+            toast.textContent = message;
+            toast.className = `notification-toast ${type}`;
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toast.style.opacity = '1';
+                }, 300);
+            }, 3000);
+        }
+
+       
+        document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newAppointment = {
+                id: Date.now(),
+                patientName: document.getElementById('patientName').value,
+                doctor: document.getElementById('doctorSelect').value,
+                date: document.getElementById('appointmentDate').value,
+                time: document.getElementById('appointmentTime').value,
+                type: document.getElementById('appointmentType').value
+            };
+            
+            dashboardData.appointments.push(newAppointment);
+            updateDashboard();
+            closeModal('appointmentModal');
+            showNotification('Appointment scheduled successfully', 'success');
+            this.reset();
+        });
+
+        document.getElementById('checkInForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const patientName = document.getElementById('checkInPatient').value;
+            const appointmentId = document.getElementById('checkInAppointment').value;
+            
+         
+            dashboardData.waitingList.push({
+                patientName,
+                appointmentId,
+                checkInTime: new Date()
+            });
+            
+            updateWaitingList();
+            closeModal('checkInModal');
+            showNotification('Patient checked in successfully', 'success');
+            this.reset();
+        });
+
+        function updateDashboard() {
+            updateStats();
+            updateWaitingList();
+            updateNotifications();
+        }
+
+        function updateStats() {
+            const stats = document.querySelector('.stats');
+            const today = new Date().toISOString().split('T')[0];
+            const todayAppointments = dashboardData.appointments.filter(apt => apt.date === today);
+            
+            stats.innerHTML = `
+                <div class="stat-item">
+                    <i class="fas fa-calendar-check"></i>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Appointments</span>
+                        <span class="stat-value">${todayAppointments.length}</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-user-check"></i>
+                    <div class="stat-info">
+                        <span class="stat-label">Checked-in</span>
+                        <span class="stat-value">${dashboardData.waitingList.length}</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-clock"></i>
+                    <div class="stat-info">
+                        <span class="stat-label">Waiting</span>
+                        <span class="stat-value">${dashboardData.waitingList.filter(p => !p.seen).length}</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-user-times"></i>
+                    <div class="stat-info">
+                        <span class="stat-label">No-shows</span>
+                        <span class="stat-value">${todayAppointments.filter(apt => apt.noShow).length}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateWaitingList() {
+            const waitingList = document.querySelector('.patient-list');
+            waitingList.innerHTML = dashboardData.waitingList.map(patient => `
+                <div class="patient-status">
+                    <span class="status-indicator status-${patient.seen ? 'checked-in' : 'waiting'}"></span>
+                    <span>${patient.patientName}</span>
+                </div>
+            `).join('');
+        }
+
+        function updateNotifications() {
+            const notificationList = document.querySelector('.notification-list');
+            notificationList.innerHTML = dashboardData.notifications.map(notif => `
+                <div class="notification-item">
+                    <i class="fas fa-${notif.icon}"></i>
+                    <div class="notification-content">
+                        <h4>${notif.title}</h4>
+                        <p>${notif.message}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+    
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setInterval(updateDateTime, 60000);
+            updateDashboard();
+            
+        
+            dashboardData.appointments.push({
+                id: 1,
+                patientName: "John Doe",
+                doctor: "dr-smith",
+                date: new Date().toISOString().split('T')[0],
+                time: "10:00",
+                type: "consultation"
+            });
+            
+            updateDashboard();
+        });
+
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                showNotification('Logging out...');
+                
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1000);
+            }
+        }
+    </script>
+</body>
+</html> 
