@@ -1,1 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nurse Dashboard - Mediplus</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: #f8f9fa;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #0066cc 0%, #0052a3 100%);
+            padding: 30px;
+            color: white;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .sidebar h1 {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 40px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar a i {
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+       
+        .dashboard-header {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .welcome-section h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+       
+        .task-board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .task-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .task-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .task-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #0066cc;
+        }
+
+        .task-item.urgent {
+            border-left-color: #dc3545;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .patient-info {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .task-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .task-status.pending {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        /* Vitals Form */
+        .vitals-form {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        
+        .communication-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .message-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .message-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-sender {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: #666;
+        }
+
+        
+        .action-btn {
+            padding: 8px 16px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: #0052a3;
+        }
+
+        .action-btn.urgent {
+            background: #dc3545;
+        }
+
+        .action-btn.urgent:hover {
+            background: #c82333;
+        }
+
+       
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .vitals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .bp-inputs {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge.urgent {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .badge.medication {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .task-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: #0066cc;
+            color: white;
+            border-color: #0066cc;
+        }
+
+        
+        .logout-btn {
+            margin-top: auto !important;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: 20px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 0, 0, 0.1) !important;
+            border-color: rgba(255, 0, 0, 0.2);
+            color: #fff !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h1>Nurse Dashboard</h1>
+        <a href="#tasks" class="active"><i class="fas fa-tasks"></i> Tasks</a>
+        <a href="#patients"><i class="fas fa-user-injured"></i> Patients</a>
+        <a href="#vitals"><i class="fas fa-heartbeat"></i> Vitals</a>
+        <a href="#messages"><i class="fas fa-comments"></i> Messages</a>
+        <a href="#schedule"><i class="fas fa-calendar-alt"></i> Schedule</a>
+        <a href="#" class="logout-btn" onclick="handleLogout()">
+            <i class="fas fa-door-open"></i> Logout
+        </a>
+    </div>
+
+    <div class="main-content">
+        <div class="dashboard-header">
+            <div class="welcome-section">
+                <h1>Welcome Back, Nurse Sarah</h1>
+                <p class="date-time">Thursday, March 21, 2024</p>
+            </div>
+        </div>
+
+       
+        <div class="task-management">
+            <div class="task-filters">
+                <button class="filter-btn active">All Tasks</button>
+                <button class="filter-btn">Urgent</button>
+                <button class="filter-btn">Routine</button>
+                <button class="filter-btn">Completed</button>
+            </div>
+            <div class="task-list">
+                <div class="task-item urgent">
+                    <div class="task-header">
+                        <span class="patient-info">Room 201 - John Doe</span>
+                        <div class="task-badges">
+                            <span class="badge urgent">Urgent</span>
+                            <span class="badge medication">Medication</span>
+                        </div>
+                    </div>
+                    <p class="task-description">Administer pain medication and check vitals</p>
+                    <div class="task-footer">
+                        <span class="due-time">Due: 10:30 AM</span>
+                        <div class="task-actions">
+                            <button class="action-btn small">Complete</button>
+                            <button class="action-btn small">Reschedule</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="task-item">
+                    <div class="task-header">
+                        <span class="patient-info">Room 205 - Jane Smith</span>
+                        <span class="task-status">Scheduled</span>
+                    </div>
+                    <p>Post-surgery vital signs monitoring</p>
+                    <small>Due: 11:00 AM</small>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="task-card">
+            <h3><i class="fas fa-heartbeat"></i> Record Vitals</h3>
+            <form class="vitals-form">
+                <div class="form-group">
+                    <label>Patient</label>
+                    <select class="form-control">
+                        <option>Select Patient</option>
+                        <option>John Doe - Room 201</option>
+                        <option>Jane Smith - Room 205</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Blood Pressure</label>
+                    <input type="text" placeholder="120/80">
+                </div>
+                <div class="form-group">
+                    <label>Temperature (°C)</label>
+                    <input type="number" step="0.1" placeholder="37.0">
+                </div>
+                <div class="form-group">
+                    <label>Heart Rate (BPM)</label>
+                    <input type="number" placeholder="75">
+                </div>
+                <button type="submit" class="action-btn">Save Vitals</button>
+            </form>
+        </div>
+
+       
+        <div class="communication-panel">
+            <h3><i class="fas fa-comments"></i> Messages</h3>
+            <div class="message-list">
+                <div class="message-item">
+                    <i class="fas fa-user-md"></i>
+                    <div class="message-content">
+                        <div class="message-sender">Dr. Smith</div>
+                        <p>Please monitor Room 201's blood pressure every 2 hours</p>
+                        <span class="message-time">10 mins ago</span>
+                    </div>
+                </div>
+                <div class="message-item">
+                    <i class="fas fa-user-nurse"></i>
+                    <div class="message-content">
+                        <div class="message-sender">Nurse Johnson</div>
+                        <p>Medication administered to Room 205</p>
+                        <span class="message-time">30 mins ago</span>
+                    </div>
+                </div>
+            </div>
+            <div class="message-input" style="margin-top: 15px;">
+                <input type="text" placeholder="Type your message..." style="width: 80%; padding: 8px;">
+                <button class="action-btn">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+        let dashboardData = {
+            tasks: [
+                {
+                    id: 1,
+                    patient: "John Doe",
+                    room: "201",
+                    description: "Administer pain medication and check vitals",
+                    status: "urgent",
+                    dueTime: "10:30 AM",
+                    type: "medication"
+                },
+                {
+                    id: 2,
+                    patient: "Jane Smith",
+                    room: "205",
+                    description: "Post-surgery vital signs monitoring",
+                    status: "routine",
+                    dueTime: "11:00 AM",
+                    type: "monitoring"
+                }
+            ],
+            messages: []
+        };
+
+       
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            updateDateTime();
+            setInterval(updateDateTime, 60000);
+
+           
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    filterTasks(this.textContent.toLowerCase());
+                });
+            });
+
+            
+            initializeFormHandlers();
+
+            
+            initializeRealTimeUpdates();
+        });
+
+        
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit', 
+                minute: '2-digit'
+            };
+            document.querySelector('.date-time').textContent = now.toLocaleDateString('en-US', options);
+        }
+
+      
+        function initializeRealTimeUpdates() {
+            setInterval(() => {
+                checkForNewTasks();
+                updateVitalSigns();
+                checkForNewMessages();
+            }, 30000);
+        }
+
+        
+        function checkForNewTasks() {
+            
+            const mockNewTask = {
+                id: Math.floor(Math.random() * 1000),
+                patient: "New Patient",
+                room: "203",
+                description: "New task arrived",
+                status: "routine",
+                dueTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                type: "routine"
+            };
+
+            
+            if (Math.random() > 0.7) {
+                dashboardData.tasks.push(mockNewTask);
+                showNotification("New task received for Room " + mockNewTask.room);
+                updateTaskList();
+            }
+        }
+
+       
+        function updateVitalSigns() {
+           
+            const vitalsForm = document.querySelector('.vitals-form');
+            if (vitalsForm) {
+                const lastUpdate = new Date().toLocaleTimeString();
+                const statusElement = vitalsForm.querySelector('.last-update') || 
+                    createLastUpdateElement(vitalsForm);
+                statusElement.textContent = `Last checked: ${lastUpdate}`;
+            }
+        }
+
+       
+        function checkForNewMessages() {
+            
+            const mockMessages = [
+                "Patient in Room 203 requesting assistance",
+                "Medication schedule updated for Room 201",
+                "Dr. Smith requesting vital signs update"
+            ];
+
+            if (Math.random() > 0.7) {
+                const newMessage = mockMessages[Math.floor(Math.random() * mockMessages.length)];
+                showNotification(newMessage);
+            }
+        }
+
+        
+        function filterTasks(filter) {
+            const tasks = document.querySelectorAll('.task-item');
+            tasks.forEach(task => {
+                if (filter === 'all tasks') {
+                    task.style.display = 'block';
+                } else {
+                    const hasFilter = task.classList.contains(filter);
+                    task.style.display = hasFilter ? 'block' : 'none';
+                }
+            });
+        }
+
+  
+        function showNotification(message) {
+            
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #0066cc;
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                z-index: 1000;
+                animation: slideIn 0.3s ease-out;
+            `;
+
+
+            document.body.appendChild(notification);
+
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+        }
+
+      
+        function initializeFormHandlers() {
+          
+            const vitalsForm = document.querySelector('.vitals-form');
+            if (vitalsForm) {
+                vitalsForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    showNotification('Vital signs recorded successfully');
+                });
+            }
+
+        
+            const messageInput = document.querySelector('.message-input input');
+            const sendButton = document.querySelector('.message-input .action-btn');
+            if (messageInput && sendButton) {
+                sendButton.addEventListener('click', function() {
+                    if (messageInput.value.trim()) {
+                        addNewMessage(messageInput.value);
+                        messageInput.value = '';
+                    }
+                });
+            }
+        }
+
+        
+        function addNewMessage(message) {
+            const messageList = document.querySelector('.message-list');
+            const newMessage = document.createElement('div');
+            newMessage.className = 'message-item';
+            newMessage.innerHTML = `
+                <i class="fas fa-user-nurse"></i>
+                <div class="message-content">
+                    <div class="message-sender">Nurse Sarah</div>
+                    <p>${message}</p>
+                    <span class="message-time">Just now</span>
+                </div>
+            `;
+            messageList.prepend(newMessage);
+            showNotification('Message sent');
+        }
+
+        
+        function createLastUpdateElement(parent) {
+            const element = document.createElement('div');
+            element.className = 'last-update';
+            element.style.cssText = 'margin-top: 10px; color: #666; font-size: 12px;';
+            parent.appendChild(element);
+            return element;
+        }
+
+       
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+     
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                showNotification('Logging out...');
+                
+                setTimeout(() => {
+                    window.location.href = 'login.html'; 
+                }, 1000);
+            }
+        }
+    </script>
+</body>
+</html>
 
