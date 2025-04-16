@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html class="no-js" lang="zxx">
     <head>
@@ -54,61 +56,6 @@
         color: #0066cc;
         text-decoration: underline;
     }
-    
-    /* User greeting styles */
-    .user-greeting {
-        background-color: #1A76D1;
-        color: white;
-        padding: 10px 0;
-        text-align: right;
-    }
-    
-    .user-greeting .container {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-    }
-    
-    #userGreeting {
-        font-size: 16px;
-        font-weight: 500;
-    }
-    
-    #userGreeting i {
-        margin-right: 5px;
-    }
-
-	.message-widget {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #0066cc;
-      color: white;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      cursor: pointer;
-      transition: background-color 0.3s;
-	  font-size: 30px; 
-    }
-
-    .message-widget a {
-      color: white;
-      font-size: 24px;
-      text-decoration: none;
-    }
-
-    .message-widget:hover {
-      background-color: #005bb5;
-    }
-
-    .message-widget i {
-      font-size: 24px;
-    }
         </style>
 		
     </head>
@@ -128,22 +75,9 @@
                 </div>
             </div>
         </div>
-        <!-- Widget HTML -->
-<div class="message-widget">
-  <a href="messages.html">
-    <i class="fas fa-comments"></i> Chat with Doctor
-  </a>
-</div>
+        
 		<header class="header">
 		
-			<div class="user-greeting">
-				<div class="container">
-					<div id="userGreeting">
-						<!-- User greeting will be inserted here via JavaScript -->
-					</div>
-				</div>
-			</div>
-			
 			<div class="header-inner">
 				<div class="container">
 					<div class="inner">
@@ -749,11 +683,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="message-widget">
-				<a href="./messaging.html">
-				  <i class="fas fa-comments" ></i> Chat with Doctor
-				</a>
-			  </div>
+		
 			<div class="copyright">
 				<div class="container">
 					<div class="row">
@@ -809,74 +739,11 @@
 		<script src="js/bootstrap.min.js"></script>
 		
 		<script src="js/main.js"></script>
-		<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-		<script src="js/auth-api.js"></script>
-		<script>
-			document.addEventListener('DOMContentLoaded', function() {
-				const userGreetingElement = document.getElementById('userGreeting');
-				
-				// Try to get the current user data
-				const currentUser = getCurrentUser();
-				
-				if (currentUser) {
-					// Set display name with better fallbacks
-					let displayName;
-					if (currentUser.first_name) {
-						displayName = currentUser.first_name;
-					} else if (currentUser.email) {
-						// Use part of the email before @ as a friendly name
-						displayName = currentUser.email.split('@')[0];
-					} else {
-						displayName = "User";
-					}
-					userGreetingElement.innerHTML = `<i class="fas fa-user-circle"></i> Hi, ${displayName}!`;
-				} else {
-					// Default greeting if no user data at all
-					userGreetingElement.innerHTML = `<i class="fas fa-user-circle"></i> Hi, Guest!`;
-				}
-				
-				// Debug info to help diagnose further issues
-				console.log('User data from localStorage:', currentUser);
-			});
-		</script>
-		<script>
-			// Add this function to show user data when needed
-			function checkUserData() {
-				const token = localStorage.getItem('authToken');
-				const userData = localStorage.getItem('user');
-				
-				console.log('Current authToken:', token);
-				console.log('Current user data:', userData ? JSON.parse(userData) : null);
-				
-				// If we have a token, also decode and show payload
-				if (token) {
-					try {
-						const parts = token.split('.');
-						if (parts.length === 3) {
-							const payload = parts[1];
-							const decodedPayload = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-							console.log('Token payload decoded:', JSON.parse(decodedPayload));
-						}
-					} catch (e) {
-						console.error('Failed to decode token:', e);
-					}
-				}
-				
-				return 'Check browser console for user data details';
-			}
-			
-			// Optional: Run the check automatically when page loads
-			document.addEventListener('DOMContentLoaded', function() {
-				checkUserData();
-			});
-		</script>
     </body>
 </html> 
 <script>
      function handleLogout() {
             if (confirm('Are you sure you want to logout?')) {
-                // Use the logoutUser function to delete token
-                logoutUser();
                 showNotification('Logging out...');
                 
                 setTimeout(() => {
