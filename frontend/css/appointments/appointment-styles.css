@@ -1,4 +1,3 @@
-
 .appointment-container {
     max-width: 900px;
     margin: 4rem auto;
@@ -354,4 +353,24 @@ input[type="checkbox"]:checked::after {
 .form-section:hover {
     border-color: #3498db;
     box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
-} 
+}
+
+/* Calendar view options styling */
+.calendar-view-options {
+    background: #f0f8ff;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border-left: 3px solid #1A76D1;
+}
+
+.view-description {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #333;
+}
+
+.view-description i {
+    margin-right: 8px;
+    color: #1A76D1;
+}

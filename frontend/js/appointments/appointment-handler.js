@@ -3,7 +3,7 @@
  * Manages the appointment booking UI interactions
  */
 
-import { getAllDoctors, getAvailableDoctors, getAvailableTimeSlots, bookAppointment, checkInsuranceCoverage } from './appointment-api.js';
+import { getAllDoctors, getAvailableDoctors, getAvailableTimeSlots, bookAppointment, checkInsuranceCoverage, getDoctorAvailabilityRange } from './appointment-api.js';
 
 // Global variables for DOM elements and state
 let datePickerEl;
@@ -15,6 +15,9 @@ let timeSlotsContainer;
 let appointmentNotesEl;
 let appointmentTypeEl;
 let errorContainer;
+let calendarContainer;
+let calendarEl;
+let calendar;
 let allDoctors = [];
 let selectedDoctor = null;
 let selectedTimeSlot = null;
@@ -37,6 +40,8 @@ function initAppointmentHandler() {
     appointmentNotesEl = document.getElementById('appointmentNotes');
     appointmentTypeEl = document.getElementById('appointmentType');
     errorContainer = document.getElementById('errorContainer');
+    calendarContainer = document.getElementById('calendarContainer');
+    calendarEl = document.getElementById('calendar');
 
     // Initialize datepicker
     if (datePickerEl && typeof $.fn.datepicker !== 'undefined') {
@@ -45,6 +50,126 @@ function initAppointmentHandler() {
             format: 'yyyy-mm-dd',
             startDate: new Date(),
             autoclose: true
+        });
+    }
+
+    // Initialize fullCalendar
+    if (calendarEl && typeof FullCalendar !== 'undefined') {
+        console.log('Initializing calendar...');
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'timeGridWeek',
+            height: 'auto',
+            headerToolbar: { 
+                left: 'prev,next today', 
+                center: 'title', 
+                right: 'timeGridDay,timeGridWeek,dayGridMonth' 
+            },
+            slotMinTime: '08:00:00', // Start at 8 AM
+            slotMaxTime: '17:00:00', // End at 5 PM
+            selectable: true,
+            events: [], // Will be populated based on doctor availability
+            select: function(info) {
+                // When a date is selected in the calendar
+                console.log('Calendar date selected:', info.startStr);
+                const selectedDate = info.start.toISOString().split('T')[0];
+                
+                // Update the datepicker with the selected date
+                if (datePickerEl) {
+                    datePickerEl.value = selectedDate;
+                    // Trigger the date change handler
+                    handleDateChange();
+                }
+            },
+            datesSet: function(dateInfo) {
+                // This fires when the calendar view changes (e.g., next/prev month, change view)
+                console.log('Calendar view changed:', dateInfo.view.type, dateInfo.startStr, dateInfo.endStr);
+                
+                // Update the view description message
+                const viewDescriptionEl = document.getElementById('viewDescription');
+                if (viewDescriptionEl) {
+                    if (dateInfo.view.type === 'timeGridDay') {
+                        viewDescriptionEl.innerHTML = 'Day view: Pick an available slot from the calendar or time slot list below.';
+                    } else if (dateInfo.view.type === 'timeGridWeek') {
+                        viewDescriptionEl.innerHTML = 'Week view: Browse availability across the entire week. Click any available slot to select it.';
+                    } else if (dateInfo.view.type === 'dayGridMonth') {
+                        viewDescriptionEl.innerHTML = 'Month view: Get an overview of the doctor\'s availability for the entire month.';
+                    }
+                }
+                
+                // Only fetch range data if we have a selected doctor
+                if (selectedDoctor) {
+                    // For day view, use the regular single-date availability
+                    if (dateInfo.view.type === 'timeGridDay') {
+                        const currentDate = dateInfo.start.toISOString().split('T')[0];
+                        fetchAndShowAvailability(selectedDoctor.id, currentDate);
+                    } 
+                    // For week and month views, fetch the entire date range
+                    else {
+                        fetchAndShowAvailabilityRange(selectedDoctor.id, dateInfo.start, dateInfo.end);
+                    }
+                }
+            },
+            eventClick: function(info) {
+                // Handle clicking on an availability slot in the calendar
+                const eventData = info.event.extendedProps;
+                
+                // Only allow selecting available slots
+                if (eventData.isAvailable) {
+                    // Set the datepicker to the date of the clicked slot
+                    const clickedDate = info.event.start.toISOString().split('T')[0];
+                    if (datePickerEl) {
+                        datePickerEl.value = clickedDate;
+                    }
+                    
+                    // Load the time slots for this date
+                    fetchAndShowAvailability(selectedDoctor.id, clickedDate)
+                        .then(() => {
+                            // Find and select the matching time slot in the list
+                            setTimeout(() => {
+                                const timeSlots = document.querySelectorAll('.time-slot');
+                                const formattedTime = eventData.formattedTime || 
+                                    info.event.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                                
+                                for (const slot of timeSlots) {
+                                    if (slot.textContent.includes(formattedTime)) {
+                                        // Simulate a click on this time slot
+                                        slot.click();
+                                        // Scroll to the time slots
+                                        document.getElementById('timeSlotContainer').scrollIntoView({behavior: 'smooth'});
+                                        break;
+                                    }
+                                }
+                            }, 500); // Short delay to ensure time slots are loaded
+                        });
+                } else {
+                    showMessage('This time slot is already booked.', 'warning');
+                }
+            },
+            eventContent: function(arg) {
+                // Customize the appearance of events in the calendar
+                const isAvailable = arg.event.extendedProps.isAvailable;
+                
+                // Create a custom element for the event
+                const content = document.createElement('div');
+                content.classList.add('fc-event-content');
+                
+                if (isAvailable) {
+                    content.innerHTML = `
+                        <div style="text-align: center; padding: 2px;">
+                            <span style="font-size: 0.8em;">Available</span>
+                        </div>
+                    `;
+                    content.style.cursor = 'pointer';
+                } else {
+                    content.innerHTML = `
+                        <div style="text-align: center; padding: 2px;">
+                            <span style="font-size: 0.8em;">Booked</span>
+                        </div>
+                    `;
+                }
+                
+                return { domNodes: [content] };
+            }
         });
     }
 
@@ -101,8 +226,16 @@ function initAppointmentHandler() {
         newAppointmentBtn.addEventListener('click', resetAppointmentForm);
     }
     
-    // Load all doctors when the page loads
+    // Render calendar if it exists
+    if (calendar) {
+        calendar.render();
+    }
+    
+    // Load all doctors immediately when the page loads
     loadAllDoctors();
+    
+    // Show a message to inform the user that doctors are being loaded
+    showMessage('Loading available doctors...', 'info');
 }
 
 /**
@@ -235,6 +368,7 @@ function handleDoctorSearch(event) {
             if (selectedDoctor) {
                 selectedDoctor = null;
                 toggleElement(doctorInfoEl, false);
+                toggleElement(calendarContainer, false);
                 clearTimeSlots();
                 updateSummary();
             }
@@ -371,9 +505,17 @@ async function selectDoctor(doctor) {
         }
     }
     
+    // Clear existing calendar events
+    if (calendar) {
+        calendar.getEvents().forEach(event => event.remove());
+    }
+    
+    // Show the calendar
+    toggleElement(calendarContainer, true);
+    
     // Update time slots if a date is already selected
     if (datePickerEl.value) {
-        fetchAndShowTimeSlots(doctor.id, datePickerEl.value);
+        fetchAndShowAvailability(doctor.id, datePickerEl.value);
     }
     
     // Update appointment summary
@@ -394,9 +536,9 @@ async function handleDateChange() {
     // If a doctor is already selected, update the time slots
     if (selectedDoctor) {
         try {
-            await fetchAndShowTimeSlots(selectedDoctor.id, selectedDate);
+            await fetchAndShowAvailability(selectedDoctor.id, selectedDate);
         } catch (error) {
-            console.error('Error fetching time slots:', error);
+            console.error('Error fetching availability:', error);
             showMessage('Failed to load available time slots. Please try again.', 'error');
         }
     }
@@ -406,20 +548,159 @@ async function handleDateChange() {
 }
 
 /**
- * Fetch and show time slots for selected doctor and date
+ * Fetch and show doctor availability on the calendar and time slots
+ * @param {number} doctorId - The ID of the doctor
+ * @param {string} date - The selected date in YYYY-MM-DD format
  */
-async function fetchAndShowTimeSlots(doctorId, date) {
+async function fetchAndShowAvailability(doctorId, date) {
     try {
-        showMessage('Loading available time slots...', 'info');
+        showMessage('Loading doctor availability...', 'info');
         
+        // Get available time slots
         const timeSlots = await getAvailableTimeSlots(doctorId, date);
         console.log('Time slots received:', timeSlots);
         
+        // Update time slots display
         updateTimeSlots(timeSlots);
+        
+        // Update calendar with availability
+        updateCalendarWithAvailability(timeSlots, date);
     } catch (error) {
-        console.error('Error fetching time slots:', error);
+        console.error('Error fetching availability:', error);
         throw error;
     }
+}
+
+/**
+ * Fetch and show doctor availability across a date range (week/month view)
+ * @param {number} doctorId - The ID of the doctor
+ * @param {Date} startDate - The start date of the range
+ * @param {Date} endDate - The end date of the range
+ */
+async function fetchAndShowAvailabilityRange(doctorId, startDate, endDate) {
+    try {
+        showMessage('Loading doctor availability for date range...', 'info');
+        
+        // Get available time slots across the date range
+        const availabilityData = await getDoctorAvailabilityRange(doctorId, startDate, endDate);
+        console.log('Availability range data received:', availabilityData);
+        
+        // Clear existing events on the calendar
+        calendar.getEvents().forEach(event => event.remove());
+        
+        // Process the availability data to show on calendar
+        if (availabilityData && availabilityData.availability) {
+            const availability = availabilityData.availability;
+            
+            // Iterate through each date in the availability data
+            Object.keys(availability).forEach(dateStr => {
+                const dateSlots = availability[dateStr];
+                
+                // Add each time slot as an event on the calendar
+                dateSlots.forEach(slot => {
+                    // Determine event color based on availability
+                    const eventColor = slot.is_booked ? '#ccc' : '#1A76D1';
+                    const eventTitle = slot.is_booked ? 'Booked' : 'Available';
+                    
+                    // Create start and end time for the event
+                    const [startHour, startMinute] = slot.start.split(':').map(Number);
+                    
+                    // End time is now 1 hour after start time (not 30 minutes)
+                    const endHour = startHour + 1;
+                    
+                    const startTime = `${dateStr}T${startHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}:00`;
+                    const endTime = `${dateStr}T${endHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}:00`;
+                    
+                    // Add the event to the calendar
+                    calendar.addEvent({
+                        title: eventTitle,
+                        start: startTime,
+                        end: endTime,
+                        color: eventColor,
+                        textColor: slot.is_booked ? '#666' : '#fff',
+                        extendedProps: {
+                            isAvailable: !slot.is_booked,
+                            slotData: slot,
+                            dateStr: dateStr
+                        }
+                    });
+                });
+            });
+            
+            // Update the message to show availability info
+            showMessage(`Showing doctor availability from ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`, 'success');
+        } else {
+            showMessage('No availability data found for the selected date range', 'warning');
+        }
+    } catch (error) {
+        console.error('Error fetching availability range:', error);
+        showMessage('Failed to load doctor availability for the date range. Please try again.', 'error');
+    }
+}
+
+/**
+ * Update the calendar with doctor availability
+ * @param {Array} availableSlots - List of available time slots
+ * @param {string} date - The selected date in YYYY-MM-DD format
+ */
+function updateCalendarWithAvailability(availableSlots, date) {
+    if (!calendar || !availableSlots || availableSlots.length === 0) {
+        return;
+    }
+    
+    // Clear existing events
+    calendar.getEvents().forEach(event => event.remove());
+    
+    // Add events for available slots
+    availableSlots.forEach(slot => {
+        let startTime, endTime;
+        
+        // Handle different API response formats
+        if (slot.start && slot.end) {
+            startTime = `${date}T${slot.start}`;
+            // Modify end time to be 1 hour after start time instead of using slot.end
+            const startDate = new Date(`${date}T${slot.start}`);
+            const endDate = new Date(startDate.getTime() + 60 * 60000); // Add 60 minutes (1 hour)
+            endTime = endDate.toISOString().split('.')[0]; // Format as ISO string without milliseconds
+        } else if (slot.time) {
+            // Assuming slot.time is in format "10:00 AM" 
+            // and each slot is now 1 hour (changed from 30 minutes)
+            const timeParts = slot.time.split(' ')[0].split(':');
+            let hour = parseInt(timeParts[0]);
+            const minute = parseInt(timeParts[1]);
+            const isPM = slot.time.includes('PM') && hour < 12;
+            
+            if (isPM) hour += 12;
+            
+            const formattedHour = hour.toString().padStart(2, '0');
+            const formattedMinute = minute.toString().padStart(2, '0');
+            
+            startTime = `${date}T${formattedHour}:${formattedMinute}:00`;
+            
+            // End time is 1 hour after start time
+            const endHour = (hour + 1) % 24;
+            endTime = `${date}T${endHour.toString().padStart(2, '0')}:${formattedMinute}:00`;
+        }
+        
+        if (startTime && endTime) {
+            const eventColor = slot.is_booked ? '#ccc' : '#1A76D1';
+            
+            calendar.addEvent({
+                title: slot.is_booked ? 'Booked' : 'Available',
+                start: startTime,
+                end: endTime,
+                color: eventColor,
+                textColor: slot.is_booked ? '#666' : '#fff',
+                extendedProps: {
+                    isAvailable: !slot.is_booked,
+                    slotData: slot
+                }
+            });
+        }
+    });
+    
+    // Focus the calendar on the selected date
+    calendar.gotoDate(date);
 }
 
 /**
@@ -641,6 +922,12 @@ function resetAppointmentForm() {
     
     // Hide doctor info
     toggleElement(doctorInfoEl, false);
+    toggleElement(calendarContainer, false);
+    
+    // Clear calendar events
+    if (calendar) {
+        calendar.getEvents().forEach(event => event.remove());
+    }
     
     // Clear time slots
     clearTimeSlots();
@@ -711,5 +998,8 @@ if (document.readyState === 'loading') {
 // Make functions available globally and export for module usage
 window.confirmAppointment = confirmAppointment;
 window.resetAppointmentForm = resetAppointmentForm;
+window.selectDoctor = selectDoctor; // Expose selectDoctor globally
+window.initAppointmentHandler = initAppointmentHandler; // Expose initAppointmentHandler globally
+window.loadAllDoctors = loadAllDoctors; // Expose loadAllDoctors globally
 
 export { initAppointmentHandler };

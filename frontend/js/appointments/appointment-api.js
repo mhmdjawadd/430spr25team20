@@ -12,23 +12,69 @@ const API_BASE_URL = 'http://localhost:5000';
  */
 async function getAllDoctors() {
     try {
+        // Enhanced debugging
+        console.log(`%c[API CALL] getAllDoctors - Starting`, 'color: blue; font-weight: bold');
+        
+        // Make the API URL absolutely clear
         const url = `${API_BASE_URL}/doctors`;
-        console.log('Calling getAllDoctors API at:', url);
+        console.log(`%c[API URL] ${url}`, 'color: green; font-weight: bold');
         
-        const response = await fetch(url);
-        console.log('API response status:', response.status);
+        // Add specific headers for troubleshooting CORS issues
+        const headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        };
+        console.log('[API Headers]', headers);
         
+        // Make the fetch request with explicit options
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: headers,
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin'
+        });
+        
+        // Log detailed response info
+        console.log(`%c[API Response] Status: ${response.status} ${response.statusText}`, 
+                   response.ok ? 'color: green' : 'color: red; font-weight: bold');
+        console.log('[API Response Headers]', [...response.headers.entries()]);
+        
+        // Handle response based on status
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to fetch doctors');
+            try {
+                const errorData = await response.json();
+                console.error('[API Error Response]', errorData);
+                return []; // Return empty array instead of throwing
+            } catch (jsonError) {
+                const errorText = await response.text();
+                console.error('[API Error Text]', errorText);
+                return []; // Return empty array instead of throwing
+            }
         }
         
+        // Parse and validate response
         const data = await response.json();
-        console.log('Doctors data received:', data);
-        return data;
+        console.log('[API Success Response]', data);
+        
+        // Normalize the response format to always return an array
+        let doctorsArray = data;
+        
+        // If the API returns an object with a doctors property, use that
+        if (!Array.isArray(data) && data.doctors && Array.isArray(data.doctors)) {
+            doctorsArray = data.doctors;
+        } 
+        // If the API returns a non-array that isn't a doctors object, return empty array
+        else if (!Array.isArray(data)) {
+            console.warn('[API Warning] Expected array of doctors but got:', typeof data);
+            return [];
+        }
+        
+        console.log(`%c[API SUCCESS] Retrieved ${doctorsArray.length} doctors`, 'color: green; font-weight: bold');
+        return doctorsArray;
     } catch (error) {
-        console.error('Error fetching all doctors:', error);
-        throw error;
+        console.error('%c[API ERROR] Error fetching doctors:', 'color: red; font-weight: bold', error);
+        return []; // Return empty array to gracefully handle errors
     }
 }
 
@@ -159,8 +205,47 @@ async function checkInsuranceCoverage(doctorId) {
     }
 }
 
-// Export the functions for ES modules
-export { getAllDoctors, getAvailableDoctors, getAvailableTimeSlots, bookAppointment, checkInsuranceCoverage };
+/**
+ * Get doctor availability for a date range (week/month view)
+ * @param {number} doctorId - The ID of the doctor
+ * @param {Date} startDate - The start date of the range
+ * @param {Date} endDate - The end date of the range
+ * @returns {Promise<Object>} - Promise that resolves to availability data by date
+ */
+async function getDoctorAvailabilityRange(doctorId, startDate, endDate) {
+    try {
+        // Format dates in YYYY-MM-DD format for the API
+        const formattedStartDate = startDate.toISOString().split('T')[0];
+        const formattedEndDate = endDate.toISOString().split('T')[0];
+        
+        // Make API request to get availability range
+        const response = await fetch(`${API_BASE_URL}/appointments/availability-range`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+                doctor_id: doctorId,
+                start_date: formattedStartDate,
+                end_date: formattedEndDate
+            })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to fetch availability range');
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching doctor availability range:', error);
+        throw error;
+    }
+}
+
+// Export the functions for ES modules - FIXED: removed duplicate export
+export { getAllDoctors, getAvailableDoctors, getAvailableTimeSlots, bookAppointment, checkInsuranceCoverage, getDoctorAvailabilityRange };
 
 // Also make them available on window for non-module scripts
 window.appointmentAPI = {
@@ -168,5 +253,6 @@ window.appointmentAPI = {
     getAvailableDoctors,
     getAvailableTimeSlots,
     bookAppointment,
-    checkInsuranceCoverage
+    checkInsuranceCoverage,
+    getDoctorAvailabilityRange
 };

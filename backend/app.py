@@ -171,6 +171,11 @@ def cancel_appointment():
     """Cancel an existing appointment and notify all parties"""
     return AppointmentController.cancel_appointment()
 
+@app.route('/appointments/availability-range', methods=['POST'])
+def get_doctor_availability_range_route():
+    """Get available appointment slots for a doctor across a date range (week/month view)"""
+    return AppointmentController.get_doctor_availability_range()
+
 # Insurance routes
 @app.route('/insurance', methods=['GET'])
 @jwt_required()

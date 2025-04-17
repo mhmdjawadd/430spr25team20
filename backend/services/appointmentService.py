@@ -234,8 +234,8 @@ class AppointmentController:
             return jsonify({"error": "Appointment time must be between 8:00 AM and 5:00 PM"}), 400
         
         # 3. Check if the slot is already booked
-        # We'll define a 30-minute appointment slot
-        appointment_end = appointment_datetime + timedelta(minutes=30)
+        # We'll define a 1-hour appointment slot (changed from 30 minutes)
+        appointment_end = appointment_datetime + timedelta(minutes=60)
         
         # Make sure to use correct field name from your model (date_time instead of appointment_datetime)
         existing_appointments = Appointment.query.filter(
@@ -247,8 +247,8 @@ class AppointmentController:
         
         # Check for conflicts
         for existing in existing_appointments:
-            existing_start = existing.date_time  # Using date_time from your model
-            existing_end = existing_start + timedelta(minutes=30)
+            existing_start = existing.date_time
+            existing_end = existing_start + timedelta(minutes=60)  # Changed from 30 to 60 minutes
             
             # Check if new appointment overlaps with existing one
             if (appointment_datetime < existing_end and appointment_end > existing_start):
@@ -692,3 +692,132 @@ class AppointmentController:
         except Exception as e:
             db.session.rollback()
             return jsonify({"error": f"Failed to cancel appointment: {str(e)}"}), 500
+
+    @staticmethod
+    def get_doctor_availability_range():
+        # Get query parameters
+        data = request.get_json()
+        doctor_id = data.get('doctor_id')
+        start_date_str = data.get('start_date')  # Format YYYY-MM-DD
+        end_date_str = data.get('end_date')      # Format YYYY-MM-DD
+        
+        print('Fetching availability range for doctor:', doctor_id, 'from:', start_date_str, 'to:', end_date_str)
+        
+        if not doctor_id:
+            return jsonify({"error": "Missing doctor_id parameter"}), 400
+        
+        if not start_date_str or not end_date_str:
+            return jsonify({"error": "Missing date range parameters"}), 400
+        
+        try:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+        
+        # Limit range to 31 days to avoid performance issues
+        date_diff = (end_date - start_date).days
+        if date_diff > 31:
+            return jsonify({"error": "Date range too large. Maximum 31 days"}), 400
+        
+        # Get doctor record
+        doctor = Doctor.query.get(doctor_id)
+        if not doctor:
+            return jsonify({"error": "Doctor not found"}), 404
+        
+        # Initialize the result
+        availability_by_date = {}
+        
+        # Loop through each date in the range
+        current_date = start_date
+        while current_date <= end_date:
+            # Skip weekends (5=Saturday, 6=Sunday)
+            if current_date.weekday() < 5:
+                # Create time slots for this day (8 AM to 5 PM, 1-hour intervals)
+                day_slots = []
+                
+                # Check existing appointments for this doctor on this date
+                day_start = datetime.combine(current_date, time(0, 0, 0))
+                day_end = datetime.combine(current_date, time(23, 59, 59))
+                
+                booked_appointments = Appointment.query.filter(
+                    Appointment.doctor_id == doctor_id,
+                    Appointment.date_time >= day_start,
+                    Appointment.date_time <= day_end
+                ).all()
+                
+                # Convert booked appointments to a set of booked time slots
+                booked_times = set()
+                for appt in booked_appointments:
+                    # Each appointment blocks a 1-hour slot
+                    slot_time = appt.date_time.time()
+                    slot_key = f"{slot_time.hour:02d}:00"
+                    booked_times.add(slot_key)
+                
+                # Generate slots from 8 AM to 5 PM (working hours)
+                for hour in range(8, 17):  # 8 AM to 4 PM (last slot ends at 5 PM)
+                    # Changed from 30-minute intervals to 1-hour intervals
+                    slot_time = f"{hour:02d}:00"
+                    
+                    # Check if this slot is booked
+                    is_booked = slot_time in booked_times
+                    
+                    # Create the slot info
+                    slot = {
+                        "time": f"{hour}:00 {'PM' if hour >= 12 else 'AM'}",
+                        "is_booked": is_booked,
+                        "start": slot_time,
+                        "end": f"{(hour + 1):02d}:00"  # End time is now 1 hour later
+                    }
+                    day_slots.append(slot)
+                
+                # Add the day's slots to the result
+                availability_by_date[current_date.isoformat()] = day_slots
+            
+            # Move to the next day
+            current_date += timedelta(days=1)
+        
+        return jsonify({
+            "doctor_id": doctor_id,
+            "doctor_name": f"Dr. {doctor.user.first_name} {doctor.user.last_name}",
+            "availability": availability_by_date
+        })
+
+    @staticmethod
+    def get_availability_range(doctor_id, start_date, end_date):
+        """
+        Get doctor availability across a date range (week/month view)
+        
+        Args:
+            doctor_id (int): The ID of the doctor
+            start_date (date): The start date of the range
+            end_date (date): The end date of the range
+            
+        Returns:
+            dict: Dictionary of available time slots by date
+        """
+        # Validate date range (limit to a maximum of 31 days to prevent excessive queries)
+        date_difference = (end_date - start_date).days
+        if date_difference < 0:
+            raise ValueError("End date must be after start date")
+            
+        if date_difference > 31:
+            raise ValueError("Date range cannot exceed 31 days")
+        
+        # Create a dictionary to store availability for each date
+        availability = {}
+        
+        # Generate the list of dates in the range
+        current_date = start_date
+        while current_date <= end_date:
+            # Get available slots for this date
+            date_slots = AppointmentController.get_available_slots(doctor_id, current_date)
+            
+            # Store availability for this date
+            date_str = current_date.strftime("%Y-%m-%d")
+            availability[date_str] = date_slots
+            
+            # Move to the next date
+            current_date += timedelta(days=1)
+        
+        return availability
