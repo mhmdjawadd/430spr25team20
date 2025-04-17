@@ -11,8 +11,8 @@ doctors_to_register = [
     {
         "email": "dr.general@nabad.com",
         "password": "password123",
-        "first_name": "General",
-        "last_name": "Practitioner",
+        "first_name": "James",
+        "last_name": "Willson",
         "role": "DOCTOR",
         "specialty": "DOCTOR", # General Doctor
         "phone": "111-222-3333"
@@ -20,8 +20,8 @@ doctors_to_register = [
     {
         "email": "dr.therapist@nabad.com",
         "password": "password123",
-        "first_name": "Mental",
-        "last_name": "Wellness",
+        "first_name": "Sarah",
+        "last_name": "Johnson",
         "role": "THERAPIST",
         "specialty": "THERAPIST", # Therapist
         "phone": "444-555-6666"
@@ -29,8 +29,8 @@ doctors_to_register = [
     {
         "email": "dr.surgeon@nabad.com",
         "password": "password123",
-        "first_name": "Skilled",
-        "last_name": "Hands",
+        "first_name": "Michael",
+        "last_name": "Chen",
         "role": "SURGEON",
         "specialty": "SURGEON", # Surgeon
         "phone": "777-888-9999"
@@ -38,8 +38,8 @@ doctors_to_register = [
      {
         "email": "dr.cardio@nabad.com",
         "password": "password123",
-        "first_name": "Cardio",
-        "last_name": "Expert",
+        "first_name": "Emily",
+        "last_name": "Martinez",
         "role": "DOCTOR",
         "specialty": "DOCTOR", # Another Doctor, could be specialized if needed
         "phone": "123-456-7890"
