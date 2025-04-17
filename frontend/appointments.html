@@ -1,337 +1,53 @@
 <!doctype html>
 <html class="no-js" lang="zxx">
     <head>
-      
-		<meta charset="utf-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="keywords" content="Site keywords here">
-		<meta name="description" content="">
-		<meta name='copyright' content=''>
-		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		
-		
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="keywords" content="Site keywords here">
+        <meta name="description" content="">
+        <meta name='copyright' content=''>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        
         <title>Book Appointment - Mediplus Medical Center</title>
-		
-	
+        
+        <!-- Favicon -->
         <link rel="icon" href="img/favicon.png">
-		
-		<!-- Google Fonts -->
-		<link href="https://fonts.googleapis.com/css?family=Poppins:200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&display=swap" rel="stylesheet">
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-		<!-- Bootstrap CSS -->
-		<link rel="stylesheet" href="css/bootstrap.min.css">
-		<!-- Nice Select CSS -->
-		<link rel="stylesheet" href="css/nice-select.css">
-		<!-- Font Awesome CSS -->
+        
+        <!-- Google Fonts -->
+        <link href="https://fonts.googleapis.com/css?family=Poppins:200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <!-- Nice Select CSS -->
+        <link rel="stylesheet" href="css/nice-select.css">
+        <!-- Font Awesome CSS -->
         <link rel="stylesheet" href="css/font-awesome.min.css">
-		<!-- icofont CSS -->
+        <!-- icofont CSS -->
         <link rel="stylesheet" href="css/icofont.css">
-		<!-- Slicknav -->
-		<link rel="stylesheet" href="css/slicknav.min.css">
-		<!-- Owl Carousel CSS -->
+        <!-- Slicknav -->
+        <link rel="stylesheet" href="css/slicknav.min.css">
+        <!-- Owl Carousel CSS -->
         <link rel="stylesheet" href="css/owl-carousel.css">
-		<!-- Datepicker CSS -->
-		<link rel="stylesheet" href="css/datepicker.css">
-		<!-- Animate CSS -->
+        <!-- Datepicker CSS -->
+        <link rel="stylesheet" href="css/datepicker.css">
+        <!-- Animate CSS -->
         <link rel="stylesheet" href="css/animate.min.css">
-		<!-- Magnific Popup CSS -->
+        <!-- Magnific Popup CSS -->
         <link rel="stylesheet" href="css/magnific-popup.css">
         <!-- FullCalendar CSS -->
         <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet" />
-		
-		<!-- Medipro CSS -->
+        
+        <!-- Medipro CSS -->
         <link rel="stylesheet" href="css/normalize.css">
         <link rel="stylesheet" href="style.css">
         <link rel="stylesheet" href="css/responsive.css">
-
-        <style>
-            .appointment-form {
-                background: #f8f9fa;
-                border-radius: 10px;
-                padding: 25px;
-                margin-bottom: 30px;
-                box-shadow: 0 3px 10px rgba(0,0,0,0.05);
-            }
-            
-            .time-slots {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-                gap: 10px;
-                margin: 15px 0;
-                max-height: 250px;
-                overflow-y: auto;
-                padding: 10px;
-                background: #fff;
-                border-radius: 8px;
-                border: 1px solid #e9ecef;
-            }
-            
-            .time-slot {
-                padding: 10px;
-                text-align: center;
-                border: 2px solid #1A76D1;
-                border-radius: 5px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            }
-            
-            .time-slot:hover {
-                background: #1A76D1;
-                color: #fff;
-            }
-            
-            .time-slot.booked {
-                background: #ccc;
-                border-color: #ccc;
-                cursor: not-allowed;
-            }
-            
-            .time-slot.selected {
-                background: #1A76D1;
-                color: #fff;
-                border-color: #0056b3;
-            }
-            
-            .form-section {
-                margin-bottom: 20px;
-                padding-bottom: 20px;
-                border-bottom: 1px solid #e9ecef;
-            }
-            
-            .form-section h4 {
-                margin-bottom: 15px;
-                color: #1A76D1;
-                font-weight: 600;
-            }
-            
-            .options-section {
-                background: #fff;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-                margin-top: 20px;
-            }
-            
-            .appointment-summary {
-                background: #f8f9fa;
-                padding: 20px;
-                border-radius: 5px;
-                margin-top: 20px;
-                border-left: 4px solid #1A76D1;
-            }
-            
-            .summary-item {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 10px;
-            }
-            
-            .appointment-success {
-                text-align: center;
-                padding: 40px 20px;
-                display: none;
-                background: #f8f9fa;
-                border-radius: 8px;
-                border-top: 4px solid #28a745;
-            }
-            
-            .appointment-success i {
-                font-size: 60px;
-                color: #28a745;
-                margin-bottom: 20px;
-            }
-            
-            .btn {
-                background: #1A76D1;
-                color: #fff;
-                padding: 12px 25px;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                font-weight: 600;
-                transition: all 0.3s ease;
-                margin-top: 10px;
-            }
-            
-            .btn:hover {
-                background: #0056b3;
-            }
-            
-            .logout-btn{
-                color: #1a1a1a;
-                font-size: 16px;
-                font-weight: 500;
-                transition: color 0.3s;
-                margin-top: 20px;
-            }
-
-            .logout-btn:hover {
-                color: #0066cc;
-                text-decoration: underline;
-            }
-            
-            /* Nav menu user greeting (same as index) */
-            .nav.menu .user-greeting {
-                display: inline-flex;
-                align-items: center;
-                margin-left: auto;
-                color: #1A76D1;
-            }
-            .nav.menu .user-greeting i {
-                margin-right: 5px;
-            }
-            .navigation .nav.menu {
-                display: flex;
-                align-items: center;
-            }
-
-            .hidden {
-                display: none;
-            }
-
-            /* Doctor search styles */
-            .doctor-search-container {
-                position: relative;
-            }
-            
-            .doctor-search-results {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                z-index: 1000;
-                background: white;
-                border: 1px solid #ddd;
-                border-radius: 0 0 4px 4px;
-                max-height: 200px;
-                overflow-y: auto;
-                box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-            }
-            
-            .doctor-search-item {
-                padding: 10px 15px;
-                cursor: pointer;
-                border-bottom: 1px solid #f0f0f0;
-            }
-            
-            .doctor-search-item:hover,
-            .doctor-search-item.selected {
-                background-color: #f8f9fa;
-            }
-            
-            .doctor-search-item .doctor-name {
-                display: block;
-                font-weight: bold;
-                color: #333;
-            }
-            
-            .doctor-search-item .doctor-specialty {
-                display: block;
-                font-size: 0.85em;
-                color: #666;
-            }
-            
-            .doctor-info {
-                background: #f8f9fa;
-                padding: 10px;
-                border-radius: 4px;
-                border-left: 3px solid #1A76D1;
-            }
-            
-            .doctor-info .doctor-name {
-                font-weight: bold;
-                margin-right: 10px;
-            }
-            
-            .doctor-info .doctor-specialty {
-                font-style: italic;
-                color: #666;
-            }
-
-            .view-description-container {
-                background: #f0f8ff;
-                padding: 12px 15px;
-                border-radius: 8px;
-                border-left: 3px solid #1A76D1;
-                margin-bottom: 15px;
-            }
-            
-            .view-description {
-                display: flex;
-                align-items: center;
-                font-size: 14px;
-                color: #333;
-            }
-            
-            .view-description:before {
-                content: "\f05a";
-                font-family: "Font Awesome 5 Free";
-                font-weight: 900;
-                margin-right: 10px;
-                color: #1A76D1;
-            }
-            
-            .calendar-card {
-                background: #fff;
-                border-radius: 8px;
-                overflow: hidden;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            }
-
-            /* Calendar styling for appointment slots */
-            .fc-event {
-                border: none !important;
-                border-radius: 4px !important;
-                padding: 2px !important;
-            }
-            
-            .fc-event.available-slot {
-                background-color: #1A76D1 !important;
-                color: white !important;
-                cursor: pointer !important;
-            }
-            
-            .fc-event.booked-slot {
-                background-color: #ccc !important;
-                color: #666 !important;
-                cursor: not-allowed !important;
-                opacity: 0.8;
-            }
-            
-            /* Add clear visual indicators for availability */
-            .availability-legend {
-                display: flex;
-                align-items: center;
-                margin-top: 10px;
-                margin-bottom: 10px;
-            }
-            
-            .availability-indicator {
-                width: 20px;
-                height: 20px;
-                border-radius: 3px;
-                margin-right: 8px;
-            }
-            
-            .available-indicator {
-                background-color: #1A76D1;
-            }
-            
-            .booked-indicator {
-                background-color: #ccc;
-            }
-            
-            .legend-item {
-                display: flex;
-                align-items: center;
-                margin-right: 20px;
-                font-size: 14px;
-            }
-        </style>
-		
+        
+        <!-- Appointment-specific CSS -->
+        <link rel="stylesheet" href="css/appointments/appointment-styles.css">
     </head>
     <body>
-	
+        <!-- Preloader -->
         <div class="preloader">
             <div class="loader">
                 <div class="loader-outter"></div>
@@ -344,112 +60,108 @@
                 </div>
             </div>
         </div>
-      
-		<header class="header">
-			
-			<div class="header-inner">
-				<div class="container">
-					<div class="inner">
-						<div class="row">
-							<div class="col-lg-3 col-md-3 col-12">
-								
-								<div class="logo">
-									<a href="index.html"><img src="img/nabad.png" alt="#"></a>
-								</div>
-								
-								<div class="mobile-nav"></div>
-								
-							</div>
-							<div class="col-lg-9 col-md-9 col-12">
-								
-								<div class="main-menu">
-									<nav class="navigation">
-										<ul class="nav menu">
-											<li><a href="index.html">Home</a></li>
-											<li><a href="doctors.html">Doctors</a></li>
-											<li><a href="services.html">Services</a></li>
-											<li><a href="contact.html">Contact Us</a></li>
-											<li class="reminder-icon">
-												<a href="reminder-preferences.html">
-													<i class="fa fa-bell"></i>
-													<span class="reminder-tooltip"></span>
-												</a>
-											</li>
-											
-											<li><a href="login.html" class="logout-btn" onclick="handleLogout()">
-												<i class="fas fa-door-open"></i>
-											</a></li>
-											<li class="user-greeting"><span id="userGreeting"></span></li>
-										</ul>
-									</nav>
-								</div>
-							
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-			
-		</header>
-		
-		<div class="breadcrumbs overlay">
-			<div class="container">
-				<div class="bread-inner">
-					<div class="row">
-						<div class="col-12">
-							<h2>Book Your Appointment</h2>
-							<ul class="bread-list">
-								<li><a href="index.html">Home</a></li>
-								<li><i class="icofont-simple-right"></i></li>
-								<li class="active">Book Appointment</li>
-							</ul>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		
-		<section class="appointment single-page">
-			<div class="container">
-				<div class="row">
-					<div class="col-lg-12">
-						<div class="section-title">
-							<h2>Schedule Your Visit</h2>
-							<img src="img/section-img.png" alt="#">
-							<p>Choose your preferred date, doctor and time for your appointment</p>
-						</div>
-					</div>
-				</div>
-				
+        
+        <!-- Header -->
+        <header class="header">
+            <div class="header-inner">
+                <div class="container">
+                    <div class="inner">
+                        <div class="row">
+                            <div class="col-lg-3 col-md-3 col-12">
+                                <!-- Logo -->
+                                <div class="logo">
+                                    <a href="index.html"><img src="img/nabad.png" alt="#"></a>
+                                </div>
+                                <!-- Mobile Nav -->
+                                <div class="mobile-nav"></div>
+                            </div>
+                            <div class="col-lg-9 col-md-9 col-12">
+                                <!-- Main Menu -->
+                                <div class="main-menu">
+                                    <nav class="navigation">
+                                        <ul class="nav menu">
+                                            <li><a href="index.html">Home</a></li>
+                                            <li><a href="doctors.html">Doctors</a></li>
+                                            <li><a href="services.html">Services</a></li>
+                                            <li><a href="contact.html">Contact Us</a></li>
+                                            <li class="reminder-icon">
+                                                <a href="reminder-preferences.html">
+                                                    <i class="fa fa-bell"></i>
+                                                    <span class="reminder-tooltip"></span>
+                                                </a>
+                                            </li>
+                                            <li class="user-greeting"><span id="userGreeting"></span></li>
+                                            <li><a href="login.html" class="logout-btn" id="logoutBtn">
+                                                <i class="fas fa-door-open"></i>
+                                            </a></li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Breadcrumbs -->
+        <div class="breadcrumbs overlay">
+            <div class="container">
+                <div class="bread-inner">
+                    <div class="row">
+                        <div class="col-12">
+                            <h2>Book Your Appointment</h2>
+                            <ul class="bread-list">
+                                <li><a href="index.html">Home</a></li>
+                                <li><i class="icofont-simple-right"></i></li>
+                                <li class="active">Book Appointment</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Appointment Section -->
+        <section class="appointment single-page">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="section-title">
+                            <h2>Schedule Your Visit</h2>
+                            <img src="img/section-img.png" alt="#">
+                            <p>Choose your preferred date, doctor and time for your appointment</p>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Error container for displaying API and validation errors -->
                 <div id="errorContainer"></div>
                 
-				<div class="row">
-					<div class="col-lg-8 col-md-12 col-12">
-						
-						<div class="appointment-form" id="appointmentFormContainer">
-							<div class="form-section">
-								<h4>1. Select Doctor</h4>
-								
-								<div class="row mt-3">
-									<div class="col-md-12">
-										<div class="form-group">
-											<label for="doctorInput">Select Doctor</label>
-											<div class="doctor-search-container">
-												<input type="text" id="doctorInput" class="form-control" placeholder="Type doctor name or select from list">
-												<div id="doctorSuggestions" class="doctor-search-results"></div>
-											</div>
-											<div id="doctorInfo" class="mt-2 doctor-info hidden">
-												<span class="doctor-name"></span>
-												<span class="doctor-specialty"></span>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							
-							<div class="form-section">
-								<h4>2. Select Time</h4>
+                <div class="row">
+                    <div class="col-lg-8 col-md-12 col-12">
+                        <div class="appointment-form" id="appointmentFormContainer">
+                            <div class="form-section">
+                                <h4>1. Select Doctor</h4>
+                                <div class="row mt-3">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="doctorInput">Select Doctor</label>
+                                            <div class="doctor-search-container">
+                                                <input type="text" id="doctorInput" class="form-control" placeholder="Type doctor name or select from list">
+                                                <div id="doctorSuggestions" class="doctor-search-results"></div>
+                                            </div>
+                                            <div id="doctorInfo" class="mt-2 doctor-info hidden">
+                                                <span class="doctor-name"></span>
+                                                <span class="doctor-specialty"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-section">
+                                <h4>2. Select Time</h4>
                                 <!-- Doctor Calendar Section -->
                                 <div id="calendarContainer" class="hidden">
                                     <div class="view-description-container">
@@ -471,122 +183,124 @@
                                         <div id="calendar"></div>
                                     </div>
                                 </div>
-								<div id="timeSlotContainer" class="hidden">
-									<div class="time-slots" id="timeSlots">
-										<p>Please select a date and doctor first.</p>
-									</div>
-								</div>
-							</div>
+                                <div id="timeSlotContainer" class="hidden">
+                                    <div class="time-slots" id="timeSlots">
+                                        <p>Please select a date and doctor first.</p>
+                                    </div>
+                                </div>
+                            </div>
 
-							<div class="form-section">
-								<h4>3. Add Details</h4>
-								<div class="row">
-									<div class="col-md-12">
-										<div class="form-group">
-											<label for="appointmentType">Appointment Type</label>
-											<select class="form-control" id="appointmentType">
-												<option value="REGULAR">Regular</option>
-												<option value="RECURRING">Recurring</option>
-												<option value="EMERGENCY">Emergency</option>
-											</select>
-										</div>
-									</div>
-									<div class="col-12">
-										<div class="form-group">
-											<label for="appointmentNotes">Notes (optional)</label>
-											<textarea id="appointmentNotes" class="form-control" rows="3" 
-												placeholder="Add any special requirements or information for the doctor"></textarea>
-										</div>
-										
-										
-										<div id="insuranceInfoContainer" class="mt-3 p-3" style="background-color: #f8f9fa; border-radius: 5px; border-left: 3px solid #1A76D1; display: none;">
-											<h5>Insurance Information</h5>
-											<div id="insuranceDetails">
-												<p>Loading insurance information...</p>
-											</div>
-										</div>
-										
-										<div class="options-section">
-											<div class="form-group">
-												<label>
-													<input type="checkbox" id="recurring"> Make this a recurring appointment
-												</label>
-											</div>
-											<div id="recurringOptions" class="hidden">
-												<div class="row">
-													<div class="col-md-6">
-														<div class="form-group">
-															<label for="recurrencePattern">Recurrence Pattern</label>
-															<select class="form-control" name="recurrence_pattern" id="recurrencePattern">
-																<option value="WEEKLY">Weekly</option>
-																<option value="BIWEEKLY">Bi-weekly</option>
-																<option value="MONTHLY">Monthly</option>
-															</select>
-														</div>
-													</div>
-													<div class="col-md-6">
-														<div class="form-group">
-															<label for="sessions">Number of sessions</label>
-															<input type="number" class="form-control" name="sessions" id="sessions" min="2" max="12" value="4">
-														</div>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							
-							<div class="form-section">
-								<h4>4. Reminder Preferences</h4>
-								<div class="row">
-									<div class="col-md-6">
-										<div class="form-group">
-											<label>
-												<input type="checkbox" id="smsToCaregiverReminder"> Send SMS to Caregiver
-											</label>
-											<input type="tel" class="form-control" id="caregiverPhone" placeholder="Caregiver's Phone Number">
-										</div>
-									</div>
-									<div class="col-md-6">
-										<div class="form-group">
-											<label>
-												<input type="checkbox" id="emailToCaregiverReminder"> Send Email to Caregiver
-											</label>
-											<input type="email" class="form-control" id="caregiverEmail" placeholder="Caregiver's Email">
-										</div>
-									</div>
-								</div>
-							</div>
-							
-							<div class="appointment-summary">
-								<h4>Appointment Summary</h4>
-								<div class="summary-item">
-									<span>Date:</span>
-									<strong id="summaryDate">Not selected</strong>
-								</div>
-								<div class="summary-item">
-									<span>Time:</span>
-									<strong id="summaryTime">Not selected</strong>
-								</div>
-								<div class="summary-item">
-									<span>Doctor:</span>
-									<strong id="summaryDoctor">Not selected</strong>
-								</div>
-								<div class="summary-item">
-									<span>Department:</span>
-									<strong id="summaryDepartment">Not selected</strong>
-								</div>
-								<div class="summary-item" id="summaryRecurringContainer" style="display:none;">
-									<span>Recurring:</span>
-									<strong id="summaryRecurring">No</strong>
-								</div>
-							</div>
-							
-							<div class="text-center mt-4">
-								<button type="button" class="btn" id="confirmBtn">Confirm Appointment</button>
-							</div>
-						</div>
+                            <div class="form-section">
+                                <h4>3. Add Details</h4>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="appointmentType">Appointment Type</label>
+                                            <select class="form-control" id="appointmentType">
+                                                <option value="REGULAR">Regular</option>
+                                                <option value="RECURRING">Recurring</option>
+                                                <option value="EMERGENCY">Emergency</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label for="appointmentNotes">Notes (optional)</label>
+                                            <textarea id="appointmentNotes" class="form-control" rows="3" 
+                                                placeholder="Add any special requirements or information for the doctor"></textarea>
+                                        </div>
+                                        
+                                        <!-- Insurance Information -->
+                                        <div id="insuranceInfoContainer" class="mt-3 p-3" style="background-color: #f8f9fa; border-radius: 5px; border-left: 3px solid #1A76D1; display: none;">
+                                            <h5>Insurance Information</h5>
+                                            <div id="insuranceDetails">
+                                                <p>Loading insurance information...</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Recurring Appointment Options -->
+                                        <div class="options-section">
+                                            <div class="form-group">
+                                                <label>
+                                                    <input type="checkbox" id="recurring"> Make this a recurring appointment
+                                                </label>
+                                            </div>
+                                            <div id="recurringOptions" class="hidden">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label for="recurrencePattern">Recurrence Pattern</label>
+                                                            <select class="form-control" name="recurrence_pattern" id="recurrencePattern">
+                                                                <option value="WEEKLY">Weekly</option>
+                                                                <option value="BIWEEKLY">Bi-weekly</option>
+                                                                <option value="MONTHLY">Monthly</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-group">
+                                                            <label for="sessions">Number of sessions</label>
+                                                            <input type="number" class="form-control" name="sessions" id="sessions" min="2" max="12" value="4">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-section">
+                                <h4>4. Reminder Preferences</h4>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>
+                                                <input type="checkbox" id="smsToCaregiverReminder"> Send SMS to Caregiver
+                                            </label>
+                                            <input type="tel" class="form-control" id="caregiverPhone" placeholder="Caregiver's Phone Number">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label>
+                                                <input type="checkbox" id="emailToCaregiverReminder"> Send Email to Caregiver
+                                            </label>
+                                            <input type="email" class="form-control" id="caregiverEmail" placeholder="Caregiver's Email">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Appointment Summary -->
+                            <div class="appointment-summary">
+                                <h4>Appointment Summary</h4>
+                                <div class="summary-item">
+                                    <span>Date:</span>
+                                    <strong id="summaryDate">Not selected</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Time:</span>
+                                    <strong id="summaryTime">Not selected</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Doctor:</span>
+                                    <strong id="summaryDoctor">Not selected</strong>
+                                </div>
+                                <div class="summary-item">
+                                    <span>Department:</span>
+                                    <strong id="summaryDepartment">Not selected</strong>
+                                </div>
+                                <div class="summary-item" id="summaryRecurringContainer" style="display:none;">
+                                    <span>Recurring:</span>
+                                    <strong id="summaryRecurring">No</strong>
+                                </div>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <button type="button" class="btn" id="confirmBtn">Confirm Appointment</button>
+                            </div>
+                        </div>
                         
                         <!-- Success message will be shown here after booking -->
                         <div id="appointmentSuccess" class="appointment-success" style="display:none;">
@@ -595,403 +309,125 @@
                             <p id="successDetails"></p>
                             <button class="btn" id="newAppointmentBtn">Book Another Appointment</button>
                         </div>
-					</div>
-					
-					<div class="col-lg-4 col-md-12 col-12">
-						<div class="appointment-image">
-							<img src="img/contact-img.png" alt="#">
-						</div>
-					
-						<div class="work-hour">
-							<h3>Working Hours</h3>
-							<ul class="time-sidual">
-								<li class="day">Monday - Friday <span>8.00-20.00</span></li>
-								<li class="day">Saturday <span>9.00-18.30</span></li>
-								<li class="day">Sunday <span>9.00-15.00</span></li>
-							</ul>
-						</div>
-					</div>
-				</div>
-			</div>
-		</section>
-		
-		<footer id="footer" class="footer ">
-			
-			<div class="footer-top">
-				<div class="container">
-					<div class="row">
-						<div class="col-lg-3 col-md-6 col-12">
-							<div class="single-footer">
-								<h2>About Us</h2>
-								<p>Lorem ipsum dolor sit am consectetur adipisicing elit do eiusmod tempor incididunt ut labore dolore magna.</p>
-							
-								<ul class="social">
-									<li><a href="#"><i class="icofont-facebook"></i></a></li>
-									<li><a href="#"><i class="icofont-google-plus"></i></a></li>
-									<li><a href="#"><i class="icofont-twitter"></i></a></li>
-									<li><a href="#"><i class="icofont-vimeo"></i></a></li>
-									<li><a href="#"><i class="icofont-pinterest"></i></a></li>
-								</ul>
-								
-							</div>
-						</div>
-						<div class="col-lg-3 col-md-6 col-12">
-							<div class="single-footer f-link">
-								<h2>Quick Links</h2>
-								<div class="row">
-									<div class="col-lg-6 col-md-6 col-12">
-										<ul>
-											<li><a href="index.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Home</a></li>
-											<li><a href="doctors.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Doctors</a></li>
-											<li><a href="services.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Services</a></li>
-											<li><a href="contact.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Contact Us</a></li>	
-										</ul>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="col-lg-3 col-md-6 col-12">
-							<div class="single-footer">
-								<h2>Open Hours</h2>
-								<ul class="time-sidual">
-									<li class="day">Monday - Friday <span>8.00-20.00</span></li>
-									<li class="day">Saturday <span>9.00-18.30</span></li>
-									<li class="day">Sunday <span>9.00-15.00</span></li>
-								</ul>
-							</div>
-						</div>
-						<div class="col-lg-3 col-md-6 col-12">
-							<div class="single-footer">
-								<h2>Newsletter</h2>
-								<p>Subscribe to our newsletter to get all our news in your inbox.</p>
-								<form action="mail/mail.php" method="get" target="_blank" class="newsletter-inner">
-									<input name="email" placeholder="Email Address" class="common-input" type="email">
-									<button class="button"><i class="icofont icofont-paper-plane"></i></button>
-								</form>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-			
-			<div class="copyright">
-				<div class="container">
-					<div class="row">
-						<div class="col-lg-12 col-md-12 col-12">
-							<div class="copyright-content">
-								<p>© Copyright 2024 | All Rights Reserved</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		
-		</footer>
-		
-		
-		
+                    </div>
+                    
+                    <!-- Sidebar -->
+                    <div class="col-lg-4 col-md-12 col-12">
+                        <div class="appointment-image">
+                            <img src="img/contact-img.png" alt="#">
+                        </div>
+                    
+                        <div class="work-hour">
+                            <h3>Working Hours</h3>
+                            <ul class="time-sidual">
+                                <li class="day">Monday - Friday <span>8.00-17:00</span></li>
+                                
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Footer -->
+        <footer id="footer" class="footer">
+            <div class="footer-top">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 col-12">
+                            <div class="single-footer">
+                                <h2>About Us</h2>
+                                <p>Lorem ipsum dolor sit am consectetur adipisicing elit do eiusmod tempor incididunt ut labore dolore magna.</p>
+                            
+                                <ul class="social">
+                                    <li><a href="#"><i class="icofont-facebook"></i></a></li>
+                                    <li><a href="#"><i class="icofont-google-plus"></i></a></li>
+                                    <li><a href="#"><i class="icofont-twitter"></i></a></li>
+                                    <li><a href="#"><i class="icofont-vimeo"></i></a></li>
+                                    <li><a href="#"><i class="icofont-pinterest"></i></a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-12">
+                            <div class="single-footer f-link">
+                                <h2>Quick Links</h2>
+                                <div class="row">
+                                    <div class="col-lg-6 col-md-6 col-12">
+                                        <ul>
+                                            <li><a href="index.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Home</a></li>
+                                            <li><a href="doctors.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Doctors</a></li>
+                                            <li><a href="services.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Services</a></li>
+                                            <li><a href="contact.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Contact Us</a></li>    
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-12">
+                            <div class="single-footer">
+                                <h2>Open Hours</h2>
+                                <ul class="time-sidual">
+                                    <li class="day">Monday - Friday <span>8.00-20.00</span></li>
+                                    <li class="day">Saturday <span>9.00-18.30</span></li>
+                                    <li class="day">Sunday <span>9.00-15.00</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-12">
+                            <div class="single-footer">
+                                <h2>Newsletter</h2>
+                                <p>Subscribe to our newsletter to get all our news in your inbox.</p>
+                                <form action="mail/mail.php" method="get" target="_blank" class="newsletter-inner">
+                                    <input name="email" placeholder="Email Address" class="common-input" type="email">
+                                    <button class="button"><i class="icofont icofont-paper-plane"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12 col-12">
+                            <div class="copyright-content">
+                                <p>© Copyright 2024 | All Rights Reserved</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        
+        <!-- Core JS Files -->
         <script src="js/jquery.min.js"></script>
-		
-		<script src="js/jquery-migrate-3.0.0.js"></script>
-		
-		<script src="js/jquery-ui.min.js"></script>
-		
+        <script src="js/jquery-migrate-3.0.0.js"></script>
+        <script src="js/jquery-ui.min.js"></script>
         <script src="js/easing.js"></script>
-		
-		<script src="js/colors.js"></script>
-	
-		<script src="js/popper.min.js"></script>
-		
-		<script src="js/bootstrap-datepicker.js"></script>
-		
+        <script src="js/colors.js"></script>
+        <script src="js/popper.min.js"></script>
+        <script src="js/bootstrap-datepicker.js"></script>
         <script src="js/jquery.nav.js"></script>
-		
-		<script src="js/slicknav.min.js"></script>
-		
+        <script src="js/slicknav.min.js"></script>
         <script src="js/jquery.scrollUp.min.js"></script>
-	
-		<script src="js/niceselect.js"></script>
-		
-		<script src="js/tilt.jquery.min.js"></script>
-	
+        <script src="js/niceselect.js"></script>
+        <script src="js/tilt.jquery.min.js"></script>
         <script src="js/owl-carousel.js"></script>
-	
-		<script src="js/jquery.counterup.min.js"></script>
-
-		<script src="js/steller.js"></script>
-		
-		<script src="js/wow.min.js"></script>
-	
-		<script src="js/jquery.magnific-popup.min.js"></script>
-		
-		<script src="js/bootstrap.min.js"></script>
-		
-		<!-- FullCalendar Script -->
-		<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-		
-		<script src="js/main.js"></script>
-        <script src="js/auth-api.js"></script>
-        <script src="js/appointments/appointment-api.js" type="module"></script>
-        <script src="js/appointments/appointment-handler.js" type="module"></script>
-        <script>
-          document.addEventListener('DOMContentLoaded', async function() {
-            const el = document.getElementById('userGreeting');
-            const user = await getCurrentUserProfile();
-            const name = user?.first_name || user?.email?.split('@')[0] || 'Guest';
-            el.innerHTML = `<i class="fas fa-user-circle"></i> Hi, ${name}!`;
-            
-            // DIRECT API CALL - No dependencies on modules
-            console.log('Making direct fetch to backend API...');
-            try {
-              // Direct fetch to backend - this bypasses all module loading issues
-              const API_URL = 'http://localhost:5000/doctors';
-              console.log('Fetching from:', API_URL);
-              
-              const response = await fetch(API_URL);
-              console.log('Response status:', response.status);
-              
-              if (response.ok) {
-                const doctorsData = await response.json();
-                console.log('Direct API call successful:', doctorsData);
-                
-                // Store doctors globally so other functions can access them
-                window.allDoctors = Array.isArray(doctorsData) ? doctorsData : 
-                                   (doctorsData.doctors || []);
-                
-                // Display doctors in the dropdown
-                const doctorSuggestionsEl = document.getElementById('doctorSuggestions');
-                if (doctorSuggestionsEl && window.allDoctors.length > 0) {
-                  // Clear previous suggestions
-                  doctorSuggestionsEl.innerHTML = '';
-                  
-                  // Show a message about the doctors
-                  const messageEl = document.createElement('div');
-                  messageEl.className = 'alert alert-success mb-0';
-                  messageEl.textContent = `${window.allDoctors.length} doctors loaded successfully.`;
-                  document.getElementById('errorContainer').innerHTML = '';
-                  document.getElementById('errorContainer').appendChild(messageEl);
-                  
-                  // Add each doctor to the suggestions
-                  window.allDoctors.forEach(doctor => {
-                    const resultItem = document.createElement('div');
-                    resultItem.className = 'doctor-search-item';
-                    resultItem.dataset.id = doctor.id;
-                    
-                    const doctorName = document.createElement('span');
-                    doctorName.className = 'doctor-name';
-                    doctorName.textContent = `Dr. ${doctor.first_name} ${doctor.last_name}`;
-                    
-                    const doctorSpecialty = document.createElement('span');
-                    doctorSpecialty.className = 'doctor-specialty';
-                    doctorSpecialty.textContent = doctor.specialty;
-                    
-                    resultItem.appendChild(doctorName);
-                    resultItem.appendChild(doctorSpecialty);
-                    
-                    // Add click handler directly
-                    resultItem.addEventListener('click', function() {
-                      // Select this doctor
-                      selectDoctorDirectly(doctor);
-                    });
-                    
-                    doctorSuggestionsEl.appendChild(resultItem);
-                  });
-                  
-                  // Setup search functionality
-                  const doctorInputEl = document.getElementById('doctorInput');
-                  if (doctorInputEl) {
-                    doctorInputEl.addEventListener('input', function() {
-                      const searchText = this.value.toLowerCase().trim();
-                      const filteredDoctors = window.allDoctors.filter(doctor => {
-                        const fullName = `${doctor.first_name} ${doctor.last_name}`.toLowerCase();
-                        return fullName.includes(searchText) || 
-                               doctor.specialty.toLowerCase().includes(searchText);
-                      });
-                      
-                      // Clear suggestions
-                      doctorSuggestionsEl.innerHTML = '';
-                      
-                      // Add filtered doctors
-                      filteredDoctors.forEach(doctor => {
-                        const resultItem = document.createElement('div');
-                        resultItem.className = 'doctor-search-item';
-                        resultItem.dataset.id = doctor.id;
-                        
-                        const doctorName = document.createElement('span');
-                        doctorName.className = 'doctor-name';
-                        doctorName.textContent = `Dr. ${doctor.first_name} ${doctor.last_name}`;
-                        
-                        const doctorSpecialty = document.createElement('span');
-                        doctorSpecialty.className = 'doctor-specialty';
-                        doctorSpecialty.textContent = doctor.specialty;
-                        
-                        resultItem.appendChild(doctorName);
-                        resultItem.appendChild(doctorSpecialty);
-                        
-                        // Add click handler directly
-                        resultItem.addEventListener('click', function() {
-                          // Select this doctor
-                          selectDoctorDirectly(doctor);
-                        });
-                        
-                        doctorSuggestionsEl.appendChild(resultItem);
-                      });
-                      
-                      // Show the suggestions
-                      doctorSuggestionsEl.classList.remove('hidden');
-                    });
-                    
-                    // Show all doctors when input is focused
-                    doctorInputEl.addEventListener('focus', function() {
-                      // Show all doctors
-                      doctorSuggestionsEl.classList.remove('hidden');
-                    });
-                  }
-                }
-              } else {
-                const errorData = await response.text();
-                console.error('Error response from API:', errorData);
-                
-                // Show error message
-                const messageEl = document.createElement('div');
-                messageEl.className = 'alert alert-danger mb-0';
-                messageEl.textContent = `Failed to load doctors: ${response.status} ${response.statusText}`;
-                document.getElementById('errorContainer').innerHTML = '';
-                document.getElementById('errorContainer').appendChild(messageEl);
-              }
-            } catch (error) {
-              console.error('Error making direct API call:', error);
-              
-              // Show error message
-              const messageEl = document.createElement('div');
-              messageEl.className = 'alert alert-danger mb-0';
-              messageEl.textContent = `Error connecting to backend: ${error.message}`;
-              document.getElementById('errorContainer').innerHTML = '';
-              document.getElementById('errorContainer').appendChild(messageEl);
-            }
-            
-            // Try normal initialization as fallback
-            if (typeof window.initAppointmentHandler === 'function') {
-              window.initAppointmentHandler();
-            }
-            
-            // Customize FullCalendar to remove month view
-            if (typeof FullCalendar !== 'undefined') {
-              const calendarEl = document.getElementById('calendar');
-              if (calendarEl) {
-                const calendar = new FullCalendar.Calendar(calendarEl, {
-                  initialView: 'timeGridWeek',
-                  headerToolbar: { 
-                    left: 'prev,next today', 
-                    center: 'title', 
-                    right: 'timeGridDay,timeGridWeek' // Removed dayGridMonth
-                  },
-                  height: 'auto',
-                  slotMinTime: '08:00:00',
-                  slotMaxTime: '17:00:00',
-                  slotDuration: '01:00:00', // 1-hour slots instead of default 30 minutes
-                  selectable: true,
-                  events: [],
-                  eventClassNames: function(arg) {
-                    // Add specific classes based on availability
-                    return arg.event.extendedProps.isAvailable ? 
-                      ['available-slot'] : ['booked-slot'];
-                  },
-                  eventContent: function(arg) {
-                    // Customize the appearance of events in the calendar
-                    const isAvailable = arg.event.extendedProps.isAvailable;
-                    
-                    // Create a custom element for the event
-                    const content = document.createElement('div');
-                    content.classList.add('fc-event-content');
-                    
-                    if (isAvailable) {
-                      content.innerHTML = `
-                        <div style="text-align: center; padding: 2px;">
-                          <span style="font-size: 0.9em; font-weight: bold;">Available</span>
-                        </div>
-                      `;
-                      content.style.cursor = 'pointer';
-                    } else {
-                      content.innerHTML = `
-                        <div style="text-align: center; padding: 2px;">
-                          <span style="font-size: 0.9em;">Booked</span>
-                        </div>
-                      `;
-                    }
-                    
-                    return { domNodes: [content] };
-                  }
-                });
-                
-                calendar.render();
-                window.customCalendar = calendar; // Store reference for later use
-              }
-            }
-          });
-          
-          // Direct function to select a doctor (no dependencies)
-          function selectDoctorDirectly(doctor) {
-            console.log('Selecting doctor directly:', doctor);
-            
-            // Store selected doctor
-            window.selectedDoctor = doctor;
-            
-            // Update input field
-            const doctorInputEl = document.getElementById('doctorInput');
-            if (doctorInputEl) {
-              doctorInputEl.value = `Dr. ${doctor.first_name} ${doctor.last_name}`;
-            }
-            
-            // Update doctor info display
-            const doctorInfoEl = document.getElementById('doctorInfo');
-            if (doctorInfoEl) {
-              const doctorNameEl = doctorInfoEl.querySelector('.doctor-name');
-              const doctorSpecialtyEl = doctorInfoEl.querySelector('.doctor-specialty');
-              
-              if (doctorNameEl) {
-                doctorNameEl.textContent = `Dr. ${doctor.first_name} ${doctor.last_name}`;
-              }
-              
-              if (doctorSpecialtyEl) {
-                doctorSpecialtyEl.textContent = `(${doctor.specialty})`;
-              }
-              
-              // Show doctor info
-              doctorInfoEl.classList.remove('hidden');
-            }
-            
-            // Hide suggestions
-            const doctorSuggestionsEl = document.getElementById('doctorSuggestions');
-            if (doctorSuggestionsEl) {
-              doctorSuggestionsEl.classList.add('hidden');
-            }
-            
-            // Show calendar
-            const calendarContainer = document.getElementById('calendarContainer');
-            if (calendarContainer) {
-              calendarContainer.classList.remove('hidden');
-            }
-            
-            // Update summary
-            updateSummaryDirectly();
-          }
-          
-          // Direct function to update appointment summary (no dependencies)
-          function updateSummaryDirectly() {
-            const summaryDoctorEl = document.getElementById('summaryDoctor');
-            const summaryDepartmentEl = document.getElementById('summaryDepartment');
-            
-            // Update doctor
-            if (summaryDoctorEl && window.selectedDoctor) {
-              summaryDoctorEl.textContent = `Dr. ${window.selectedDoctor.first_name} ${window.selectedDoctor.last_name}`;
-            }
-            
-            // Update department/specialty
-            if (summaryDepartmentEl && window.selectedDoctor) {
-              summaryDepartmentEl.textContent = window.selectedDoctor.specialty;
-            }
-          }
-        </script>
+        <script src="js/jquery.counterup.min.js"></script>
+        <script src="js/steller.js"></script>
+        <script src="js/wow.min.js"></script>
+        <script src="js/jquery.magnific-popup.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        
+        <!-- FullCalendar Script -->
+        <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+        
+        <!-- Custom JS -->
+        <script src="js/main.js"></script>
+        <script src="js/auth.js"></script>
+        
+        <!-- Appointment-specific JS - now using single unified file -->
+        <script src="js/appointments/appointments.js"></script>
     </body>
 </html>
