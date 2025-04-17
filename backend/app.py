@@ -25,7 +25,7 @@ jwt = JWTManager(app)
 
 # Initialize database
 from services.db import init_db
-db =init_db(app)  # Initialize with our Flask app
+db =init_db(app,True)  # Initialize with our Flask app
 
 @jwt.user_identity_loader
 def user_identity_lookup(user):
@@ -228,23 +228,35 @@ def get_caregiver_emergency_alerts():
     return CaregiverController.get_emergency_alerts()
 
 # Messaging routes
-@app.route('/messages', methods=['POST'])
+@app.route('/messages/contacts', methods=['GET'])
+@jwt_required()
+def get_messaging_contacts_route():
+    """Get all contacts the user can message (doctors, nurses, patients)"""
+    return MessagingController.get_messaging_contacts()
+
+@app.route('/messages/<int:contact_id>', methods=['GET'])
+@jwt_required()
+def get_messages_with_contact_route(contact_id):
+    """Get all messages between current user and the specified contact"""
+    return MessagingController.get_messages_with_contact(contact_id)
+
+@app.route('/messages/send', methods=['POST'])
 @jwt_required()
 def send_message_route():
     """Send a message to another user"""
     return MessagingController.send_message()
 
-@app.route('/messages/conversations', methods=['GET'])
+@app.route('/messages/mark-read/<int:contact_id>', methods=['POST'])
 @jwt_required()
-def get_conversations_route():
-    """Get all conversations for the current user"""
-    return MessagingController.get_conversations()
+def mark_messages_as_read_route(contact_id):
+    """Mark all messages from a contact as read"""
+    return MessagingController.mark_messages_as_read(contact_id)
 
-@app.route('/messages/<int:user_id>', methods=['GET'])
+@app.route('/messages/unread-count', methods=['GET'])
 @jwt_required()
-def get_messages_route(user_id):
-    """Get all messages between the current user and another user"""
-    return MessagingController.get_messages(user_id)
+def get_unread_message_count_route():
+    """Get the count of unread messages"""
+    return MessagingController.get_unread_message_count()
 
 # Notification routes
 @app.route('/notifications', methods=['GET'])
