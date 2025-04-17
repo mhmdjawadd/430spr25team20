@@ -1,5 +1,3 @@
-
-
 <!doctype html>
 <html class="no-js" lang="zxx">
     <head>
@@ -56,6 +54,63 @@
         color: #0066cc;
         text-decoration: underline;
     }
+    
+    /* Nav menu user greeting */
+    .nav.menu .user-greeting {
+        display: inline-flex;
+        align-items: center;
+        color: #1A76D1;
+        margin-left: auto; /* push to right */
+    }
+    .nav.menu .user-greeting i {
+        margin-right: 5px;
+    }
+
+	.message-widget {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #0066cc;
+      color: white;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: background-color 0.3s;
+	  font-size: 30px; 
+    }
+
+    .message-widget a {
+      color: white;
+      font-size: 24px;
+      text-decoration: none;
+    }
+
+    .message-widget:hover {
+      background-color: #005bb5;
+    }
+
+    .message-widget i {
+      font-size: 24px;
+    }
+
+    /* Align nav menu items inline */
+    .navigation .nav.menu {
+        display: flex;
+        align-items: center;
+    }
+    .navigation .nav.menu li {
+        margin: 0 8px;
+    }
+    .navigation .nav.menu .user-greeting {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+    }
         </style>
 		
     </head>
@@ -75,54 +130,57 @@
                 </div>
             </div>
         </div>
-        
+        <!-- Widget HTML -->
+<div class="message-widget">
+  <a href="messages.html">
+    <i class="fas fa-comments"></i> Chat with Doctor
+  </a>
+</div>
 		<header class="header">
-		
-			<div class="header-inner">
-				<div class="container">
-					<div class="inner">
-						<div class="row">
-							<div class="col-lg-3 col-md-3 col-12">
-								
-								<div class="logo">
-									<a href="index.html"><img src="img/nabad.png" alt="#"></a>
-								</div>
-								
-								<div class="mobile-nav"></div>
-								
-							</div>
-							<div class="col-lg-9 col-md-9 col-12">
-								
-								<div class="main-menu">
-									<nav class="navigation">
-										<ul class="nav menu">
-											<li><a href="doctors.html">Doctors</a></li>
-											<li><a href="services.html">Services</a></li>
-											<li><a href="appointments.html">Book Appointment</a></li>
-											<li><a href="contact.html">Contact Us</a></li>
-											<li class="reminder-icon">
-												<a href="reminder-preferences.html">
-													<i class="fa fa-bell"></i>
-													<span class="reminder-tooltip"></span>
-												</a>
-											</li>
-                                            <li></li><a href="login.html" class="logout-btn" onclick="handleLogout()">
-                                                <i class="fas fa-door-open"></i> 
-                                            </a></li>
-`										</ul>
-									</nav>
-								</div>
-							
-								
-								
-								
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-			
-		</header>
+    <div class="header-inner">
+        <div class="container">
+            <div class="inner">
+                <div class="row">
+                    <div class="col-lg-3 col-md-3 col-12">
+                        
+                        <div class="logo">
+                            <a href="index.html"><img src="img/nabad.png" alt="#"></a>
+                        </div>
+                        
+                        <div class="mobile-nav"></div>
+                        
+                    </div>
+                    <div class="col-lg-9 col-md-9 col-12">
+                        
+                        <div class="main-menu">
+                            <nav class="navigation">
+                                <ul class="nav menu">
+                                    <li><a href="doctors.html">Doctors</a></li>
+                                    <li><a href="services.html">Services</a></li>
+                                    <li><a href="appointments.html">Book Appointment</a></li>
+                                    <li><a href="contact.html">Contact Us</a></li>
+                                    <li class="reminder-icon">
+                                        <a href="reminder-preferences.html">
+                                            <i class="fa fa-bell"></i>
+                                            <span class="reminder-tooltip"></span>
+                                        </a>
+                                    </li>
+                                    <li><a href="login.html" class="logout-btn" onclick="handleLogout()">
+                                        <i class="fas fa-door-open"></i> 
+                                    </a></li>
+                                    <li class="nav-item user-greeting">
+                                        <span id="userGreeting"></span>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</header>
 		
 		<section class="slider">
 			<div class="hero-slider">
@@ -683,7 +741,11 @@
 					</div>
 				</div>
 			</div>
-		
+			<div class="message-widget">
+				<a href="./messaging.html">
+				  <i class="fas fa-comments" ></i> Chat with Doctor
+				</a>
+			  </div>
 			<div class="copyright">
 				<div class="container">
 					<div class="row">
@@ -739,11 +801,63 @@
 		<script src="js/bootstrap.min.js"></script>
 		
 		<script src="js/main.js"></script>
+		<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+		<script src="js/auth-api.js"></script>
+		<script>
+			// Replace greeting logic to fetch from backend
+			document.addEventListener('DOMContentLoaded', async function() {
+				const userGreetingElement = document.getElementById('userGreeting');
+				const user = await getCurrentUserProfile();
+				let displayName;
+				if (user && user.first_name) {
+					displayName = user.first_name;
+				} else if (user && user.email) {
+					displayName = user.email.split('@')[0];
+				} else {
+					displayName = 'Guest';
+				}
+				userGreetingElement.innerHTML = `<i class="fas fa-user-circle"></i> Hi, ${displayName}!`;
+				console.log('User profile loaded:', user);
+			});
+		</script>
+		<script>
+			// Add this function to show user data when needed
+			function checkUserData() {
+				const token = localStorage.getItem('authToken');
+				const userData = localStorage.getItem('user');
+				
+				console.log('Current authToken:', token);
+				console.log('Current user data:', userData ? JSON.parse(userData) : null);
+				
+				// If we have a token, also decode and show payload
+				if (token) {
+					try {
+						const parts = token.split('.');
+						if (parts.length === 3) {
+							const payload = parts[1];
+							const decodedPayload = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+							console.log('Token payload decoded:', JSON.parse(decodedPayload));
+						}
+					} catch (e) {
+						console.error('Failed to decode token:', e);
+					}
+				}
+				
+				return 'Check browser console for user data details';
+			}
+			
+			// Optional: Run the check automatically when page loads
+			document.addEventListener('DOMContentLoaded', function() {
+				checkUserData();
+			});
+		</script>
     </body>
 </html> 
 <script>
      function handleLogout() {
             if (confirm('Are you sure you want to logout?')) {
+                // Use the logoutUser function to delete token
+                logoutUser();
                 showNotification('Logging out...');
                 
                 setTimeout(() => {

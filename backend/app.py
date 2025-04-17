@@ -49,6 +49,17 @@ def signup_route():
     """User registration endpoint"""
     return AuthController.signup()
 
+# Endpoint to get current user's ID
+@app.route('/api/auth/me', methods=['GET'])
+@jwt_required()
+def get_current_user_id():
+    """Returns the ID of the currently authenticated user."""
+    current_user_id = get_jwt_identity()
+    if not current_user_id:
+        # This case should ideally not be reached if @jwt_required() works correctly
+        return jsonify({"error": "Authentication token is invalid or missing"}), 401
+    return jsonify({"user_id": current_user_id}), 200
+
 # Doctor routes
 @app.route('/doctors', methods=['GET', 'OPTIONS'])
 @jwt_required(optional=True)
@@ -315,6 +326,24 @@ def get_specialists_list_route():
 def add_message_to_referral_route(referral_id):
     """Add a communication message to an existing referral"""
     return ReferralController.add_message_to_referral(referral_id)
+
+# User profile route
+@app.route('/user/profile', methods=['GET'])
+@jwt_required()
+def user_profile():
+    """Return profile info for current user"""
+    from flask import jsonify
+    from models.user import User
+    user_id = get_jwt_identity()
+    user = User.query.get(int(user_id))
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    return jsonify({
+        'user_id': user.user_id,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'email': user.email
+    })
 
 if __name__ == "__main__":
     app.run(debug=True)

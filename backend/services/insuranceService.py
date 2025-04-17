@@ -62,7 +62,7 @@ class InsuranceController:
     @jwt_required()
     def update_patient_insurance():
         """
-        Update or create insurance information for a patient
+        Update or create insurance information for a patient, including detailed fields.
         """
         # Get the current user
         current_user_id = get_jwt_identity()
@@ -87,46 +87,71 @@ class InsuranceController:
         if not patient:
             return jsonify({"error": "Patient record not found"}), 404
             
-        # Validate required fields
-        required_fields = ["coverage_type", "provider_name", "policy_number"]
+        # Validate required fields - provider_name and policy_number might be optional if coverage_type is NONE
+        required_fields = ["coverage_type"]
+        if data.get("coverage_type") != "NONE":
+            required_fields.extend(["provider_name", "policy_number"])
+
         for field in required_fields:
-            if field not in data:
+            if field not in data or not data[field]: # Check for presence and non-empty value
+                # Allow NONE coverage type without provider/policy
+                if field in ["provider_name", "policy_number"] and data.get("coverage_type") == "NONE":
+                    continue
                 return jsonify({"error": f"Missing required field: {field}"}), 400
-                
+
         # Validate coverage type
         try:
-            coverage_type = InsuranceCoverage[data["coverage_type"].upper()]
+            # Handle potential None value for coverage_type if allowed, otherwise default or raise error
+            coverage_input = data.get("coverage_type", "NONE") # Default to NONE if not provided
+            coverage_type = InsuranceCoverage[coverage_input.upper()]
         except KeyError:
             valid_types = ", ".join([t.name for t in InsuranceCoverage])
             return jsonify({"error": f"Invalid coverage type. Valid types: {valid_types}"}), 400
-            
+        except AttributeError:
+             return jsonify({"error": "Coverage type must be a string"}), 400
+
+
         # Create or update insurance record
         insurance = Insurance.query.get(patient.patient_id)
         if not insurance:
-            insurance = Insurance(
-                patient_id=patient.patient_id,
-                coverage_type=coverage_type,
-                provider_name=data["provider_name"],
-                policy_number=data["policy_number"]
-            )
+            insurance = Insurance(patient_id=patient.patient_id)
             db.session.add(insurance)
-        else:
-            insurance.coverage_type = coverage_type
-            insurance.provider_name = data["provider_name"]
-            insurance.policy_number = data["policy_number"]
-            
+
+        # Update all fields from the request data
+        insurance.coverage_type = coverage_type
+        # Set provider/policy to None if coverage is NONE, otherwise use provided data
+        insurance.provider_name = data.get("provider_name") if coverage_type != InsuranceCoverage.NONE else None
+        insurance.policy_number = data.get("policy_number") if coverage_type != InsuranceCoverage.NONE else None
+        insurance.group_number = data.get("group_number") # Optional field
+        insurance.policy_holder_name = data.get("policy_holder_name") # Optional field
+        insurance.coverage_start_date = data.get("coverage_start_date") # Optional field, ensure frontend sends YYYY-MM-DD
+        insurance.coverage_end_date = data.get("coverage_end_date") # Optional field, ensure frontend sends YYYY-MM-DD
+        insurance.front_card_image = data.get("front_card_image") # Optional field (Base64 string)
+        insurance.back_card_image = data.get("back_card_image") # Optional field (Base64 string)
+
+
         try:
             db.session.commit()
+            # Return more detailed insurance info
             return jsonify({
                 "message": "Insurance information updated successfully",
                 "insurance": {
-                    "provider": insurance.provider_name,
+                    "patient_id": insurance.patient_id,
+                    "coverage_type": insurance.coverage_type.name,
+                    "provider_name": insurance.provider_name,
                     "policy_number": insurance.policy_number,
-                    "coverage_type": insurance.coverage_type.name
+                    "group_number": insurance.group_number,
+                    "policy_holder_name": insurance.policy_holder_name,
+                    "coverage_start_date": str(insurance.coverage_start_date) if insurance.coverage_start_date else None,
+                    "coverage_end_date": str(insurance.coverage_end_date) if insurance.coverage_end_date else None,
+                    "has_front_card_image": bool(insurance.front_card_image), # Indicate if image exists
+                    "has_back_card_image": bool(insurance.back_card_image)   # Indicate if image exists
                 }
             }), 200
         except Exception as e:
             db.session.rollback()
+            # Provide more specific error logging on the server side if needed
+            print(f"Error updating insurance: {e}") # Log the error server-side
             return jsonify({"error": f"Failed to update insurance: {str(e)}"}), 500
             
     @staticmethod

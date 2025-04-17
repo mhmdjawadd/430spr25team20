@@ -90,18 +90,32 @@ async function getAvailableTimeSlots(doctorId, date) {
  */
 async function bookAppointment(appointmentData) {
     try {
+        console.log('Sending appointment data:', JSON.stringify(appointmentData));
+        
+        // Debug token availability - using consistent key name 'token'
+        const token = localStorage.getItem('token');
+        console.log('JWT Token available:', token ? 'Yes' : 'No (null or empty)');
+        
+        if (!token) {
+            console.error('No JWT token found in localStorage. User may not be logged in.');
+            throw new Error('Authentication required. Please log in to book an appointment.');
+        }
+        
         const response = await fetch(`${API_BASE_URL}/appointments`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(appointmentData)
         });
         
+        console.log('Received status:', response.status);
+        
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to book appointment');
+            console.error('API error details:', errorData);
+            throw new Error(errorData.error || errorData.message || 'Failed to book appointment');
         }
         
         return await response.json();
@@ -111,13 +125,48 @@ async function bookAppointment(appointmentData) {
     }
 }
 
+/**
+ * Check insurance coverage for a specific doctor
+ * @param {number} doctorId - The ID of the doctor
+ * @returns {Promise} Promise object represents insurance coverage details
+ */
+async function checkInsuranceCoverage(doctorId) {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('Authentication required for insurance verification');
+        }
+        
+        const url = `${API_BASE_URL}/insurance/verify`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ doctor_id: doctorId })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to verify insurance');
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Error checking insurance coverage:', error);
+        throw error;
+    }
+}
+
 // Export the functions for ES modules
-export { getAllDoctors, getAvailableDoctors, getAvailableTimeSlots, bookAppointment };
+export { getAllDoctors, getAvailableDoctors, getAvailableTimeSlots, bookAppointment, checkInsuranceCoverage };
 
 // Also make them available on window for non-module scripts
 window.appointmentAPI = {
     getAllDoctors,
     getAvailableDoctors,
     getAvailableTimeSlots,
-    bookAppointment
+    bookAppointment,
+    checkInsuranceCoverage
 };

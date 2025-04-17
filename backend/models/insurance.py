@@ -1,4 +1,4 @@
-from sqlalchemy import  Column, Integer, String, ForeignKey, JSON, Boolean , Enum
+from sqlalchemy import  Column, Integer, String, ForeignKey, JSON, Boolean, Enum, Date, Text
 from sqlalchemy.orm import relationship
 import enum
 from .base import * 
@@ -16,6 +16,12 @@ class Insurance(Base):
     coverage_type = Column(Enum(InsuranceCoverage), nullable=False)
     provider_name = Column(String(100), nullable=True)  # Added provider name
     policy_number = Column(String(50), nullable=True)   # Added policy number
+    group_number = Column(String(50), nullable=True)    # Added group number
+    policy_holder_name = Column(String(100), nullable=True)  # Added policy holder name
+    coverage_start_date = Column(Date, nullable=True)   # Added coverage start date
+    coverage_end_date = Column(Date, nullable=True)     # Added coverage end date
+    front_card_image = Column(Text, nullable=True)      # Base64 encoded image for front of card
+    back_card_image = Column(Text, nullable=True)       # Base64 encoded image for back of card
         
     # Relationships - explicitly define foreign keys
     patient = relationship("Patient", back_populates="insurance", foreign_keys=[patient_id])

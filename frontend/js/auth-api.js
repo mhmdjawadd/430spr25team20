@@ -48,9 +48,9 @@ async function loginUser(email, password) {
             throw new Error(data.error || data.message || 'Login failed');
         }
         
-        // Save auth token and user data to localStorage
+        // Save auth token and user data to localStorage - updated key name
         if (data.access_token) {
-            localStorage.setItem('authToken', data.access_token);
+            localStorage.setItem('token', data.access_token);
             
             // Extract user data from token and/or response
             let userData = data.user || {};
@@ -99,9 +99,9 @@ async function registerUser(userData) {
             throw new Error(data.error || data.message || 'Registration failed');
         }
         
-        // Save auth token and user data to localStorage
+        // Save auth token and user data to localStorage - updated key name
         if (data.access_token) {
-            localStorage.setItem('authToken', data.access_token);
+            localStorage.setItem('token', data.access_token);
             
             // Store comprehensive user data
             // First try to use data from response
@@ -139,7 +139,7 @@ async function registerUser(userData) {
  * @returns {boolean} - Whether the user has a valid auth token
  */
 function isAuthenticated() {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     return !!token; // Convert to boolean
 }
 
@@ -148,7 +148,7 @@ function isAuthenticated() {
  * @returns {Promise<object|null>} - User data or null if not logged in
  */
 async function getCurrentUserProfile() {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     if (!token) return null;
     
     // Try to get user from localStorage first
@@ -189,42 +189,18 @@ async function getCurrentUserProfile() {
 }
 
 /**
- * Get the current user data from localStorage
- * @returns {object|null} - User data or null if not logged in
+ * Get current user data from localStorage
+ * @returns {object|null} - Parsed user data or null
  */
 function getCurrentUser() {
     const userJson = localStorage.getItem('user');
-    if (!userJson) return null;
-    
-    const userData = JSON.parse(userJson);
-    
-    // If we have a token but missing user info, try to extract from token
-    if ((!userData.first_name || !userData.last_name) && localStorage.getItem('authToken')) {
-        const token = localStorage.getItem('authToken');
-        const tokenPayload = parseJwt(token);
-        
-        // Update user data with info from token
-        const updatedUserData = {
-            ...userData,
-            user_id: userData.user_id || tokenPayload.sub,
-            email: userData.email || tokenPayload.email,
-            first_name: userData.first_name || tokenPayload.first_name || userData.email.split('@')[0], // Use email username as fallback
-            last_name: userData.last_name || tokenPayload.last_name || '',
-            role: userData.role || tokenPayload.role
-        };
-        
-        // Save the updated user data
-        localStorage.setItem('user', JSON.stringify(updatedUserData));
-        return updatedUserData;
-    }
-    
-    return userData;
+    return userJson ? JSON.parse(userJson) : null;
 }
 
 /**
  * Log out the current user
  */
 function logoutUser() {
-    localStorage.removeItem('authToken');
+    localStorage.removeItem('token');
     localStorage.removeItem('user');
 }

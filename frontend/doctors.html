@@ -54,6 +54,20 @@
 			color: #0066cc;
 			text-decoration: underline;
 		}
+		/* Nav menu user greeting (same as index) */
+		.nav.menu .user-greeting {
+			display: inline-flex;
+			align-items: center;
+			color: #1A76D1;
+			margin-left: auto;
+		}
+		.nav.menu .user-greeting i {
+			margin-right: 5px;
+		}
+		.navigation .nav.menu {
+			display: flex;
+			align-items: center;
+		}
 		</style>
     </head>
     <body>
@@ -103,9 +117,11 @@
 													<span class="reminder-tooltip"></span>
 												</a>
 											</li>
-											<li></li><a href="login.html" class="logout-btn" onclick="handleLogout()">
+											
+											<li><a href="login.html" class="logout-btn" onclick="handleLogout()">
                                                 <i class="fas fa-door-open"></i> 
                                             </a></li>
+											<li class="user-greeting"><span id="userGreeting"></span></li>
 										</ul>
 									</nav>
 								</div>
@@ -328,6 +344,15 @@
 		<script src="js/bootstrap.min.js"></script>
 		
 		<script src="js/main.js"></script>
+		<script src="js/auth-api.js"></script>
+		<script>
+		  document.addEventListener('DOMContentLoaded', async function() {
+			const el = document.getElementById('userGreeting');
+			const user = await getCurrentUserProfile();
+			let name = user?.first_name || user?.email?.split('@')[0] || 'Guest';
+			el.innerHTML = `<i class="fas fa-user-circle"></i> Hi, ${name}!`;
+		  });
+		</script>
 
 		
 		<div class="modal" id="appointmentModal">
@@ -496,4 +521,4 @@
 		}
 		</script>
     </body>
-</html> 
+</html>

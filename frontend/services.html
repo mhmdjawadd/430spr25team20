@@ -47,7 +47,7 @@
         font-size: 16px;
         font-weight: 500;
         transition: color 0.3s;
-        margin-top: 20px;
+        margin-top: 0;
     }
 
     .logout-btn:hover {
@@ -55,27 +55,19 @@
         text-decoration: underline;
     }
     
-    /* User greeting styles */
-    .user-greeting {
-        background-color: #1A76D1;
-        color: white;
-        padding: 10px 0;
-        text-align: right;
-    }
-    
-    .user-greeting .container {
-        display: flex;
-        justify-content: flex-end;
+    /* Nav menu user greeting (same as index) */
+    .nav.menu .user-greeting {
+        display: inline-flex;
         align-items: center;
+        color: #1A76D1;
+        margin-left: auto;
     }
-    
-    #userGreeting {
-        font-size: 16px;
-        font-weight: 500;
-    }
-    
-    #userGreeting i {
+    .nav.menu .user-greeting i {
         margin-right: 5px;
+    }
+    .navigation .nav.menu {
+        display: flex;
+        align-items: center;
     }
 		</style>
 		
@@ -98,14 +90,6 @@
         </div>
         
 		<header class="header">
-		
-			<div class="user-greeting">
-				<div class="container">
-					<div id="userGreeting">
-						<!-- User greeting will be inserted here via JavaScript -->
-					</div>
-				</div>
-			</div>
 			
 			<div class="header-inner">
 				<div class="container">
@@ -136,9 +120,13 @@
 													<span class="reminder-tooltip"></span>
 												</a>
 											</li>
-											<li></li><a href="login.html" class="logout-btn" onclick="handleLogout()">
+											
+											<li><a href="login.html" class="logout-btn" onclick="handleLogout()">
                                                 <i class="fas fa-door-open"></i> 
                                             </a></li>
+                                            <li class="nav-item user-greeting">
+                                                <span id="userGreeting"></span>
+                                            </li>
 										</ul>
 									</nav>
 								</div>
@@ -183,18 +171,20 @@
 					<div class="col-lg-4 col-md-6 col-12">
 						
 						<div class="single-service">
-							<i class="icofont icofont-prescription"></i>
-							<h4><a href="service-details.html">Primary Care</a></h4>
-							<p>Comprehensive primary healthcare services including preventive care, health screenings, and management of chronic conditions.</p>	
+							<i class="icofont icofont-comments"></i>
+							<h4><a href="messaging.html">Messaging</a></h4>
+							<p>Chat with healthcare professionals anytime for instant advice and support.</p>
+							<a href="messaging.html" class="btn" style="background-color: #1A76D1; color: white; padding: 10px 20px; margin-top: 15px; display: inline-block; border-radius: 4px;">Go to Messaging Portal</a>	
 						</div>
 					
 					</div>
 					<div class="col-lg-4 col-md-6 col-12">
 				
-						<div class="single-service">
-							<i class="icofont icofont-tooth"></i>
-							<h4><a href="service-details.html">Dental Care</a></h4>
-							<p>Complete dental services including cleanings, fillings, crowns, implants, and cosmetic dentistry using advanced dental technology.</p>	
+						<div class="single-service" style="min-height: 350px;">
+							<i class="icofont icofont-doctor"></i>
+							<h4><a href="insurance-portal.html">Insurance</a></h4>
+							<p>Access our comprehensive insurance portal to manage your healthcare coverage, review benefits, submit claims, check claim status, and connect with insurance representatives.</p>
+							<a href="insurance-portal.html" class="btn" style="background-color: #1A76D1; color: white; padding: 10px 20px; margin-top: 15px; display: inline-block; width: 80%; text-align: center; border-radius: 4px;">Access Insurance Portal</a>	
 						</div>
 					
 					</div>
@@ -366,29 +356,19 @@
 		<script src="js/main.js"></script>
 		<script src="js/auth-api.js"></script>
 		<script>
-			document.addEventListener('DOMContentLoaded', function() {
-				const userGreetingElement = document.getElementById('userGreeting');
-				
-				// Try to get the current user data
-				const currentUser = getCurrentUser();
-				
-				if (currentUser) {
-					// Set display name with better fallbacks
-					let displayName;
-					if (currentUser.first_name) {
-						displayName = currentUser.first_name;
-					} else if (currentUser.email) {
-						// Use part of the email before @ as a friendly name
-						displayName = currentUser.email.split('@')[0];
-					} else {
-						displayName = "User";
-					}
-					userGreetingElement.innerHTML = `<i class="fas fa-user-circle"></i> Hi, ${displayName}!`;
-				} else {
-					// Default greeting if no user data at all
-					userGreetingElement.innerHTML = `<i class="fas fa-user-circle"></i> Hi, Guest!`;
-				}
-			});
+		  document.addEventListener('DOMContentLoaded', async function() {
+			const userGreetingElement = document.getElementById('userGreeting');
+			const user = await getCurrentUserProfile();
+			let displayName;
+			if (user && user.first_name) {
+			  displayName = user.first_name;
+			} else if (user && user.email) {
+			  displayName = user.email.split('@')[0];
+			} else {
+			  displayName = 'Guest';
+			}
+			userGreetingElement.innerHTML = `<i class="fas fa-user-circle"></i> Hi, ${displayName}!`;
+		  });
 		</script>
 		<script>
 			function handleLogout() {

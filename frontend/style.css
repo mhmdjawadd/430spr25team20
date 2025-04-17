@@ -1,6 +1,6 @@
-
 body{
     font-family: 'Poppins', sans-serif;
+	font-weight: 400;
 	font-weight: 400;
 	font-size:14px;
 	color:#888;
@@ -4331,4 +4331,15 @@ input[type="time"] {
         width: 90%;
         margin: 20px auto;
     }
+}
+
+/* Align logout button icon and text vertically */
+.logout-btn {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    margin-top: 0; /* ensure no extra top margin */
+}
+.logout-btn i {
+    margin-right: 5px; /* space between icon and link text */
 }

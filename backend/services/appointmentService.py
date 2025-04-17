@@ -116,7 +116,7 @@ class AppointmentController:
                 insurance_verified=initial_appointment.insurance_verified,
                 insurance_coverage_amount=initial_appointment.insurance_coverage_amount,
                 patient_responsibility=initial_appointment.patient_responsibility,
-                billing_status="pending"
+                
             )
             recurring_appointments.append(new_appt)
             
@@ -286,7 +286,7 @@ class AppointmentController:
             insurance_verified=insurance_verified,
             insurance_coverage_amount=insurance_coverage_amount,
             patient_responsibility=patient_responsibility,
-            billing_status="pending"
+           
         )
         
         try:
@@ -349,9 +349,9 @@ class AppointmentController:
                 "appointment_id": new_appointment.appointment_id,
                 "appointment_date": new_appointment.date_time.strftime("%Y-%m-%d %H:%M"),
                 "doctor_name": f"Dr. {doctor.user.first_name} {doctor.user.last_name}",
-                "status": new_appointment.status.name,
+                
                 "insurance": insurance_info,
-                "billing_status": new_appointment.billing_status,
+                
                 "recurring_appointments": recurring_info
             }), 201
             
@@ -399,7 +399,7 @@ class AppointmentController:
             appointments_list.append({
                 "appointment_id": appt.appointment_id,
                 "date_time": appt.date_time.strftime("%Y-%m-%d %H:%M"),
-                "status": appt.status.name,
+                
                 "doctor_name": appt.doctor.user.full_name() if hasattr(appt.doctor, 'user') else "Unknown"
             })
             
@@ -531,7 +531,7 @@ class AppointmentController:
                         insurance_verified=last_appointment.insurance_verified,
                         insurance_coverage_amount=last_appointment.insurance_coverage_amount,
                         patient_responsibility=last_appointment.patient_responsibility,
-                        billing_status="pending"
+                        
                     )
                     
                     db.session.add(new_appointment)
