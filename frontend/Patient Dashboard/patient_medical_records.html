@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Records | Patient Dashboard</title>
+    <link rel="stylesheet" href="css/patient_dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <h2>Nabad</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="patient_dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="patient_appointments.html"><i class="fas fa-calendar-check"></i> My Appointments</a></li>
+                <li class="active"><a href="patient_medical_records.html"><i class="fas fa-file-medical"></i> Medical Records</a></li>
+                <li><a href="patient_prescriptions.html"><i class="fas fa-prescription"></i> Prescriptions</a></li>
+                <li><a href="patient_messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
+                <li><a href="find_doctor.html"><i class="fas fa-user-md"></i> Find Doctor</a></li>
+                <li><a href="patient_profile.html"><i class="fas fa-user"></i> Profile</a></li>
+                <li><a href="index.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <div class="search-container">
+                    <input type="text" placeholder="Search...">
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </div>
+                <div class="user-profile">
+                    <div class="notification">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </div>
+                    <div class="profile">
+                        <img src="img/patient-avatar.jpg" alt="Patient Avatar">
+                        <div class="profile-info">
+                            <p class="name">Ahmed Mohamed</p>
+                            <p class="role">Patient</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard">
+                <div class="section-header">
+                    <h2>Medical Records</h2>
+                    <button class="btn-primary" id="upload-record-btn">
+                        <i class="fas fa-upload"></i> Upload Record
+                    </button>
+                </div>
+
+                <div class="records-filters">
+                    <div class="filter-options">
+                        <button class="filter-btn active" data-filter="all">All Records</button>
+                        <button class="filter-btn" data-filter="tests">Test Results</button>
+                        <button class="filter-btn" data-filter="reports">Medical Reports</button>
+                        <button class="filter-btn" data-filter="images">Medical Images</button>
+                        <button class="filter-btn" data-filter="vaccinations">Vaccinations</button>
+                    </div>
+                    <div class="sort-options">
+                        <label for="sort-by">Sort By:</label>
+                        <select id="sort-by">
+                            <option value="date-newest">Date (Newest First)</option>
+                            <option value="date-oldest">Date (Oldest First)</option>
+                            <option value="document-type">Document Type</option>
+                            <option value="provider">Healthcare Provider</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="records-container">
+                    <div class="record-card tests">
+                        <div class="record-icon">
+                            <i class="fas fa-vial"></i>
+                        </div>
+                        <div class="record-details">
+                            <h4>Complete Blood Count (CBC)</h4>
+                            <p>Performed by: Dr. Sarah Johnson</p>
+                            <p>Date: May 5, 2023</p>
+                            <p>Type: Laboratory Test</p>
+                            <span class="record-tag">Important</span>
+                        </div>
+                        <div class="record-actions">
+                            <button class="btn-view"><i class="fas fa-eye"></i> View</button>
+                            <button class="btn-download"><i class="fas fa-download"></i> Download</button>
+                            <button class="btn-share"><i class="fas fa-share-alt"></i> Share</button>
+                        </div>
+                    </div>
+
+                    <div class="record-card reports">
+                        <div class="record-icon">
+                            <i class="fas fa-file-medical-alt"></i>
+                        </div>
+                        <div class="record-details">
+                            <h4>Annual Physical Examination</h4>
+                            <p>Performed by: Dr. James Wilson</p>
+                            <p>Date: April 20, 2023</p>
+                            <p>Type: Medical Report</p>
+                        </div>
+                        <div class="record-actions">
+                            <button class="btn-view"><i class="fas fa-eye"></i> View</button>
+                            <button class="btn-download"><i class="fas fa-download"></i> Download</button>
+                            <button class="btn-share"><i class="fas fa-share-alt"></i> Share</button>
+                        </div>
+                    </div>
+
+                    <div class="record-card images">
+                        <div class="record-icon">
+                            <i class="fas fa-x-ray"></i>
+                        </div>
+                        <div class="record-details">
+                            <h4>Chest X-Ray</h4>
+                            <p>Performed by: Dr. Emily Chen</p>
+                            <p>Date: March 15, 2023</p>
+                            <p>Type: Medical Image</p>
+                        </div>
+                        <div class="record-actions">
+                            <button class="btn-view"><i class="fas fa-eye"></i> View</button>
+                            <button class="btn-download"><i class="fas fa-download"></i> Download</button>
+                            <button class="btn-share"><i class="fas fa-share-alt"></i> Share</button>
+                        </div>
+                    </div>
+
+                    <div class="record-card reports">
+                        <div class="record-icon">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <div class="record-details">
+                            <h4>Cardiology Consultation</h4>
+                            <p>Performed by: Dr. Sarah Johnson</p>
+                            <p>Date: February 28, 2023</p>
+                            <p>Type: Medical Report</p>
+                            <span class="record-tag">Important</span>
+                        </div>
+                        <div class="record-actions">
+                            <button class="btn-view"><i class="fas fa-eye"></i> View</button>
+                            <button class="btn-download"><i class="fas fa-download"></i> Download</button>
+                            <button class="btn-share"><i class="fas fa-share-alt"></i> Share</button>
+                        </div>
+                    </div>
+
+                    <div class="record-card vaccinations">
+                        <div class="record-icon">
+                            <i class="fas fa-syringe"></i>
+                        </div>
+                        <div class="record-details">
+                            <h4>COVID-19 Vaccination</h4>
+                            <p>Performed by: Dr. Michael Brown</p>
+                            <p>Date: January 10, 2023</p>
+                            <p>Type: Vaccination</p>
+                        </div>
+                        <div class="record-actions">
+                            <button class="btn-view"><i class="fas fa-eye"></i> View</button>
+                            <button class="btn-download"><i class="fas fa-download"></i> Download</button>
+                            <button class="btn-share"><i class="fas fa-share-alt"></i> Share</button>
+                        </div>
+                    </div>
+
+                    <div class="record-card tests">
+                        <div class="record-icon">
+                            <i class="fas fa-vial"></i>
+                        </div>
+                        <div class="record-details">
+                            <h4>Lipid Panel</h4>
+                            <p>Performed by: Dr. Sarah Johnson</p>
+                            <p>Date: December 5, 2022</p>
+                            <p>Type: Laboratory Test</p>
+                        </div>
+                        <div class="record-actions">
+                            <button class="btn-view"><i class="fas fa-eye"></i> View</button>
+                            <button class="btn-download"><i class="fas fa-download"></i> Download</button>
+                            <button class="btn-share"><i class="fas fa-share-alt"></i> Share</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pagination">
+                    <button class="pagination-btn prev disabled"><i class="fas fa-chevron-left"></i></button>
+                    <button class="pagination-btn page active">1</button>
+                    <button class="pagination-btn page">2</button>
+                    <button class="pagination-btn page">3</button>
+                    <button class="pagination-btn next"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for uploading records -->
+    <div class="modal" id="upload-record-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Upload Medical Record</h3>
+                <button class="close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="record-upload-form">
+                    <div class="form-group">
+                        <label for="record-title">Record Title</label>
+                        <input type="text" id="record-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="record-type">Record Type</label>
+                        <select id="record-type" required>
+                            <option value="">Select Record Type</option>
+                            <option value="test">Laboratory Test</option>
+                            <option value="report">Medical Report</option>
+                            <option value="image">Medical Image</option>
+                            <option value="vaccination">Vaccination</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="doctor-name">Healthcare Provider</label>
+                        <input type="text" id="doctor-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="record-date">Date</label>
+                        <input type="date" id="record-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="record-file">Upload File</label>
+                        <input type="file" id="record-file" required>
+                        <p class="file-help">Accepted formats: PDF, JPG, PNG (Max: 10MB)</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="record-notes">Notes (Optional)</label>
+                        <textarea id="record-notes" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="important-record">
+                            Mark as important
+                        </label>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel-form">Cancel</button>
+                        <button type="submit" class="btn-submit">Upload Record</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/patient_medical_records.js"></script>
+</body>
+</html>

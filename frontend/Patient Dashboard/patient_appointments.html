@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Appointments | Patient Dashboard</title>
+    <link rel="stylesheet" href="css/patient_dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <h2>Nabad</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="patient_dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li class="active"><a href="patient_appointments.html"><i class="fas fa-calendar-check"></i> My Appointments</a></li>
+                <li><a href="patient_medical_records.html"><i class="fas fa-file-medical"></i> Medical Records</a></li>
+                <li><a href="patient_prescriptions.html"><i class="fas fa-prescription"></i> Prescriptions</a></li>
+                <li><a href="patient_messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
+                <li><a href="find_doctor.html"><i class="fas fa-user-md"></i> Find Doctor</a></li>
+                <li><a href="patient_profile.html"><i class="fas fa-user"></i> Profile</a></li>
+                <li><a href="index.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <div class="search-container">
+                    <input type="text" placeholder="Search...">
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </div>
+                <div class="user-profile">
+                    <div class="notification">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </div>
+                    <div class="profile">
+                        <img src="img/patient-avatar.jpg" alt="Patient Avatar">
+                        <div class="profile-info">
+                            <p class="name">Ahmed Mohamed</p>
+                            <p class="role">Patient</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard">
+                <div class="section-header">
+                    <h2>My Appointments</h2>
+                    <button class="btn-primary" id="new-appointment-btn">
+                        <i class="fas fa-plus"></i> Book New Appointment
+                    </button>
+                </div>
+
+                <div class="appointment-filters">
+                    <div class="filter-options">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="upcoming">Upcoming</button>
+                        <button class="filter-btn" data-filter="completed">Completed</button>
+                        <button class="filter-btn" data-filter="cancelled">Cancelled</button>
+                    </div>
+                    <div class="sort-options">
+                        <label for="sort-by">Sort By:</label>
+                        <select id="sort-by">
+                            <option value="date-newest">Date (Newest First)</option>
+                            <option value="date-oldest">Date (Oldest First)</option>
+                            <option value="doctor-name">Doctor Name</option>
+                            <option value="specialty">Specialty</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="appointments-container">
+                    <div class="appointment-card upcoming">
+                        <div class="appointment-info">
+                            <img src="img/doctor-avatar1.jpg" alt="Doctor Image">
+                            <div class="appointment-details">
+                                <h4>Dr. Sarah Johnson</h4>
+                                <p>Cardiologist</p>
+                                <div class="appointment-time">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>May 12, 2023</span>
+                                    <i class="fas fa-clock"></i>
+                                    <span>09:00 AM</span>
+                                </div>
+                                <div class="appointment-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Nabad Medical Center, Room 305</span>
+                                </div>
+                                <span class="status upcoming">Upcoming</span>
+                            </div>
+                        </div>
+                        <div class="appointment-actions">
+                            <button class="btn-details"><i class="fas fa-info-circle"></i> Details</button>
+                            <button class="btn-reschedule"><i class="fas fa-calendar-alt"></i> Reschedule</button>
+                            <button class="btn-cancel"><i class="fas fa-times"></i> Cancel</button>
+                        </div>
+                    </div>
+
+                    <div class="appointment-card upcoming">
+                        <div class="appointment-info">
+                            <img src="img/doctor-avatar2.jpg" alt="Doctor Image">
+                            <div class="appointment-details">
+                                <h4>Dr. James Wilson</h4>
+                                <p>Neurologist</p>
+                                <div class="appointment-time">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>May 18, 2023</span>
+                                    <i class="fas fa-clock"></i>
+                                    <span>02:30 PM</span>
+                                </div>
+                                <div class="appointment-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Nabad Medical Center, Room 210</span>
+                                </div>
+                                <span class="status upcoming">Upcoming</span>
+                            </div>
+                        </div>
+                        <div class="appointment-actions">
+                            <button class="btn-details"><i class="fas fa-info-circle"></i> Details</button>
+                            <button class="btn-reschedule"><i class="fas fa-calendar-alt"></i> Reschedule</button>
+                            <button class="btn-cancel"><i class="fas fa-times"></i> Cancel</button>
+                        </div>
+                    </div>
+
+                    <div class="appointment-card completed">
+                        <div class="appointment-info">
+                            <img src="img/doctor-avatar3.jpg" alt="Doctor Image">
+                            <div class="appointment-details">
+                                <h4>Dr. Emily Chen</h4>
+                                <p>Dermatologist</p>
+                                <div class="appointment-time">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>April 30, 2023</span>
+                                    <i class="fas fa-clock"></i>
+                                    <span>10:15 AM</span>
+                                </div>
+                                <div class="appointment-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Nabad Medical Center, Room 118</span>
+                                </div>
+                                <span class="status completed">Completed</span>
+                            </div>
+                        </div>
+                        <div class="appointment-actions">
+                            <button class="btn-details"><i class="fas fa-info-circle"></i> Details</button>
+                            <button class="btn-feedback"><i class="fas fa-comment"></i> Leave Feedback</button>
+                            <button class="btn-book-again"><i class="fas fa-redo"></i> Book Again</button>
+                        </div>
+                    </div>
+
+                    <div class="appointment-card cancelled">
+                        <div class="appointment-info">
+                            <img src="img/doctor-avatar4.jpg" alt="Doctor Image">
+                            <div class="appointment-details">
+                                <h4>Dr. Michael Brown</h4>
+                                <p>Orthopedic Surgeon</p>
+                                <div class="appointment-time">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>April 15, 2023</span>
+                                    <i class="fas fa-clock"></i>
+                                    <span>03:45 PM</span>
+                                </div>
+                                <div class="appointment-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Nabad Medical Center, Room 422</span>
+                                </div>
+                                <span class="status cancelled">Cancelled</span>
+                            </div>
+                        </div>
+                        <div class="appointment-actions">
+                            <button class="btn-details"><i class="fas fa-info-circle"></i> Details</button>
+                            <button class="btn-book-again"><i class="fas fa-redo"></i> Book Again</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pagination">
+                    <button class="pagination-btn prev disabled"><i class="fas fa-chevron-left"></i></button>
+                    <button class="pagination-btn page active">1</button>
+                    <button class="pagination-btn page">2</button>
+                    <button class="pagination-btn page">3</button>
+                    <button class="pagination-btn next"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for booking new appointment -->
+    <div class="modal" id="book-appointment-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Book New Appointment</h3>
+                <button class="close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="appointment-form">
+                    <div class="form-group">
+                        <label for="specialty">Specialty</label>
+                        <select id="specialty" required>
+                            <option value="">Select Specialty</option>
+                            <option value="cardiology">Cardiology</option>
+                            <option value="neurology">Neurology</option>
+                            <option value="dermatology">Dermatology</option>
+                            <option value="orthopedics">Orthopedics</option>
+                            <option value="pediatrics">Pediatrics</option>
+                            <option value="general">General Medicine</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="doctor">Doctor</label>
+                        <select id="doctor" required>
+                            <option value="">Select Doctor</option>
+                            <option value="dr-sarah">Dr. Sarah Johnson</option>
+                            <option value="dr-james">Dr. James Wilson</option>
+                            <option value="dr-emily">Dr. Emily Chen</option>
+                            <option value="dr-michael">Dr. Michael Brown</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="appointment-date">Date</label>
+                        <input type="date" id="appointment-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="appointment-time">Time</label>
+                        <select id="appointment-time" required>
+                            <option value="">Select Time</option>
+                            <option value="09:00">09:00 AM</option>
+                            <option value="09:30">09:30 AM</option>
+                            <option value="10:00">10:00 AM</option>
+                            <option value="10:30">10:30 AM</option>
+                            <option value="11:00">11:00 AM</option>
+                            <option value="11:30">11:30 AM</option>
+                            <option value="14:00">02:00 PM</option>
+                            <option value="14:30">02:30 PM</option>
+                            <option value="15:00">03:00 PM</option>
+                            <option value="15:30">03:30 PM</option>
+                            <option value="16:00">04:00 PM</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reason">Reason for Visit</label>
+                        <textarea id="reason" rows="3" required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel-form">Cancel</button>
+                        <button type="submit" class="btn-submit">Book Appointment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/patient_appointments.js"></script>
+</body>
+</html>

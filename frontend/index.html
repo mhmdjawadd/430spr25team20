@@ -156,7 +156,7 @@
                             <nav class="navigation">
                                 <ul class="nav menu">
                                     <li><a href="doctors.html">Doctors</a></li>
-                                    <li><a href="services.html">Services</a></li>
+                                    <li><a href="#" id="dashboardLink">Dashboard</a></li>
                                     <li><a href="appointments.html">Book Appointment</a></li>
                                     <li><a href="contact.html">Contact Us</a></li>
                                     <li class="reminder-icon">
@@ -807,17 +807,40 @@
 			// Replace greeting logic to fetch from backend
 			document.addEventListener('DOMContentLoaded', async function() {
 				const userGreetingElement = document.getElementById('userGreeting');
-				const user = await getCurrentUserProfile();
-				let displayName;
-				if (user && user.first_name) {
-					displayName = user.first_name;
-				} else if (user && user.email) {
-					displayName = user.email.split('@')[0];
-				} else {
-					displayName = 'Guest';
+				const dashboardLink = document.getElementById('dashboardLink');
+				
+				try {
+					const user = await getCurrentUserProfile();
+					
+					// Update greeting
+					let displayName;
+					if (user && user.first_name) {
+						displayName = user.first_name;
+					} else if (user && user.email) {
+						displayName = user.email.split('@')[0];
+					} else {
+						displayName = 'Guest';
+					}
+					userGreetingElement.innerHTML = `<i class="fas fa-user-circle"></i> Hi, ${displayName}!`;
+					
+					// Set dashboard redirect based on role
+					if (user && user.role) {
+						if (user.role.toLowerCase() === 'doctor') {
+							dashboardLink.href = './Doctor Dashboard/doctor_dashboard.html';
+						} else {
+							dashboardLink.href = './Patient Dashboard/patient_dashboard.html';
+						}
+					} else {
+						// Default to patient dashboard if role is not defined
+						dashboardLink.href = './Patient Dashboard/patient_dashboard.html';
+					}
+					
+					console.log('User profile loaded:', user);
+				} catch (error) {
+					console.error('Error loading user profile:', error);
+					userGreetingElement.innerHTML = `<i class="fas fa-user-circle"></i> Hi, Guest!`;
+					dashboardLink.href = 'login.html'; // Redirect to login if can't get profile
 				}
-				userGreetingElement.innerHTML = `<i class="fas fa-user-circle"></i> Hi, ${displayName}!`;
-				console.log('User profile loaded:', user);
 			});
 		</script>
 		<script>

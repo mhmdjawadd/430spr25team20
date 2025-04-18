@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Doctor – Prescriptions | Mediplus</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}body{display:flex;min-height:100vh;background:#f8f9fa}.sidebar{width:280px;background:linear-gradient(180deg,#0066cc 0%,#0052a3 100%);padding:30px;color:#fff;display:flex;flex-direction:column}.nav-link{display:flex;gap:12px;align-items:center;color:rgba(255,255,255,.85);padding:12px 15px;border-radius:8px;text-decoration:none;transition:.3s}.nav-link:hover,.nav-link.active{background:rgba(255,255,255,.15);color:#fff;transform:translateX(4px)}.nav-link i{font-size:18px}.logout-btn{margin-top:auto;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25)}.main-content{flex:1;padding:30px;overflow-y:auto}.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.btn-primary{background:#0066cc;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;transition:.3s}.btn-primary:hover{background:#0052a3}.queue{background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.05);overflow:hidden}.queue-header{display:flex;gap:20px;padding:18px 24px;background:#f8f9fa;font-weight:600}.queue-row{display:flex;gap:20px;padding:18px 24px;border-top:1px solid #eee;align-items:center}.queue-row:hover{background:#eef6ff}.queue-row span:first-child{flex:2}.queue-row span{flex:1;font-size:14px}.status{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}.pending{background:#fff3e0;color:#ef6c00}.approved{background:#e8f5e9;color:#2e7d32}.denied{background:#ffebee;color:#c62828}.action-btn{padding:6px 12px;border:none;border-radius:6px;margin-left:6px;cursor:pointer;font-size:12px}.approve{background:#2e7d32;color:#fff}.deny{background:#c62828;color:#fff}@media(max-width:768px){.sidebar{width:80px;padding:20px 10px}.sidebar span{display:none}}</style></head>
+<body>
+<aside class="sidebar">
+ <a href="doctor-dashboard.html" class="nav-link"><i class="fas fa-home"></i><span>Dashboard</span></a>
+ <a href="doctor-appointments.html" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Appointments</span></a>
+ <a href="doctor-patients.html" class="nav-link"><i class="fas fa-user-injured"></i><span>Patients</span></a>
+ <a href="#" class="nav-link active"><i class="fas fa-prescription"></i><span>Prescriptions</span></a>
+ <a href="doctor-records.html" class="nav-link"><i class="fas fa-file-medical"></i><span>Medical Records</span></a>
+ <a href="doctor-analytics.html" class="nav-link"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
+ <a href="doctor-messages.html" class="nav-link"><i class="fas fa-comments"></i><span>Messages</span></a>
+ <a href="doctor-settings.html" class="nav-link"><i class="fas fa-cog"></i><span>Settings</span></a>
+ <a href="login.html" class="nav-link logout-btn"><i class="fas fa-door-open"></i><span>Logout</span></a>
+</aside>
+<main class="main-content">
+ <header class="page-header"><h1>Prescription Queue</h1></header>
+ <section class="queue" id="rxQueue">
+  <div class="queue-header"><span style="flex:2">Patient</span><span>Medication</span><span>Date</span><span>Status</span><span style="text-align:right">Actions</span></div>
+  <!-- rows injected by JS -->
+ </section>
+</main>
+<script>
+const data=[{id:1,patient:'Sarah Johnson',med:'Atorvastatin 20mg',date:'2025-04-15',status:'pending'},{id:2,patient:'Michael Brown',med:'Metoprolol 50mg',date:'2025-04-14',status:'pending'},{id:3,patient:'Emma Davis',med:'Lisinopril 10mg',date:'2025-04-13',status:'approved'}];
+const queue=document.getElementById('rxQueue');
+function render(){queue.querySelectorAll('.queue-row').forEach(r=>r.remove());data.forEach(r=>{const row=document.createElement('div');row.className='queue-row';row.innerHTML=`<span style="flex:2">${r.patient}</span><span>${r.med}</span><span>${r.date}</span><span><span class="status ${r.status}">${r.status.charAt(0).toUpperCase()+r.status.slice(1)}</span></span><span style="text-align:right">${r.status==='pending'?`<button class='action-btn approve' onclick='updateStatus(${r.id},"approved")'>Approve</button><button class='action-btn deny' onclick='updateStatus(${r.id},"denied")'>Deny</button>`:''}</span>`;queue.appendChild(row);});}
+function updateStatus(id,newStatus){const rx=data.find(x=>x.id===id);if(rx){rx.status=newStatus;render();}}
+render();
+</script>
+</body>
+</html>

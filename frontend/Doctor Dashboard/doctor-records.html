@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Doctor – Medical Records | Mediplus</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"><style>*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}body{display:flex;min-height:100vh;background:#f8f9fa}.sidebar{width:280px;background:linear-gradient(180deg,#0066cc 0%,#0052a3 100%);padding:30px;color:#fff;display:flex;flex-direction:column}.nav-link{display:flex;gap:12px;align-items:center;color:rgba(255,255,255,.85);padding:12px 15px;border-radius:8px;text-decoration:none;transition:.3s}.nav-link i{font-size:18px}.nav-link:hover,.nav-link.active{background:rgba(255,255,255,.15);color:#fff;transform:translateX(4px)}.logout-btn{margin-top:auto;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25)}.main-content{flex:1;padding:30px;overflow-y:auto}.timeline{position:relative;margin:20px 0;padding-left:40px}.timeline::before{content:'';position:absolute;left:15px;top:0;width:2px;height:100%;background:#0066cc}.entry{position:relative;margin-bottom:25px;background:#fff;padding:18px 24px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.05)}.entry::before{content:'';position:absolute;left:-27px;top:18px;width:12px;height:12px;border-radius:50%;background:#0066cc;border:3px solid #fff}.entry h3{margin-bottom:6px;font-size:16px;color:#333}.entry small{color:#666;font-size:12px}.entry p{margin-top:10px;font-size:14px;color:#555}
+@media(max-width:768px){.sidebar{width:80px;padding:20px 10px}.sidebar span{display:none}}
+</style></head>
+<body>
+<aside class="sidebar">
+<a href="doctor-dashboard.html" class="nav-link"><i class="fas fa-home"></i><span>Dashboard</span></a>
+<a href="doctor-appointments.html" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Appointments</span></a>
+<a href="doctor-patients.html" class="nav-link"><i class="fas fa-user-injured"></i><span>Patients</span></a>
+<a href="doctor-prescriptions.html" class="nav-link"><i class="fas fa-prescription"></i><span>Prescriptions</span></a>
+<a href="#" class="nav-link active"><i class="fas fa-file-medical"></i><span>Medical Records</span></a>
+<a href="doctor-analytics.html" class="nav-link"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
+<a href="doctor-messages.html" class="nav-link"><i class="fas fa-comments"></i><span>Messages</span></a>
+<a href="doctor-settings.html" class="nav-link"><i class="fas fa-cog"></i><span>Settings</span></a>
+<a href="login.html" class="nav-link logout-btn"><i class="fas fa-door-open"></i><span>Logout</span></a>
+</aside>
+<main class="main-content">
+<h1>Patient Medical Records</h1>
+<div class="timeline" id="recordTimeline"></div>
+</main>
+<script>
+const records=[{date:'2025-04-12',title:'Follow‑up Visit',patient:'Sarah Johnson',details:'Blood pressure stable. Continued current medication.'},{date:'2025-03-30',title:'ECG Result',patient:'Sarah Johnson',details:'Mild arrhythmia detected. Scheduled stress test.'},{date:'2025-02-14',title:'Annual Physical',patient:'Emma Davis',details:'All vitals within normal range.'}];
+const tl=document.getElementById('recordTimeline');
+records.forEach(r=>{const e=document.createElement('div');e.className='entry';e.innerHTML=`<h3>${r.title} – <span style='color:#0066cc'>${r.patient}</span></h3><small>${r.date}</small><p>${r.details}</p>`;tl.appendChild(e);});
+</script>
+</body></html>

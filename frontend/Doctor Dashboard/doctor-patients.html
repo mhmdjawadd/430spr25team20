@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor – Patients | Mediplus</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+        body{display:flex;min-height:100vh;background:#f8f9fa}
+        .sidebar{width:280px;background:linear-gradient(180deg,#0066cc 0%,#0052a3 100%);padding:30px;color:#fff;display:flex;flex-direction:column;box-shadow:4px 0 10px rgba(0,0,0,.1)}
+        .doctor-profile{text-align:center;margin-bottom:25px}
+        .doctor-avatar{width:90px;height:90px;border-radius:50%;border:3px solid rgba(255,255,255,.25);margin-bottom:10px}
+        .doctor-name{font-size:18px;font-weight:600}
+        .doctor-specialty{font-size:14px;opacity:.8}
+        .nav-link{display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.85);text-decoration:none;padding:12px 15px;border-radius:8px;transition:.3s}
+        .nav-link i{font-size:18px}
+        .nav-link:hover,.nav-link.active{background:rgba(255,255,255,.15);color:#fff;transform:translateX(4px)}
+        .logout-btn{margin-top:auto;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25)}
+        .main-content{flex:1;padding:30px;overflow-y:auto}
+        .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
+        .page-header h1{font-size:26px;color:#333}
+        .btn-primary{background:#0066cc;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;transition:.3s}
+        .btn-primary:hover{background:#0052a3}
+        .filters{display:flex;flex-wrap:wrap;gap:15px;margin-bottom:20px}
+        .filters input,.filters select{padding:10px 14px;border:1px solid #ddd;border-radius:6px;font-size:14px}
+        .patient-table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.05);overflow:hidden}
+        th,td{padding:14px 18px;text-align:left;border-bottom:1px solid #eee;font-size:14px}
+        th{background:#f8f9fa;font-weight:600;color:#555}
+        tr:hover{background:#eef6ff}
+        .tag{padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+        .tag.chronic{background:#ffebee;color:#c62828}
+        .tag.new{background:#e8f5e9;color:#2e7d32}
+        @media(max-width:768px){.sidebar{width:80px;padding:20px 10px}.sidebar span{display:none}.doctor-profile{display:none}}
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="doctor-profile"><img src="avatar.jpg" class="doctor-avatar"><div class="doctor-name">Dr. John Smith</div><div class="doctor-specialty">Cardiologist</div></div>
+        <a href="doctor-dashboard.html" class="nav-link"><i class="fas fa-home"></i><span>Dashboard</span></a>
+        <a href="doctor-appointments.html" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Appointments</span></a>
+        <a href="#" class="nav-link active"><i class="fas fa-user-injured"></i><span>Patients</span></a>
+        <a href="doctor-prescriptions.html" class="nav-link"><i class="fas fa-prescription"></i><span>Prescriptions</span></a>
+        <a href="doctor-records.html" class="nav-link"><i class="fas fa-file-medical"></i><span>Medical Records</span></a>
+        <a href="doctor-analytics.html" class="nav-link"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
+        <a href="doctor-messages.html" class="nav-link"><i class="fas fa-comments"></i><span>Messages</span></a>
+        <a href="doctor-settings.html" class="nav-link"><i class="fas fa-cog"></i><span>Settings</span></a>
+        <a href="login.html" class="nav-link logout-btn"><i class="fas fa-door-open"></i><span>Logout</span></a>
+    </aside>
+    <main class="main-content">
+        <header class="page-header"><h1>Patients</h1><button class="btn-primary" onclick="alert('Add Patient – placeholder')"><i class="fas fa-user-plus"></i> New Patient</button></header>
+        <section class="filters">
+            <input type="text" id="searchInput" placeholder="Search patient…" oninput="filterRows()">
+            <select id="tagFilter" onchange="filterRows()">
+                <option value="all">All Status</option><option value="new">New</option><option value="chronic">Chronic</option></select>
+        </section>
+        <div style="overflow-x:auto">
+        <table class="patient-table" id="patientTable">
+            <thead><tr><th>Name</th><th>Age</th><th>Condition</th><th>Last Visit</th><th>Status</th></tr></thead>
+            <tbody>
+                <tr><td>Sarah Johnson</td><td>45</td><td>Hypertension</td><td>2025‑03‑30</td><td><span class="tag chronic">Chronic</span></td></tr>
+                <tr><td>Michael Brown</td><td>33</td><td>Chest Pain</td><td>2025‑04‑10</td><td><span class="tag new">New</span></td></tr>
+                <tr><td>Emma Davis</td><td>29</td><td>Arrhythmia</td><td>2025‑02‑14</td><td><span class="tag chronic">Chronic</span></td></tr>
+            </tbody>
+        </table></div>
+    </main>
+    <script>
+        function filterRows(){
+            const text=document.getElementById('searchInput').value.toLowerCase();
+            const tag=document.getElementById('tagFilter').value;
+            document.querySelectorAll('#patientTable tbody tr').forEach(r=>{
+                const name=r.children[0].textContent.toLowerCase();
+                const status=r.querySelector('.tag').classList.contains('chronic')?'chronic':'new';
+                const match=(text==''||name.includes(text))&&(tag=='all'||tag==status);
+                r.style.display=match?'':'none';
+            });
+        }
+    </script>
+</body>
+</html>
