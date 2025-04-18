@@ -227,9 +227,9 @@ function initializeCalendar() {
     calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'timeGridDay',
         headerToolbar: {
-            left: 'prev,next today',
+            left: 'prev,next', // Removed 'today' button
             center: 'title',
-            right: 'timeGridDay,timeGridWeek,dayGridMonth'
+            right: 'timeGridDay,timeGridWeek' // Removed dayGridMonth view
         },
         height: 'auto',
         allDaySlot: false,
@@ -299,8 +299,6 @@ function initializeCalendar() {
                     viewDescriptionEl.innerHTML = 'Day view: Pick an available slot from the calendar or time slot list below.';
                 } else if (dateInfo.view.type === 'timeGridWeek') {
                     viewDescriptionEl.innerHTML = 'Week view: Get an overview of available slots throughout the week.';
-                } else if (dateInfo.view.type === 'dayGridMonth') {
-                    viewDescriptionEl.innerHTML = 'Month view: Get an overview of the doctor\'s availability for the entire month.';
                 }
             }
             
@@ -311,8 +309,8 @@ function initializeCalendar() {
                     const currentDate = dateInfo.start.toISOString().split('T')[0];
                     fetchAvailability(selectedDoctor.id, currentDate);
                 } 
-                // For week and month views, fetch the entire date range
-                else {
+                // For week view, fetch the entire date range
+                else if (dateInfo.view.type === 'timeGridWeek') {
                     fetchAvailabilityRange(selectedDoctor.id, dateInfo.start, dateInfo.end);
                 }
             }
