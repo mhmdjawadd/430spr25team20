@@ -1,307 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Insurance Portal - Nabad Health System</title>
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="img/favicon.png">
-    
-    <!-- CSS Files -->
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/font-awesome.min.css">
-    <link rel="stylesheet" href="css/icofont.css">
-    <link rel="stylesheet" href="css/owl-carousel.css">
-    <link rel="stylesheet" href="css/datepicker.css">
-    <link rel="stylesheet" href="css/animate.min.css">
-    <link rel="stylesheet" href="css/magnific-popup.css">
-    <link rel="stylesheet" href="css/normalize.css">
-    <link rel="stylesheet" href="css/nice-select.css">
-    <link rel="stylesheet" href="css/responsive.css">
-    <link rel="stylesheet" href="css/slicknav.min.css">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="css/insurance-styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance Portal | Patient Dashboard</title>
+    <link rel="stylesheet" href="css/patient_dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .form-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+        
+        .form-section h4 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .btn-update {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+        
+        .btn-update:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+        
+        .col-md-6, .col-md-12 {
+            padding: 0 10px;
+            margin-bottom: 15px;
+        }
+        
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+        
+        .col-md-12 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .col-md-6 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            outline: none;
+            transition: var(--transition);
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .mt-4 {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <!-- Header Area -->
-    <header class="header">
-        <!-- Add user greeting above nav -->
-        <div class="user-greeting">
-            <div class="container">
-                <div id="userGreeting"><!-- populated by auth.js --></div>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <h2>Nabad</h2>
             </div>
+            <ul class="nav-links">
+                <li><a href="patient_dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="patient_appointments.html"><i class="fas fa-calendar-check"></i> My Appointments</a></li>
+                <li><a href="patient_medical_records.html"><i class="fas fa-file-medical"></i> Medical Records</a></li>
+                <li class="active"><a href="insurance-portal.html"><i class="fas fa-heartbeat"></i> Insurance</a></li>
+                <li><a href="patient_messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
+                <li><a href="../index.html" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
         </div>
-        <div class="header-inner">
-            <div class="container">
-                <div class="inner">
-                    <div class="row">
-                        <div class="col-lg-3 col-md-3 col-12">
-                            <div class="logo">
-                                <a href="index.html"><img src="img/nabad.png" alt="#"></a>
-                            </div>
-                            <div class="mobile-nav"></div>
-                        </div>
-                        <div class="col-lg-9 col-md-9 col-12">
-                            <div class="main-menu">
-                                <nav class="navigation">
-                                    <ul class="nav menu">
-                                        <li><a href="doctors.html">Doctors</a></li>
-                                        <li><a href="services.html">Services</a></li>
-                                        <li><a href="appointments.html">Book Appointment</a></li>
-                                        <li><a href="contact.html">Contact Us</a></li>
-                                        <li class="reminder-icon">
-                                            <a href="reminder-preferences.html">
-                                                <i class="fa fa-bell"></i>
-                                                <span class="reminder-tooltip"></span>
-                                            </a>
-                                        </li>
-                                        <li><a href="login.html" class="logout-btn" onclick="handleLogout()">
-                                            <i class="fas fa-door-open"></i> 
-                                        </a></li>
-                                    </ul>
-                                </nav>
-                            </div>
+
+        <div class="main-content">
+            <div class="header">
+                <div class="search-container">
+                    <input type="text" placeholder="Search...">
+                    <button type="submit"><i class="fas fa-search"></i></button>
+                </div>
+                <div class="user-profile">
+                    <div class="notification">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </div>
+                    <div class="profile">
+                        <img src="../img/patient-avatar.jpg" alt="Patient Avatar" 
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/40?text=User';">
+                        <div class="profile-info">
+                            <p class="name" id="patientName">Ahmed Mohamed</p>
+                            <p class="role">Patient</p>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </header>
-    <!-- End Header Area -->
-    
-    <!-- Breadcrumbs -->
-    <div class="breadcrumbs overlay">
-        <div class="container">
-            <div class="bread-inner">
-                <div class="row">
-                    <div class="col-12">
-                        <h2>Insurance Portal</h2>
-                        <ul class="bread-list">
-                            <li><a href="index.html">Home</a></li>
-                            <li><i class="icofont-simple-right"></i></li>
-                            <li class="active">Insurance Portal</li>
-                        </ul>
+
+            <div class="dashboard">
+                <div class="section-header">
+                    <h2>Insurance Portal</h2>
+                </div>
+
+                <div class="form-section">
+                    <h4>Current Insurance Information</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Coverage Type</label>
+                                <select class="form-control" id="coverageType">
+                                    <option value="">Select Coverage Type</option>
+                                    <option value="PREMIUM">Premium</option>
+                                    <option value="STANDARD">Standard</option>
+                                    <option value="LIMITED">Limited</option>
+                                    <option value="NONE">None</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Provider Name</label>
+                                <input type="text" class="form-control" id="providerName" placeholder="Enter provider name (e.g., AUB HIP)">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Policy Number</label>
+                                <input type="text" class="form-control" id="policyNumber" placeholder="Enter your policy number">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Group Number</label>
+                                <input type="text" class="form-control" id="groupNumber" placeholder="Enter your group number (optional)">
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Policy Holder Name</label>
+                                <input type="text" class="form-control" id="policyHolderName" placeholder="Enter policy holder name (if different)">
+                            </div>
+                        </div>
                     </div>
+                </div>
+                
+                <div class="form-section">
+                    <h4>Coverage Details</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Coverage Start Date</label>
+                                <input type="date" class="form-control" id="coverageStartDate">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Coverage End Date</label>
+                                <input type="date" class="form-control" id="coverageEndDate">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h4>Upload Insurance Card (Optional)</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Front of Card</label>
+                                <input type="file" class="form-control" id="frontCardImage" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Back of Card</label>
+                                <input type="file" class="form-control" id="backCardImage" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="statusMessage" class="form-section" style="display:none;">
+                    <p id="statusText"></p>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button class="btn-update" id="updateInsurance">
+                        <i class="fas fa-save"></i> Update Insurance Information
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-    <!-- End Breadcrumbs -->
-    
-    <!-- Insurance Portal -->
-    <section class="insurance-portal section">
-        <div class="container">
-            <div class="row">
-                <div class="col-12">
-                    <div class="insurance-form">
-                        <h3>Manage Your Insurance Information</h3>
-                        
-                        <div class="form-section">
-                            <h4>Current Insurance Information</h4>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Coverage Type</label>
-                                        <select class="form-control" id="coverageType">
-                                            <option value="">Select Coverage Type</option>
-                                            <option value="PREMIUM">Premium</option>
-                                            <option value="STANDARD">Standard</option>
-                                            <option value="LIMITED">Limited</option>
-                                            <option value="NONE">None</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Provider Name</label>
-                                        <input type="text" class="form-control" id="providerName" placeholder="Enter provider name (e.g., AUB HIP)">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Policy Number</label>
-                                        <input type="text" class="form-control" id="policyNumber" placeholder="Enter your policy number">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Group Number</label>
-                                        <input type="text" class="form-control" id="groupNumber" placeholder="Enter your group number (optional)">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="form-group">
-                                        <label>Policy Holder Name</label>
-                                        <input type="text" class="form-control" id="policyHolderName" placeholder="Enter policy holder name (if different)">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-section">
-                            <h4>Coverage Details</h4>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Coverage Start Date</label>
-                                        <input type="date" class="form-control" id="coverageStartDate">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Coverage End Date</label>
-                                        <input type="date" class="form-control" id="coverageEndDate">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-section">
-                            <h4>Upload Insurance Card (Optional)</h4>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Front of Card</label>
-                                        <input type="file" class="form-control" id="frontCardImage" accept="image/*">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Back of Card</label>
-                                        <input type="file" class="form-control" id="backCardImage" accept="image/*">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="text-center mt-4">
-                            <button class="btn btn-update" id="updateInsurance">Update Insurance Information</button>
-                        </div>
-                        
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- End Insurance Portal -->
-    
-    <!-- Footer Area -->
-    <footer class="footer">
-        <!-- Footer Top -->
-        <div class="footer-top">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-3 col-md-6 col-12">
-                        <div class="single-footer">
-                            <h2>About Us</h2>
-                            <p>Nabad Health System provides quality healthcare services to our community. Our mission is to improve the health and wellbeing of those we serve.</p>
-                            <!-- Social -->
-                            <ul class="social">
-                                <li><a href="#"><i class="icofont-facebook"></i></a></li>
-                                <li><a href="#"><i class="icofont-twitter"></i></a></li>
-                                <li><a href="#"><i class="icofont-instagram"></i></a></li>
-                            </ul>
-                            <!-- End Social -->
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6 col-12">
-                        <div class="single-footer f-link">
-                            <h2>Quick Links</h2>
-                            <ul>
-                                <li><a href="#"><i class="fa fa-caret-right" aria-hidden="true"></i>Home</a></li>
-                                <li><a href="#"><i class="fa fa-caret-right" aria-hidden="true"></i>About Us</a></li>
-                                <li><a href="#"><i class="fa fa-caret-right" aria-hidden="true"></i>Services</a></li>
-                                <li><a href="#"><i class="fa fa-caret-right" aria-hidden="true"></i>Our Cases</a></li>
-                                <li><a href="#"><i class="fa fa-caret-right" aria-hidden="true"></i>Contact Us</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6 col-12">
-                        <div class="single-footer">
-                            <h2>Open Hours</h2>
-                            <ul class="time-sidual">
-                                <li class="day">Monday - Friday <span>8.00-20.00</span></li>
-                                <li class="day">Saturday <span>9.00-18.30</span></li>
-                                <li class="day">Sunday <span>9.00-15.00</span></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-6 col-12">
-                        <div class="single-footer">
-                            <h2>Newsletter</h2>
-                            <p>Subscribe to our newsletter to receive updates on our services and events.</p>
-                            <form action="mail/mail.php" method="get" class="newsletter-inner">
-                                <input name="email" placeholder="Email Address" class="common-input" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Your email address'" required="" type="email">
-                                <button class="button"><i class="icofont icofont-paper-plane"></i></button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!--/ End Footer Top -->
-        <!-- Copyright -->
-        <div class="copyright">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-12 col-md-12 col-12">
-                        <div class="copyright-content">
-                            <p>© Copyright 2025 <span>Nabad Health System</span>. All Rights Reserved</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!--/ End Copyright -->
-    </footer>
-    <!--/ End Footer Area -->
-    
-    <!-- jquery Min JS -->
-    <script src="js/jquery.min.js"></script>
-    <!-- jquery Migrate JS -->
-    <script src="js/jquery-migrate-3.0.0.js"></script>
-    <!-- jquery Ui JS -->
-    <script src="js/jquery-ui.min.js"></script>
-    <!-- Easing JS -->
-    <script src="js/easing.js"></script>
-    <!-- Color JS -->
-    <script src="js/colors.js"></script>
-    <!-- Popper JS -->
-    <script src="js/popper.min.js"></script>
-    <!-- Bootstrap Datepicker JS -->
-    <script src="js/bootstrap-datepicker.js"></script>
-    <!-- Jquery Nav JS -->
-    <script src="js/jquery.nav.js"></script>
-    <!-- Slicknav JS -->
-    <script src="js/slicknav.min.js"></script>
-    <!-- ScrollUp JS -->
-    <script src="js/jquery.scrollUp.min.js"></script>
-    <!-- Niceselect JS -->
-    <script src="js/niceselect.js"></script>
-    <!-- Tilt Jquery JS -->
-    <script src="js/tilt.jquery.min.js"></script>
-    <!-- Owl Carousel JS -->
-    <script src="js/owl-carousel.js"></script>
-    <!-- CounterUp JS -->
-    <script src="js/jquery.counterup.min.js"></script>
-    <!-- Steller JS -->
-    <script src="js/steller.js"></script>
-    <!-- Wow JS -->
-    <script src="js/wow.min.js"></script>
-    <!-- Magnific Popup JS -->
-    <script src="js/jquery.magnific-popup.min.js"></script>
-    <!-- Counter Up CDN JS -->
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/waypoints/2.0.3/waypoints.min.js"></script>
-    <!-- Bootstrap JS -->
-    <script src="js/bootstrap.min.js"></script>
-    <!-- Main JS -->
-    <script src="js/main.js"></script>
-    <!-- Insurance Portal JS -->
+
+    <div class="message-widget">
+        <a href="patient_messages.html">
+            <i class="fas fa-comments"></i>
+        </a>
+    </div>
+
+    <!-- External JavaScript Files -->
+    <script src="../js/auth-api.js"></script>
     <script src="js/insurance-portal.js"></script>
 </body>
 </html>

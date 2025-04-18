@@ -412,16 +412,8 @@
         </div>
     </div>
 
-    <script src="js/patient_messages.js"></script>
+    <script src="../js/auth-api.js"></script>
     <script>
-        // Add logout functionality
-        document.getElementById('logout-link').addEventListener('click', function(e) {
-            // Clear authentication token on logout
-            localStorage.removeItem('token');
-            console.log('User logged out, token removed');
-            // Continue to index page
-        });
-        
         // Global variables
         let currentUser = null;
         let currentRecipient = null;
@@ -442,17 +434,180 @@
         const contactSearchInput = document.getElementById('contactSearchInput');
         const refreshChatButton = document.getElementById('refreshChat');
         
+        // Add logout functionality
+        document.getElementById('logout-link').addEventListener('click', function(e) {
+            // Clear authentication token on logout
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            console.log('User logged out, token removed');
+            // Continue to index page
+        });
+        
         // Init function that runs on page load
         async function initMessaging() {
-            // For demo purposes, we'll use sample data
-            // In a real app, you would fetch this from an API
-            loadSampleData();
-            setupEventListeners();
+            try {
+                // Show UI right away
+                setupEventListeners();
+                
+                // Try to load user data from localStorage with safer parsing
+                let userData = {};
+                try {
+                    const userDataString = localStorage.getItem('user');
+                    if (userDataString && userDataString !== "undefined") {
+                        userData = JSON.parse(userDataString);
+                    }
+                } catch (err) {
+                    console.warn('Error parsing user data from localStorage:', err);
+                    // Default to empty object if parsing fails
+                }
+                
+                if (userData && userData.first_name) {
+                    currentUser = userData;
+                    
+                    // Update profile display
+                    const nameElement = document.querySelector('.profile-info .name');
+                    if (nameElement) {
+                        nameElement.textContent = `${userData.first_name} ${userData.last_name || ''}`;
+                    }
+                }
+                
+                // Check for token regardless of whether we have user data
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.log('No authentication token found');
+                    // Show message instead of error alert
+                    contactList.innerHTML = `
+                        <li class="contact-item text-center">
+                            <div class="p-3">Please log in to view your messages</div>
+                        </li>
+                    `;
+                    return;
+                }
+                
+                // Load contacts first - most important for UI
+                loadContacts().catch(err => {
+                    console.warn('Error loading contacts, using sample data instead:', err);
+                    loadSampleData();
+                });
+                
+                // Try to fetch user profile only if we don't have it already - but don't block UI
+                if (!currentUser || !currentUser.first_name) {
+                    try {
+                        const profileResponse = await fetch(`${API_URL}/user/profile`, {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            // Add a timeout to prevent hanging
+                            signal: AbortSignal.timeout(5000)
+                        });
+                        
+                        if (profileResponse.ok) {
+                            const data = await profileResponse.json();
+                            currentUser = data.user;
+                            
+                            // Save user data to localStorage
+                            localStorage.setItem('user', JSON.stringify(data.user));
+                            
+                            // Update profile display
+                            const nameElement = document.querySelector('.profile-info .name');
+                            if (nameElement && currentUser.first_name) {
+                                nameElement.textContent = `${currentUser.first_name} ${currentUser.last_name || ''}`;
+                            }
+                        }
+                    } catch (profileError) {
+                        // Don't alert or disrupt the UI flow for profile errors
+                        console.warn('Error fetching user profile, continuing anyway:', profileError);
+                    }
+                }
+            } catch (error) {
+                console.error('Error in initMessaging:', error);
+                // Don't show alert as it's disruptive - just show the issue in the contacts list
+                contactList.innerHTML = `
+                    <li class="contact-item text-center">
+                        <div class="p-3">
+                            <i class="fas fa-exclamation-circle text-warning"></i>
+                            Error loading contacts. 
+                            <a href="javascript:void(0)" onclick="location.reload()">Reload</a>
+                        </div>
+                    </li>
+                `;
+            }
         }
         
-        // Load sample data for demo
+        // Load contacts (doctors and nurses the patient can message)
+        async function loadContacts() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    contactList.innerHTML = `
+                        <li class="contact-item text-center">
+                            <div class="p-3">Please log in to view your contacts</div>
+                        </li>
+                    `;
+                    return;
+                }
+                
+                // Remove loading indicator to prevent duplicates if function called again
+                const loadingElement = document.getElementById('loading-contacts');
+                if (loadingElement) {
+                    loadingElement.remove();
+                }
+                
+                // Show loading indicator
+                contactList.innerHTML = `
+                    <li class="contact-item" id="loading-contacts">
+                        <div style="text-align: center; width: 100%; padding: 15px 0;">
+                            <div class="spinner-border text-primary" role="status" style="width: 1.5rem; height: 1.5rem;">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                            <div style="margin-top: 10px;">Loading contacts...</div>
+                        </div>
+                    </li>
+                `;
+                
+                // Make API request to get contacts with a timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+                
+                const response = await fetch(`${API_URL}/messages/contacts`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load contacts: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                contacts = data.contacts || [];
+                
+                // Display contacts
+                renderContacts(contacts);
+                
+            } catch (error) {
+                console.error('Error loading contacts:', error);
+                
+                // Check if this is an abort error (timeout)
+                if (error.name === 'AbortError') {
+                    console.warn('Request timed out, loading sample data instead');
+                }
+                
+                // Don't throw - fallback to sample data instead
+                loadSampleData();
+            }
+        }
+        
+        // Load sample data for development/testing
         function loadSampleData() {
-            // Sample contacts data
+            // Sample contacts data - only doctors the patient has appointments with
             contacts = [
                 { id: 1, name: 'Dr. Sarah Johnson', role: 'Cardiologist', unread_count: 3 },
                 { id: 2, name: 'Dr. James Wilson', role: 'Neurologist', unread_count: 0 },
@@ -533,59 +688,94 @@
             chatView.style.display = 'flex';
             
             // Load messages
-            loadSampleMessages(contact.id);
+            loadMessages(contact.id);
         }
         
-        // Load sample messages for demo
-        function loadSampleMessages(contactId) {
-            chatBody.innerHTML = `
-                <div class="message-loader">
-                    <div class="spinner-border spinner-border-sm text-primary" role="status">
-                        <span class="sr-only">Loading...</span>
+        // Load messages for the selected contact
+        async function loadMessages(contactId) {
+            try {
+                chatBody.innerHTML = `
+                    <div class="message-loader">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <div class="mt-2">Loading messages...</div>
                     </div>
-                    <div class="mt-2">Loading messages...</div>
-                </div>
-            `;
-            
-            // Simulate loading delay
-            setTimeout(() => {
-                // Sample messages based on contact
-                if (contactId === 1) {
-                    messages = [
-                        { id: 1, content: "Hello, Dr. Johnson. I've been experiencing chest pain after exercising.", is_sent: true, timestamp: "2023-05-10T10:30:00" },
-                        { id: 2, content: "Hi Ahmed, could you describe the pain? Is it sharp or dull?", is_sent: false, timestamp: "2023-05-10T10:35:00" },
-                        { id: 3, content: "It's a sharp pain, right in the center of my chest.", is_sent: true, timestamp: "2023-05-10T10:38:00" },
-                        { id: 4, content: "How long does it last? Does it radiate to your arm or jaw?", is_sent: false, timestamp: "2023-05-10T10:40:00" },
-                        { id: 5, content: "It lasts about 10 minutes and sometimes radiates to my left arm.", is_sent: true, timestamp: "2023-05-10T10:45:00" },
-                        { id: 6, content: "I think we should schedule you for an in-person assessment. This could be angina. Please book an appointment as soon as possible.", is_sent: false, timestamp: "2023-05-10T10:50:00" }
-                    ];
-                } else if (contactId === 2) {
-                    messages = [
-                        { id: 1, content: "Dr. Wilson, I've been having frequent headaches since our last appointment.", is_sent: true, timestamp: "2023-05-05T14:20:00" },
-                        { id: 2, content: "Are you taking the medication I prescribed?", is_sent: false, timestamp: "2023-05-05T15:30:00" },
-                        { id: 3, content: "Yes, every day as directed.", is_sent: true, timestamp: "2023-05-05T15:45:00" },
-                        { id: 4, content: "Let's schedule a follow-up to adjust your dosage.", is_sent: false, timestamp: "2023-05-05T16:00:00" }
-                    ];
-                } else if (contactId === 3) {
-                    messages = [
-                        { id: 1, content: "Dr. Chen, the rash has improved with the cream you prescribed.", is_sent: true, timestamp: "2023-05-08T09:10:00" },
-                        { id: 2, content: "That's great news! Continue using it for another week as directed.", is_sent: false, timestamp: "2023-05-08T10:25:00" }
-                    ];
-                } else if (contactId === 4) {
-                    messages = [
-                        { id: 1, content: "Nurse Roberts, when should I come in for my next blood test?", is_sent: true, timestamp: "2023-05-09T11:00:00" },
-                        { id: 2, content: "You're due for another test next Monday. You can come anytime between 8 AM and 4 PM.", is_sent: false, timestamp: "2023-05-09T11:30:00" },
-                        { id: 3, content: "Do I need to fast before the test?", is_sent: true, timestamp: "2023-05-09T11:35:00" },
-                        { id: 4, content: "Yes, please fast for 8 hours before the test. You can drink water.", is_sent: false, timestamp: "2023-05-09T11:40:00" },
-                        { id: 5, content: "Thank you, I'll schedule for Monday morning.", is_sent: true, timestamp: "2023-05-09T11:45:00" }
-                    ];
-                } else {
-                    messages = [];
+                `;
+                
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('Not authenticated');
                 }
+                
+                // Make API request to get messages
+                const response = await fetch(`${API_URL}/messages/${contactId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load messages');
+                }
+                
+                const data = await response.json();
+                messages = data.messages || [];
                 
                 // Display messages
                 renderMessages(messages);
-            }, 1000);
+                
+                // Mark messages as read
+                markMessagesAsRead(contactId);
+                
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                
+                // For development - load sample messages if API fails
+                loadSampleMessages(contactId);
+            }
+        }
+        
+        // Load sample messages for testing/development
+        function loadSampleMessages(contactId) {
+            // Sample messages based on contact
+            if (contactId === 1) {
+                messages = [
+                    { id: 1, content: "Hello, Dr. Johnson. I've been experiencing chest pain after exercising.", is_sent: true, timestamp: "2023-05-10T10:30:00" },
+                    { id: 2, content: "Hi Ahmed, could you describe the pain? Is it sharp or dull?", is_sent: false, timestamp: "2023-05-10T10:35:00" },
+                    { id: 3, content: "It's a sharp pain, right in the center of my chest.", is_sent: true, timestamp: "2023-05-10T10:38:00" },
+                    { id: 4, content: "How long does it last? Does it radiate to your arm or jaw?", is_sent: false, timestamp: "2023-05-10T10:40:00" },
+                    { id: 5, content: "It lasts about 10 minutes and sometimes radiates to my left arm.", is_sent: true, timestamp: "2023-05-10T10:45:00" },
+                    { id: 6, content: "I think we should schedule you for an in-person assessment. This could be angina. Please book an appointment as soon as possible.", is_sent: false, timestamp: "2023-05-10T10:50:00" }
+                ];
+            } else if (contactId === 2) {
+                messages = [
+                    { id: 1, content: "Dr. Wilson, I've been having frequent headaches since our last appointment.", is_sent: true, timestamp: "2023-05-05T14:20:00" },
+                    { id: 2, content: "Are you taking the medication I prescribed?", is_sent: false, timestamp: "2023-05-05T15:30:00" },
+                    { id: 3, content: "Yes, every day as directed.", is_sent: true, timestamp: "2023-05-05T15:45:00" },
+                    { id: 4, content: "Let's schedule a follow-up to adjust your dosage.", is_sent: false, timestamp: "2023-05-05T16:00:00" }
+                ];
+            } else if (contactId === 3) {
+                messages = [
+                    { id: 1, content: "Dr. Chen, the rash has improved with the cream you prescribed.", is_sent: true, timestamp: "2023-05-08T09:10:00" },
+                    { id: 2, content: "That's great news! Continue using it for another week as directed.", is_sent: false, timestamp: "2023-05-08T10:25:00" }
+                ];
+            } else if (contactId === 4) {
+                messages = [
+                    { id: 1, content: "Nurse Roberts, when should I come in for my next blood test?", is_sent: true, timestamp: "2023-05-09T11:00:00" },
+                    { id: 2, content: "You're due for another test next Monday. You can come anytime between 8 AM and 4 PM.", is_sent: false, timestamp: "2023-05-09T11:30:00" },
+                    { id: 3, content: "Do I need to fast before the test?", is_sent: true, timestamp: "2023-05-09T11:35:00" },
+                    { id: 4, content: "Yes, please fast for 8 hours before the test. You can drink water.", is_sent: false, timestamp: "2023-05-09T11:40:00" },
+                    { id: 5, content: "Thank you, I'll schedule for Monday morning.", is_sent: true, timestamp: "2023-05-09T11:45:00" }
+                ];
+            } else {
+                messages = [];
+            }
+            
+            // Display messages
+            renderMessages(messages);
         }
         
         // Render messages in chat body
@@ -621,41 +811,87 @@
         }
         
         // Send a message
-        function sendMessage() {
+        async function sendMessage() {
             const message = messageInput.value.trim();
             if (!message || !currentRecipient) return;
             
-            // Create a new message
-            const newMessage = {
-                id: messages.length + 1,
-                content: message,
-                is_sent: true,
-                timestamp: new Date().toISOString()
-            };
-            
-            // Add to messages array
-            messages.push(newMessage);
-            
-            // Clear input
-            messageInput.value = '';
-            
-            // Re-render messages
-            renderMessages(messages);
-            
-            // Auto-response for demo (simulate doctor response)
-            setTimeout(() => {
-                const autoResponse = {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('Not authenticated');
+                }
+                
+                // Add message to UI immediately (optimistic update)
+                const tempMessageElement = document.createElement('div');
+                tempMessageElement.className = 'message sent';
+                tempMessageElement.textContent = message;
+                
+                const tempTimeElement = document.createElement('div');
+                tempTimeElement.className = 'message-time';
+                tempTimeElement.textContent = 'Sending...';
+                tempMessageElement.appendChild(tempTimeElement);
+                
+                chatBody.appendChild(tempMessageElement);
+                chatBody.scrollTop = chatBody.scrollHeight;
+                
+                // Clear input
+                messageInput.value = '';
+                
+                // Make API request to send message
+                const response = await fetch(`${API_URL}/messages/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        recipient_id: currentRecipient.id,
+                        content: message
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to send message');
+                }
+                
+                const data = await response.json();
+                
+                // Update the temporary message with the actual message data
+                tempTimeElement.textContent = 'Just now';
+                
+                // Reload messages to ensure we have the latest
+                await loadMessages(currentRecipient.id);
+                
+            } catch (error) {
+                console.error('Error sending message:', error);
+                
+                // For development - simulate successful send
+                // In a real app, you'd show an error message instead
+                const now = new Date();
+                messages.push({
                     id: messages.length + 1,
-                    content: getAutoResponse(currentRecipient.id),
-                    is_sent: false,
-                    timestamp: new Date().toISOString()
-                };
-                messages.push(autoResponse);
+                    content: message,
+                    is_sent: true,
+                    timestamp: now.toISOString()
+                });
+                
+                // Auto-response for demo (simulate doctor response)
+                setTimeout(() => {
+                    const autoResponse = {
+                        id: messages.length + 1,
+                        content: getAutoResponse(currentRecipient.id),
+                        is_sent: false,
+                        timestamp: new Date().toISOString()
+                    };
+                    messages.push(autoResponse);
+                    renderMessages(messages);
+                }, 1500);
+                
                 renderMessages(messages);
-            }, 1500);
+            }
         }
         
-        // Simple auto-response based on doctor
+        // Simple auto-response based on doctor (for demo/development)
         function getAutoResponse(doctorId) {
             const responses = [
                 "I'll review this information. Thank you.",
@@ -665,6 +901,26 @@
                 "I've received your message and will follow up soon."
             ];
             return responses[Math.floor(Math.random() * responses.length)];
+        }
+        
+        // Mark messages as read
+        async function markMessagesAsRead(contactId) {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return;
+                
+                // Make API request to mark messages as read
+                await fetch(`${API_URL}/messages/mark-read/${contactId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error marking messages as read:', error);
+            }
         }
         
         // Filter contacts by search term
@@ -697,7 +953,7 @@
             // Refresh chat on button click
             refreshChatButton.addEventListener('click', () => {
                 if (currentRecipient) {
-                    loadSampleMessages(currentRecipient.id);
+                    loadMessages(currentRecipient.id);
                 }
             });
             
@@ -738,6 +994,83 @@
             // Older
             else {
                 return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            }
+        }
+        
+        // Helper function to show error message
+        function showError(message) {
+            // Replace alert with a non-blocking toast or in-page notification
+            console.error(message);
+            
+            // Add a notification to the page instead of an alert
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background-color: #f8d7da;
+                color: #721c24;
+                padding: 10px 20px;
+                border-radius: 4px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                z-index: 1000;
+                max-width: 300px;
+            `;
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span>${message}</span>
+                    <button style="background: none; border: none; cursor: pointer; margin-left: 10px; font-weight: bold;">&times;</button>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+            
+            // Remove on click
+            notification.querySelector('button').addEventListener('click', () => {
+                notification.remove();
+            });
+        }
+        
+        // Helper function to get current user profile (safe version that won't redirect)
+        async function getCurrentUserProfile() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return null;
+                
+                // First check if we already have user data in localStorage
+                const userData = JSON.parse(localStorage.getItem('user') || '{}');
+                if (userData && userData.id) {
+                    return userData;
+                }
+                
+                // If not, try to fetch it from the API
+                const response = await fetch(`${API_URL}/user/profile`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    // Don't automatically clear tokens on error
+                    console.warn('Error fetching profile:', response.status);
+                    return null;
+                }
+                
+                const data = await response.json();
+                
+                // Save user data to localStorage
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                return data.user;
+            } catch (error) {
+                console.error('Error getting user profile:', error);
+                return null;
             }
         }
         
