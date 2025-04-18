@@ -167,18 +167,19 @@
         
         <form id="registrationForm">
             <div class="form-group">
-                <label for="role">Role</label>
-                <select name="role" id="role" required onchange="toggleRoleFields()">
-                    <option value="">Select Role</option>
-                    <option value="patient">Patient</option>
-                    <option value="doctor">Doctor</option>
-                    <option value="nurse">Nurse</option>
-                    <option value="receptionist">Receptionist</option>
-                </select>
+                <label>Role</label>
+                <div class="role-selection">
+                    <label class="radio-label">
+                        <input type="radio" name="role" value="patient" checked onchange="toggleRoleFields()"> Patient
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="role" value="doctor" onchange="toggleRoleFields()"> Doctor
+                    </label>
+                </div>
             </div>
             
-            <!-- Fields for Patient only (Initially hidden) -->
-            <div id="patientFields" style="display: none;">
+            <!-- Fields for Patient only (Initially shown) -->
+            <div id="patientFields">
                 <div class="form-group">
                     <label for="dob">Date of Birth</label>
                     <input type="date" id="dob" name="dob">
@@ -253,55 +254,6 @@
                 </div>
             </div>
 
-            <!-- Nurse specific fields -->
-            <div id="nurseFields" style="display: none;">
-                <div class="form-group">
-                    <label for="nurseSpecialization">Nursing Specialization</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-stethoscope"></i>
-                        <select name="nurseSpecialization" id="nurseSpecialization">
-                            <option value="">Select Specialization</option>
-                            <option value="general">General Care</option>
-                            <option value="pediatric">Pediatric Nursing</option>
-                            <option value="emergency">Emergency Care</option>
-                            <option value="surgical">Surgical Nursing</option>
-                            <option value="icu">Intensive Care</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="nurseDepartment">Department</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-hospital"></i>
-                        <select name="nurseDepartment" id="nurseDepartment">
-                            <option value="">Select Department</option>
-                            <option value="emergency">Emergency</option>
-                            <option value="icu">Intensive Care</option>
-                            <option value="pediatric">Pediatrics</option>
-                            <option value="surgical">Surgery</option>
-                            <option value="general">General Ward</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="nurseLicenseNumber">License Number</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-id-card"></i>
-                        <input type="text" id="nurseLicenseNumber" name="nurseLicenseNumber" placeholder="Enter nursing license number">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="nurseExperience">Years of Experience</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-clock"></i>
-                        <input type="number" id="nurseExperience" name="nurseExperience" min="0" placeholder="Years of experience">
-                    </div>
-                </div>
-            </div>
-
             <button type="submit" id="registerBtn" class="register-btn">
                 <span class="spinner" id="registerSpinner"></span>
                 Create Account
@@ -326,37 +278,50 @@
             
             // Toggle role-specific fields
             function toggleRoleFields() {
-                const role = document.getElementById('role').value;
+                const roleRadios = document.getElementsByName('role');
+                let role = '';
+                
+                for (const radio of roleRadios) {
+                    if (radio.checked) {
+                        role = radio.value;
+                        break;
+                    }
+                }
+                
                 const doctorFields = document.getElementById('doctorFields');
-                const nurseFields = document.getElementById('nurseFields');
                 const patientFields = document.getElementById('patientFields');
                 
                 doctorFields.style.display = 'none';
-                nurseFields.style.display = 'none';
                 patientFields.style.display = 'none';
                 
-                switch(role) {
-                    case 'doctor':
-                        doctorFields.style.display = 'block';
-                        break;
-                    case 'nurse':
-                        nurseFields.style.display = 'block';
-                        break;
-                    case 'patient':
-                        patientFields.style.display = 'block';
-                        break;
+                if (role === 'doctor') {
+                    doctorFields.style.display = 'block';
+                } else if (role === 'patient') {
+                    patientFields.style.display = 'block';
                 }
             }
             
             // Make toggleRoleFields available globally
             window.toggleRoleFields = toggleRoleFields;
             
+            // Initialize role fields on page load
+            toggleRoleFields();
+            
             // Registration form submission
             document.getElementById('registrationForm').addEventListener('submit', async function(event) {
                 event.preventDefault();
                 
-                // Get common form fields
-                const role = document.getElementById('role').value;
+                // Get selected role from radio buttons
+                const roleRadios = document.getElementsByName('role');
+                let role = '';
+                
+                for (const radio of roleRadios) {
+                    if (radio.checked) {
+                        role = radio.value;
+                        break;
+                    }
+                }
+                
                 const firstName = document.getElementById('firstName').value;
                 const lastName = document.getElementById('lastName').value;
                 const email = document.getElementById('email').value;
@@ -404,24 +369,6 @@
                     userData.specialization = specialization;
                     userData.license_number = licenseNumber;
                 } 
-                else if (role === 'nurse') {
-                    const nurseSpecialization = document.getElementById('nurseSpecialization').value;
-                    const nurseDepartment = document.getElementById('nurseDepartment').value;
-                    const nurseLicenseNumber = document.getElementById('nurseLicenseNumber').value;
-                    const nurseExperience = document.getElementById('nurseExperience').value;
-                    
-                    if (!nurseSpecialization || !nurseDepartment || !nurseLicenseNumber) {
-                        showAlert('Please fill in all nurse-specific fields', 'error');
-                        registerBtn.disabled = false;
-                        registerSpinner.style.display = 'none';
-                        return;
-                    }
-                    
-                    userData.specialization = nurseSpecialization;
-                    userData.department = nurseDepartment;
-                    userData.license_number = nurseLicenseNumber;
-                    userData.years_experience = nurseExperience;
-                }
                 else if (role === 'patient') {
                     const dob = document.getElementById('dob').value;
                     const emergencyContactName = document.getElementById('emergencyContactName').value;
