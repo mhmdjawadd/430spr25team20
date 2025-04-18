@@ -13,12 +13,12 @@ from services.reminderService import ReminderController
 
 # Initialize Flask application
 app = Flask(__name__)
-CORS(app)  # Enable CORS
+CORS(app)  # Enable CORS for all routes
 
 # Configuration
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key")
 app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "dev-jwt-secret")
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600  # 1 hour
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 36000  # 1 hour
 
 # Initialize JWT
 jwt = JWTManager(app)
