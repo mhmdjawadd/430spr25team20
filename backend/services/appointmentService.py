@@ -619,45 +619,6 @@ class AppointmentController:
         })
 
     @staticmethod
-    def get_availability_range(doctor_id, start_date, end_date):
-        """
-        Get doctor availability across a date range (week/month view)
-        
-        Args:
-            doctor_id (int): The ID of the doctor
-            start_date (date): The start date of the range
-            end_date (date): The end date of the range
-            
-        Returns:
-            dict: Dictionary of available time slots by date
-        """
-        # Validate date range (limit to a maximum of 31 days to prevent excessive queries)
-        date_difference = (end_date - start_date).days
-        if date_difference < 0:
-            raise ValueError("End date must be after start date")
-            
-        if date_difference > 31:
-            raise ValueError("Date range cannot exceed 31 days")
-        
-        # Create a dictionary to store availability for each date
-        availability = {}
-        
-        # Generate the list of dates in the range
-        current_date = start_date
-        while current_date <= end_date:
-            # Get available slots for this date
-            date_slots = AppointmentController.get_available_slots(doctor_id, current_date)
-            
-            # Store availability for this date
-            date_str = current_date.strftime("%Y-%m-%d")
-            availability[date_str] = date_slots
-            
-            # Move to the next date
-            current_date += timedelta(days=1)
-        
-        return availability
-
-    @staticmethod
     @jwt_required()
     def get_patient_appointments():
         """
