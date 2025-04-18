@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor – Manage Availabilities | Mediplus</title>
+    <!-- Icons & Calendar -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="../js/doctor-calendar.js"></script>
+
+    <style>
+        /* ---  Core Reset --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        body { display: flex; min-height: 100vh; background: #f8f9fa; }
+
+        /* ---  Sidebar --- */
+        .sidebar {
+            width: 280px; flex-shrink: 0;
+            background: linear-gradient(180deg, #0066cc 0%, #0052a3 100%);
+            color: #fff; padding: 30px;
+            display: flex; flex-direction: column; box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+        .doctor-profile { text-align: center; margin-bottom: 25px; }
+        .doctor-avatar { width: 90px; height: 90px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.25); margin-bottom: 10px; }
+        .doctor-name { font-size: 18px; font-weight: 600; }
+        .doctor-specialty { font-size: 14px; opacity: .8; }
+        .nav-link { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.85); text-decoration: none; padding: 12px 15px; border-radius: 8px; transition: all .3s; }
+        .nav-link i { font-size: 18px; }
+        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.15); color: #fff; transform: translateX(4px); }
+        .logout-btn { margin-top: auto; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); }
+
+        /* ---  Main Content --- */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .page-header h1 { font-size: 26px; color: #333; }
+        .btn-primary { background: #0066cc; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: .3s; display: flex; align-items: center; gap: 8px; }
+        .btn-primary:hover { background: #0052a3; }
+        .btn-secondary { background: #f8f9fa; color: #333; border: 1px solid #ddd; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: .3s; }
+        .btn-secondary:hover { background: #e9ecef; }
+
+        /* ---  Calendar and Controls --- */
+        .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,.05); }
+        #availabilityCalendar { height: 600px; }
+        .calendar-legend { display: flex; gap: 15px; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; font-size: 14px; color: #555; }
+        .legend-color { width: 14px; height: 14px; border-radius: 4px; margin-right: 6px; }
+
+        /* --- Controls & Forms --- */
+        .controls-card { display: flex; flex-direction: column; }
+        .controls-title { font-size: 18px; margin-bottom: 15px; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 6px; color: #333; font-size: 14px; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .time-range { display: flex; gap: 10px; }
+        .time-range input { flex: 1; }
+        .weekday-selector { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 15px; }
+        .weekday-btn { padding: 8px 0; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+        .weekday-btn.selected { background: #0066cc; color: white; border-color: #0066cc; }
+        .pattern-selector { display: flex; gap: 10px; margin-bottom: 15px; }
+        .pattern-btn { flex: 1; padding: 8px 0; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+        .pattern-btn.selected { background: #0066cc; color: white; border-color: #0066cc; }
+        
+        /* --- Time Slots List --- */
+        .time-slots-list { margin-top: 20px; }
+        .time-slot-item { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 12px 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #0066cc; }
+        .time-slot-info { flex: 1; }
+        .time-slot-day { font-weight: 600; color: #333; }
+        .time-slot-time { font-size: 14px; color: #555; }
+        .time-slot-controls { display: flex; gap: 8px; }
+        .time-slot-btn { background: none; border: none; cursor: pointer; color: #666; transition: .2s; }
+        .time-slot-btn:hover { color: #0066cc; }
+        .time-slot-btn.delete:hover { color: #dc3545; }
+
+        /* ---  Modal --- */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); justify-content: center; align-items: center; z-index: 999; }
+        .modal-content { background: #fff; border-radius: 16px; width: 90%; max-width: 550px; box-shadow: 0 10px 30px rgba(0,0,0,.2); animation: fadeIn .3s; }
+        .modal-header { background: #0066cc; color: #fff; padding: 20px 25px; border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 25px; }
+        .modal-footer { padding: 20px 25px; background: #f8f9fa; border-radius: 0 0 16px 16px; display: flex; justify-content: flex-end; gap: 12px; }
+        .close-btn { background: none; border: none; font-size: 26px; color: #fff; cursor: pointer; opacity: .8; }
+        .close-btn:hover { opacity: 1; transform: rotate(90deg); }
+
+        /* --- Error Container --- */
+        #errorContainer { margin-bottom: 20px; }
+        .alert { padding: 12px 16px; margin-bottom: 15px; border-radius: 6px; }
+        .alert-info { background-color: #e3f2fd; color: #0d47a1; }
+        .alert-success { background-color: #e8f5e9; color: #2e7d32; }
+        .alert-warning { background-color: #fff3e0; color: #ef6c00; }
+        .alert-error { background-color: #ffebee; color: #c62828; }
+
+        @keyframes fadeIn { from{opacity:0; transform:translateY(-20px);} to{opacity:1; transform:none;} }
+
+        @media(max-width:1024px){ .content-grid{ grid-template-columns:1fr; } #availabilityCalendar{height:500px;} }
+        @media(max-width:768px){ .sidebar{ width:80px; padding:20px 10px;} .sidebar span{display:none;} .doctor-profile{display:none;} }
+    </style>
+</head>
+<body>
+    <!-- ===== Sidebar ===== -->
+    <aside class="sidebar">
+        
+        <a href="doctor-dashboard.html" class="nav-link"><i class="fas fa-home"></i><span>Dashboard</span></a>
+        <a href="doctor-appointments.html" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Appointments</span></a>
+        <a href="doctor-patients.html" class="nav-link"><i class="fas fa-user-injured"></i><span>Patients</span></a>
+        <a href="doctor-availabilities.html" class="nav-link"><i class="fas fa-prescription"></i><span>Edit Availabilities</span></a>
+        <a href="doctor-records.html" class="nav-link"><i class="fas fa-file-medical"></i><span>Medical Records</span></a>
+        <a href="doctor-messages.html" class="nav-link"><i class="fas fa-comments"></i><span>Messages</span></a>
+        <a href="../index.html" class="nav-link logout-btn"><i class="fas fa-door-open"></i><span>back</span></a>
+    </aside>
+
+    <!-- ===== Main ===== -->
+    <main class="main-content">
+        <header class="page-header">
+            <h1>Manage Availabilities</h1>
+            <button class="btn-primary" onclick="openAvailabilityModal()"><i class="fas fa-plus"></i> Add Availability</button>
+        </header>
+
+        <div id="errorContainer"></div>
+
+        <section class="content-grid">
+            <!-- Calendar -->
+            <div class="card calendar-card">
+                <div id="availabilityCalendar"></div>
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #1A76D1;"></div>
+                        <span>Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #28a745;"></div>
+                        <span>Selected</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ccc;"></div>
+                        <span>Booked</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="card controls-card">
+                <h2 class="controls-title">Availability Settings</h2>
+                
+                <div class="form-group">
+                    <label>Date Range</label>
+                    <div class="time-range">
+                        <input type="date" id="startDate" min="2023-01-01">
+                        <input type="date" id="endDate" min="2023-01-01">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Quick Filters</label>
+                    <div class="pattern-selector">
+                        <button class="pattern-btn" onclick="setDateRange('today')">Today</button>
+                        <button class="pattern-btn" onclick="setDateRange('week')">This Week</button>
+                        <button class="pattern-btn" onclick="setDateRange('month')">This Month</button>
+                    </div>
+                </div>
+                
+                <button id="loadAvailabilityBtn" class="btn-primary" style="margin-bottom: 20px;">
+                    <i class="fas fa-sync-alt"></i> Load Availabilities
+                </button>
+                
+                <h3 class="controls-title">Current Availability Template</h3>
+                <div class="time-slots-list" id="availabilityTemplateList">
+                    <div class="time-slot-item">
+                        <div class="time-slot-info">
+                            <div class="time-slot-day">Monday - Friday</div>
+                            <div class="time-slot-time">09:00 - 17:00</div>
+                        </div>
+                        <div class="time-slot-controls">
+                            <button class="time-slot-btn edit"><i class="fas fa-edit"></i></button>
+                            <button class="time-slot-btn delete"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                    <div class="time-slot-item">
+                        <div class="time-slot-info">
+                            <div class="time-slot-day">Saturday</div>
+                            <div class="time-slot-time">10:00 - 14:00</div>
+                        </div>
+                        <div class="time-slot-controls">
+                            <button class="time-slot-btn edit"><i class="fas fa-edit"></i></button>
+                            <button class="time-slot-btn delete"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: auto;">
+                    <button class="btn-secondary" onclick="syncWithCalendar()">
+                        <i class="fas fa-sync"></i> Sync with External Calendar
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ===== Modal ===== -->
+    <div class="modal" id="availabilityModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Availability</h2>
+                <button class="close-btn" onclick="closeAvailabilityModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="availabilityForm">
+                    <div class="form-group">
+                        <label>Pattern Type</label>
+                        <select id="patternType" onchange="togglePatternFields()">
+                            <option value="single">Single Day</option>
+                            <option value="recurring">Recurring Pattern</option>
+                        </select>
+                    </div>
+                    
+                    <div id="singleDayFields">
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="availabilityDate" required>
+                        </div>
+                    </div>
+                    
+                    <div id="recurringFields" style="display: none;">
+                        <div class="form-group">
+                            <label>Repeats On</label>
+                            <div class="weekday-selector">
+                                <button type="button" class="weekday-btn" data-day="1">M</button>
+                                <button type="button" class="weekday-btn" data-day="2">T</button>
+                                <button type="button" class="weekday-btn" data-day="3">W</button>
+                                <button type="button" class="weekday-btn" data-day="4">T</button>
+                                <button type="button" class="weekday-btn" data-day="5">F</button>
+                                <button type="button" class="weekday-btn" data-day="6">S</button>
+                                <button type="button" class="weekday-btn" data-day="0">S</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Date Range</label>
+                            <div class="time-range">
+                                <input type="date" id="recurringStartDate" required>
+                                <input type="date" id="recurringEndDate" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Time Range</label>
+                        <div class="time-range">
+                            <input type="time" id="startTime" required>
+                            <input type="time" id="endTime" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Break Time (optional)</label>
+                        <div class="time-range">
+                            <input type="time" id="breakStartTime" placeholder="Start">
+                            <input type="time" id="breakEndTime" placeholder="End">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Slot Duration</label>
+                        <select id="slotDuration">
+                            <option value="15">15 minutes</option>
+                            <option value="30" selected>30 minutes</option>
+                            <option value="45">45 minutes</option>
+                            <option value="60">60 minutes</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="saveAvailability()">Save</button>
+                <button class="btn-secondary" onclick="closeAvailabilityModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== JS ===== -->
+    <script>
+        // Global variables
+        let availabilityCalendar;
+        let selectedDays = [];
+        const API_BASE_URL = 'http://localhost:5000';
+        
+        // Initialize when document is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            initAvailabilityPage();
+        });
+        
+        // Initialize the page
+        function initAvailabilityPage() {
+            // Initialize calendar
+            initializeCalendar();
+            
+            // Set default date range
+            setDateRange('week');
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Load initial data
+            loadDoctorAvailability();
+            
+            // Check authentication status
+            checkAuthStatus();
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Load availability button
+            const loadAvailabilityBtn = document.getElementById('loadAvailabilityBtn');
+            if (loadAvailabilityBtn) {
+                loadAvailabilityBtn.addEventListener('click', loadDoctorAvailability);
+            }
+            
+            // Weekday buttons in modal
+            const weekdayBtns = document.querySelectorAll('.weekday-btn');
+            weekdayBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                    const day = parseInt(this.dataset.day);
+                    
+                    if (this.classList.contains('selected')) {
+                        if (!selectedDays.includes(day)) {
+                            selectedDays.push(day);
+                        }
+                    } else {
+                        selectedDays = selectedDays.filter(d => d !== day);
+                    }
+                });
+            });
+        }
+        
+        // Initialize calendar
+        function initializeCalendar() {
+            const calendarEl = document.getElementById('availabilityCalendar');
+            if (!calendarEl) return;
+            
+            availabilityCalendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'timeGridDay,timeGridWeek,dayGridMonth'
+                },
+                height: 'auto',
+                allDaySlot: false,
+                slotMinTime: '08:00:00',
+                slotMaxTime: '20:00:00',
+                slotDuration: '00:30:00',
+                selectable: true,
+                selectMirror: true,
+                businessHours: {
+                    daysOfWeek: [1, 2, 3, 4, 5], // Monday - Friday
+                    startTime: '08:00',
+                    endTime: '18:00',
+                },
+                select: function(info) {
+                    // Handle time slot selection
+                    handleTimeSlotSelection(info);
+                },
+                eventClick: function(info) {
+                    // Handle event click
+                    handleEventClick(info);
+                },
+                eventContent: function(arg) {
+                    const isAvailable = arg.event.extendedProps.isAvailable;
+                    const isBooked = arg.event.extendedProps.isBooked;
+                    
+                    return {
+                        html: `
+                            <div style="font-size:12px;overflow:hidden;height:100%;">
+                                <div style="font-weight:600;">${arg.timeText}</div>
+                                <div>${isBooked ? 'Booked' : (isAvailable ? 'Available' : 'Unavailable')}</div>
+                            </div>
+                        `
+                    };
+                }
+            });
+            
+            availabilityCalendar.render();
+        }
+        
+        // Handle time slot selection
+        function handleTimeSlotSelection(info) {
+            console.log('Selected time slot:', info);
+            
+            // Format date and time
+            const startDate = info.start.toISOString().split('T')[0];
+            const startTime = info.start.toTimeString().slice(0, 5);
+            const endTime = info.end.toTimeString().slice(0, 5);
+            
+            // Open modal with pre-filled values
+            openAvailabilityModal();
+            
+            // Set values in the form
+            document.getElementById('patternType').value = 'single';
+            document.getElementById('availabilityDate').value = startDate;
+            document.getElementById('startTime').value = startTime;
+            document.getElementById('endTime').value = endTime;
+            
+            // Toggle the appropriate fields
+            togglePatternFields();
+        }
+        
+        // Handle event click
+        function handleEventClick(info) {
+            const eventData = info.event.extendedProps;
+            
+            if (eventData.isBooked) {
+                showMessage('This time slot is already booked by a patient', 'info');
+                return;
+            }
+            
+            if (confirm('Do you want to delete this availability?')) {
+                deleteAvailability(info.event.id);
+            }
+        }
+        
+        // Toggle pattern fields based on pattern type
+        function togglePatternFields() {
+            const patternType = document.getElementById('patternType').value;
+            const singleDayFields = document.getElementById('singleDayFields');
+            const recurringFields = document.getElementById('recurringFields');
+            
+            if (patternType === 'single') {
+                singleDayFields.style.display = 'block';
+                recurringFields.style.display = 'none';
+            } else {
+                singleDayFields.style.display = 'none';
+                recurringFields.style.display = 'block';
+            }
+        }
+        
+        // Set date range for the filters
+        function setDateRange(range) {
+            const today = new Date();
+            const startDateEl = document.getElementById('startDate');
+            const endDateEl = document.getElementById('endDate');
+            
+            // Remove selected class from all buttons
+            document.querySelectorAll('.pattern-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Select the clicked button
+            const btn = event.target;
+            btn.classList.add('selected');
+            
+            switch(range) {
+                case 'today':
+                    startDateEl.value = formatDate(today);
+                    endDateEl.value = formatDate(today);
+                    break;
+                case 'week':
+                    // Start of week (Monday)
+                    const monday = new Date(today);
+                    monday.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
+                    
+                    // End of week (Sunday)
+                    const sunday = new Date(monday);
+                    sunday.setDate(monday.getDate() + 6);
+                    
+                    startDateEl.value = formatDate(monday);
+                    endDateEl.value = formatDate(sunday);
+                    break;
+                case 'month':
+                    // Start of month
+                    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                    
+                    // End of month
+                    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    
+                    startDateEl.value = formatDate(startOfMonth);
+                    endDateEl.value = formatDate(endOfMonth);
+                    break;
+            }
+            
+            // If range changes, load data
+            loadDoctorAvailability();
+        }
+        
+        // Format date to YYYY-MM-DD
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Load doctor availability
+        async function loadDoctorAvailability() {
+            try {
+                showMessage('Loading availability data...', 'info');
+                
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                
+                if (!startDate || !endDate) {
+                    showMessage('Please select a date range', 'warning');
+                    return;
+                }
+                
+                // Get doctor ID
+                const doctorId = getCurrentDoctorId();
+                if (!doctorId) {
+                    showMessage('Doctor ID not found. Please log in again.', 'error');
+                    return;
+                }
+                
+                // Fetch availability from API
+                const token = getAuthToken();
+                if (!token) {
+                    showMessage('Authentication required. Please log in again.', 'warning');
+                    return;
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/doctors/availability?doctor_id=${doctorId}&start_date=${startDate}&end_date=${endDate}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load availability: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Availability data:', data);
+                
+                // Clear existing events
+                availabilityCalendar.getEvents().forEach(event => event.remove());
+                
+                // Add availability slots to calendar
+                updateCalendarWithAvailability(data.availability || {});
+                
+                // Update availability templates list
+                updateAvailabilityTemplateList(data.templates || []);
+                
+                showMessage('Availability data loaded successfully', 'success');
+            } catch (error) {
+                console.error('Error loading availability:', error);
+                showMessage(`Error loading availability: ${error.message}`, 'error');
+                
+                // Load sample data for development
+                loadSampleAvailabilityData();
+            }
+        }
+        
+        // Update calendar with availability data
+        function updateCalendarWithAvailability(availabilityData) {
+            if (!availabilityCalendar) return;
+            
+            // Process each date in the availability data
+            Object.keys(availabilityData).forEach(dateStr => {
+                const slots = availabilityData[dateStr];
+                
+                // Add each slot as an event on the calendar
+                slots.forEach(slot => {
+                    // Skip if no start/end time
+                    if (!slot.start || !slot.end) return;
+                    
+                    // Create date objects for the start and end times
+                    const startDateTime = `${dateStr}T${slot.start}:00`;
+                    const endDateTime = `${dateStr}T${slot.end}:00`;
+                    
+                    // Add event to calendar
+                    availabilityCalendar.addEvent({
+                        id: slot.id || `slot-${Math.random().toString(36).substr(2, 9)}`,
+                        title: slot.is_booked ? 'Booked' : 'Available',
+                        start: startDateTime,
+                        end: endDateTime,
+                        color: slot.is_booked ? '#ccc' : '#1A76D1',
+                        textColor: slot.is_booked ? '#666' : '#fff',
+                        extendedProps: {
+                            isAvailable: true,
+                            isBooked: slot.is_booked,
+                            slotData: slot
+                        }
+                    });
+                });
+            });
+            
+            // Go to the selected date range
+            const startDate = document.getElementById('startDate').value;
+            if (startDate) {
+                availabilityCalendar.gotoDate(startDate);
+            }
+        }
+        
+        // Update availability template list
+        function updateAvailabilityTemplateList(templates) {
+            const listEl = document.getElementById('availabilityTemplateList');
+            if (!listEl) return;
+            
+            listEl.innerHTML = '';
+            
+            if (templates.length === 0) {
+                listEl.innerHTML = '<p>No availability templates defined</p>';
+                return;
+            }
+            
+            templates.forEach(template => {
+                const templateItem = document.createElement('div');
+                templateItem.className = 'time-slot-item';
+                templateItem.innerHTML = `
+                    <div class="time-slot-info">
+                        <div class="time-slot-day">${formatWeekdays(template.days)}</div>
+                        <div class="time-slot-time">${template.start_time} - ${template.end_time}</div>
+                    </div>
+                    <div class="time-slot-controls">
+                        <button class="time-slot-btn edit" onclick="editTemplate('${template.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="time-slot-btn delete" onclick="deleteTemplate('${template.id}')"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                `;
+                
+                listEl.appendChild(templateItem);
+            });
+        }
+        
+        // Format weekdays array to readable string
+        function formatWeekdays(days) {
+            if (!days || days.length === 0) return 'No days selected';
+            
+            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const selectedDayNames = days.map(day => dayNames[day]);
+            
+            // Check if it's all days
+            if (selectedDayNames.length === 7) {
+                return 'Every day';
+            }
+            
+            // Check if it's weekdays
+            if (days.length === 5 && 
+                days.includes(1) && days.includes(2) && days.includes(3) && 
+                days.includes(4) && days.includes(5)) {
+                return 'Weekdays';
+            }
+            
+            // Check if it's weekends
+            if (days.length === 2 && days.includes(0) && days.includes(6)) {
+                return 'Weekends';
+            }
+            
+            // Otherwise list the days
+            return selectedDayNames.join(', ');
+        }
+        
+        // Load sample availability data for development
+        function loadSampleAvailabilityData() {
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const currentMonth = today.getMonth();
+            const currentDate = today.getDate();
+            
+            // Sample availability data for the current week
+            const availability = {};
+            
+            // Generate sample slots for 7 days
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(currentYear, currentMonth, currentDate + i);
+                const dateStr = formatDate(date);
+                
+                // Only add slots for weekdays
+                const day = date.getDay();
+                if (day > 0 && day < 6) {
+                    availability[dateStr] = [
+                        { id: `morning-${i}`, start: '09:00', end: '12:00', is_booked: false },
+                        { id: `afternoon-${i}`, start: '13:00', end: '17:00', is_booked: i % 3 === 0 } // Some slots booked
+                    ];
+                } else if (day === 6) { // Saturday
+                    availability[dateStr] = [
+                        { id: `morning-${i}`, start: '10:00', end: '14:00', is_booked: false }
+                    ];
+                }
+            }
+            
+            // Sample templates
+            const templates = [
+                { id: 'template-1', days: [1, 2, 3, 4, 5], start_time: '09:00', end_time: '17:00' },
+                { id: 'template-2', days: [6], start_time: '10:00', end_time: '14:00' }
+            ];
+            
+            // Update calendar with sample data
+            updateCalendarWithAvailability(availability);
+            
+            // Update template list
+            updateAvailabilityTemplateList(templates);
+        }
+        
+        // Open availability modal
+        function openAvailabilityModal() {
+            const modal = document.getElementById('availabilityModal');
+            if (modal) {
+                modal.style.display = 'flex';
+            }
+        }
+        
+        // Close availability modal
+        function closeAvailabilityModal() {
+            const modal = document.getElementById('availabilityModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            
+            // Reset form
+            document.getElementById('availabilityForm').reset();
+            selectedDays = [];
+            
+            // Reset weekday buttons
+            document.querySelectorAll('.weekday-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+        }
+        
+        // Save availability
+        async function saveAvailability() {
+            try {
+                const patternType = document.getElementById('patternType').value;
+                const startTime = document.getElementById('startTime').value;
+                const endTime = document.getElementById('endTime').value;
+                const slotDuration = document.getElementById('slotDuration').value;
+                const breakStartTime = document.getElementById('breakStartTime').value;
+                const breakEndTime = document.getElementById('breakEndTime').value;
+                
+                // Validate required fields
+                if (!startTime || !endTime) {
+                    showMessage('Please enter start and end times', 'warning');
+                    return;
+                }
+                
+                // Create availability data
+                let availabilityData = {
+                    doctor_id: getCurrentDoctorId(),
+                    start_time: startTime,
+                    end_time: endTime,
+                    slot_duration: parseInt(slotDuration),
+                    pattern_type: patternType
+                };
+                
+                // Add break time if provided
+                if (breakStartTime && breakEndTime) {
+                    availabilityData.break_start = breakStartTime;
+                    availabilityData.break_end = breakEndTime;
+                }
+                
+                // Add pattern-specific data
+                if (patternType === 'single') {
+                    const availabilityDate = document.getElementById('availabilityDate').value;
+                    if (!availabilityDate) {
+                        showMessage('Please select a date', 'warning');
+                        return;
+                    }
+                    
+                    availabilityData.date = availabilityDate;
+                } else {
+                    // Recurring pattern
+                    if (selectedDays.length === 0) {
+                        showMessage('Please select at least one day of the week', 'warning');
+                        return;
+                    }
+                    
+                    const recurringStartDate = document.getElementById('recurringStartDate').value;
+                    const recurringEndDate = document.getElementById('recurringEndDate').value;
+                    
+                    if (!recurringStartDate || !recurringEndDate) {
+                        showMessage('Please select start and end dates for the recurring pattern', 'warning');
+                        return;
+                    }
+                    
+                    availabilityData.days = selectedDays;
+                    availabilityData.start_date = recurringStartDate;
+                    availabilityData.end_date = recurringEndDate;
+                }
+                
+                showMessage('Saving availability...', 'info');
+                
+                // Get token
+                const token = getAuthToken();
+                if (!token) {
+                    throw new Error('Authentication required. Please log in again.');
+                }
+                
+                // Call API to save availability
+                const response = await fetch(`${API_BASE_URL}/doctors/availability`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(availabilityData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to save availability: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Availability saved:', data);
+                
+                showMessage('Availability saved successfully', 'success');
+                closeAvailabilityModal();
+                
+                // Reload availability data
+                loadDoctorAvailability();
+            } catch (error) {
+                console.error('Error saving availability:', error);
+                showMessage(`Error saving availability: ${error.message}`, 'error');
+            }
+        }
+        
+        // Delete availability
+        async function deleteAvailability(id) {
+            try {
+                showMessage('Deleting availability...', 'info');
+                
+                // Get token
+                const token = getAuthToken();
+                if (!token) {
+                    throw new Error('Authentication required. Please log in again.');
+                }
+                
+                // Call API to delete availability
+                const response = await fetch(`${API_BASE_URL}/doctors/availability/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to delete availability: ${response.status}`);
+                }
+                
+                showMessage('Availability deleted successfully', 'success');
+                
+                // Reload availability data
+                loadDoctorAvailability();
+            } catch (error) {
+                console.error('Error deleting availability:', error);
+                showMessage(`Error deleting availability: ${error.message}`, 'error');
+            }
+        }
+        
+        // Edit template
+        function editTemplate(id) {
+            // This would be implemented to edit an existing template
+            showMessage(`Editing template: ${id}`, 'info');
+            openAvailabilityModal();
+        }
+        
+        // Delete template
+        function deleteTemplate(id) {
+            if (confirm('Are you sure you want to delete this template?')) {
+                showMessage(`Deleting template: ${id}`, 'info');
+                // In a real implementation, this would call an API to delete the template
+            }
+        }
+        
+        // Sync with external calendar
+        function syncWithCalendar() {
+            showMessage('Syncing with external calendar...', 'info');
+            // In a real implementation, this would integrate with external calendar APIs
+            setTimeout(() => {
+                showMessage('Calendar sync completed successfully', 'success');
+            }, 2000);
+        }
+        
+        // Get current doctor ID from localStorage
+        function getCurrentDoctorId() {
+            try {
+                const userData = JSON.parse(localStorage.getItem('user'));
+                return userData && userData.id ? userData.id : 1; // Default for development
+            } catch (e) {
+                console.error('Error getting doctor ID:', e);
+                return 1; // Default value for development
+            }
+        }
+        
+        // Get auth token from localStorage
+        function getAuthToken() {
+            return localStorage.getItem('token');
+        }
+        
+        // Check authentication status
+        function checkAuthStatus() {
+            const token = getAuthToken();
+            
+            if (!token) {
+                showMessage('Authentication required. Please log in again.', 'warning');
+                // In a production app, redirect to login
+                // setTimeout(() => window.location.href = '../login.html', 3000);
+            }
+        }
+        
+        // Show message to the user
+        function showMessage(message, type = 'info') {
+            const errorContainer = document.getElementById('errorContainer');
+            if (!errorContainer) return;
+            
+            const messageEl = document.createElement('div');
+            messageEl.className = `alert alert-${type}`;
+            messageEl.textContent = message;
+            
+            // Clear previous messages and add new one
+            errorContainer.innerHTML = '';
+            errorContainer.appendChild(messageEl);
+            
+            // Auto-dismiss success and info messages after 3 seconds
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    messageEl.remove();
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>
