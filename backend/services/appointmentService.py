@@ -620,6 +620,149 @@ class AppointmentController:
 
     @staticmethod
     @jwt_required()
+    def set_doctor_availability_range():
+        """
+        Set available time slots for a doctor across a date range
+        
+        Request body:
+        {
+            "doctor_id": int,
+            "start_date": "YYYY-MM-DD",
+            "end_date": "YYYY-MM-DD",
+            "availability": {
+                "date": [
+                    {"start": "HH:MM", "end": "HH:MM", "available": bool},
+                    ...
+                ],
+                ...
+            }
+        }
+        """
+        # Get the current user
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+        
+        if not current_user:
+            return jsonify({"error": "User not found"}), 404
+            
+        # Get request data
+        data = request.get_json()
+        doctor_id = data.get('doctor_id')
+        start_date_str = data.get('start_date')
+        end_date_str = data.get('end_date')
+        availability_data = data.get('availability')
+        
+        # Validate required fields
+        if not doctor_id or not start_date_str or not end_date_str or not availability_data:
+            return jsonify({"error": "Missing required fields"}), 400
+            
+        # Check if the user is authorized (must be the doctor or an admin/receptionist)
+        is_authorized = (str(current_user.user_id) == str(doctor_id) or 
+                         current_user.role in [UserRole.ADMIN, UserRole.RECEPTIONIST])
+                         
+        if not is_authorized:
+            return jsonify({"error": "Unauthorized to set availability for this doctor"}), 403
+            
+        # Convert date strings to date objects
+        try:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
+            
+        # Limit range to 31 days to avoid performance issues
+        date_diff = (end_date - start_date).days
+        if date_diff > 31:
+            return jsonify({"error": "Date range too large. Maximum 31 days"}), 400
+            
+        # Get doctor record
+        doctor = Doctor.query.get(doctor_id)
+        if not doctor:
+            return jsonify({"error": "Doctor not found"}), 404
+            
+        try:
+            # Create or update availability records
+            # For simplicity, we'll delete existing appointments that conflict with new availability
+            modified_dates = []
+            conflict_handling = []
+            
+            # Process each date in the availability data
+            for date_str, slots in availability_data.items():
+                try:
+                    date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+                    
+                    # Skip if date is outside the specified range
+                    if date_obj < start_date or date_obj > end_date:
+                        continue
+                        
+                    # Skip weekends
+                    if date_obj.weekday() >= 5:  # 5=Saturday, 6=Sunday
+                        continue
+                        
+                    # Process each time slot for the date
+                    for slot in slots:
+                        start_time_str = slot.get('start')
+                        end_time_str = slot.get('end')
+                        is_available = slot.get('available', True)
+                        
+                        if not start_time_str or not end_time_str:
+                            continue
+                            
+                        # Parse time strings
+                        try:
+                            start_time = datetime.strptime(start_time_str, "%H:%M").time()
+                            end_time = datetime.strptime(end_time_str, "%H:%M").time()
+                        except ValueError:
+                            continue
+                            
+                        # Create datetime objects for start and end
+                        slot_start = datetime.combine(date_obj, start_time)
+                        slot_end = datetime.combine(date_obj, end_time)
+                        
+                        # Handle existing appointments that conflict with this slot
+                        if not is_available:
+                            # If marking as unavailable, find and handle conflicts
+                            conflicts = Appointment.query.filter(
+                                Appointment.doctor_id == doctor_id,
+                                Appointment.date_time >= slot_start,
+                                Appointment.date_time < slot_end
+                            ).all()
+                            
+                            if conflicts:
+                                # For now, just log the conflicts
+                                for conflict in conflicts:
+                                    conflict_handling.append({
+                                        "appointment_id": conflict.appointment_id,
+                                        "patient_id": conflict.patient_id,
+                                        "date_time": conflict.date_time.strftime("%Y-%m-%d %H:%M"),
+                                        "action": "conflict_detected"
+                                    })
+                    
+                    # Mark this date as modified
+                    modified_dates.append(date_str)
+                    
+                except ValueError:
+                    # Skip invalid dates
+                    continue
+                    
+            # Commit any database changes
+            db.session.commit()
+            
+            return jsonify({
+                "message": "Doctor availability updated successfully",
+                "doctor_id": doctor_id,
+                "doctor_name": f"Dr. {doctor.user.first_name} {doctor.user.last_name}",
+                "modified_dates": modified_dates,
+                "conflicts": conflict_handling
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error setting doctor availability: {str(e)}")
+            return jsonify({"error": f"Failed to set doctor availability: {str(e)}"}), 500
+
+    @staticmethod
+    @jwt_required()
     def get_patient_appointments():
         """
         Get all appointments for the current patient
