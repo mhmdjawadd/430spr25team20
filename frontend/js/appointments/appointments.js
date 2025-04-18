@@ -28,6 +28,7 @@ let successDetails;
 let allDoctors = [];
 let selectedDoctor = null;
 let selectedTimeSlot = null;
+let selectedTimeSlotData = null; // Add this new variable to store the raw time slot data
 let calendar;
 
 // API base URL
@@ -58,6 +59,9 @@ function initAppointmentPage() {
     
     // Check authentication status
     checkAuthStatus();
+    
+    // Check button connections after a short delay to ensure DOM is loaded
+    setTimeout(checkButtonConnections, 2000);
     
     // Add debug button to force show doctor suggestions
     const doctorInput = document.getElementById('doctorInput');
@@ -170,10 +174,19 @@ function setupEventListeners() {
         });
     }
     
-    // Confirm appointment button
+    // Confirm appointment button - Add direct event listener and console log
     const confirmBtn = document.getElementById('confirmBtn');
     if (confirmBtn) {
-        confirmBtn.addEventListener('click', confirmAppointment);
+        console.log('Found confirm button, adding event listener');
+        // Remove any existing event listeners
+        confirmBtn.removeEventListener('click', confirmAppointment);
+        // Add the event listener
+        confirmBtn.addEventListener('click', function(event) {
+            console.log('Confirm button clicked!');
+            confirmAppointment();
+        });
+    } else {
+        console.error('Confirm button not found in the DOM!');
     }
     
     // Book another appointment button
@@ -186,6 +199,21 @@ function setupEventListeners() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', handleLogout);
+    }
+}
+
+/**
+ * Add a simple function to check for button connectivity on page load
+ */
+function checkButtonConnections() {
+    console.log('Checking button connections...');
+    const confirmBtn = document.getElementById('confirmBtn');
+    if (confirmBtn) {
+        console.log('Confirm button found:', confirmBtn);
+        // Test click
+        confirmBtn.dispatchEvent(new Event('click', { bubbles: true }));
+    } else {
+        console.error('Confirm button not found - DOM may not be fully loaded');
     }
 }
 
@@ -252,8 +280,15 @@ function initializeCalendar() {
                 // Update time slot selection
                 selectTimeSlot(eventDate, eventTime);
                 
-                // Update summary
-                updateSummary(eventDate, eventTime);
+                // Store direct data from the event
+                selectedTimeSlotData = {
+                    date: eventDate,
+                    start: eventTime,
+                    end: info.event.end ? info.event.end.toTimeString().slice(0, 5) : 
+                        `${parseInt(eventTime.split(':')[0]) + 1}:${eventTime.split(':')[1]}`
+                };
+                
+                console.log("Selected time slot data from calendar:", selectedTimeSlotData);
             }
         },
         datesSet: function(dateInfo) {
@@ -701,11 +736,18 @@ function updateTimeSlots(slots) {
                 // Mark this slot as selected
                 timeSlot.classList.add('selected');
                 
-                // Get the selected date from calendar
-                const selectedDate = calendar.getDate().toISOString().split('T')[0];
+                // Store both the element and the data
+                selectedTimeSlot = timeSlot;
+                selectedTimeSlotData = {
+                    date: calendar.getDate().toISOString().split('T')[0],
+                    start: slot.start,
+                    end: slot.end || `${parseInt(slot.start.split(':')[0]) + 1}:${slot.start.split(':')[1]}`
+                };
+                
+                console.log("Time slot selected from list:", selectedTimeSlotData);
                 
                 // Update summary
-                updateSummary(selectedDate, slot.start);
+                updateSummary(selectedTimeSlotData.date, slot.start);
             });
         }
         
@@ -726,8 +768,12 @@ function clearTimeSlots() {
  * Select a time slot
  */
 function selectTimeSlot(date, time) {
-    // Find the time slot element with this time
+    console.log(`Selecting time slot: date=${date}, time=${time}`);
+    
+    // First try to find the time slot in the displayed list
     const timeSlotEl = document.querySelector(`.time-slot[data-start="${time}"]`);
+    console.log("Found time slot element:", timeSlotEl);
+    
     if (timeSlotEl && !timeSlotEl.classList.contains('booked')) {
         // Clear previous selections
         document.querySelectorAll('.time-slot').forEach(el => {
@@ -739,10 +785,24 @@ function selectTimeSlot(date, time) {
         
         // Store selected time slot
         selectedTimeSlot = timeSlotEl;
+        console.log("Time slot selected and stored from element:", selectedTimeSlot);
+    } else {
+        // If we couldn't find a matching element, create a virtual selection
+        // This handles cases where the calendar was clicked but no matching element exists
+        console.log("Creating virtual time slot selection since element not found in list");
         
-        // Update summary
-        updateSummary(date, time);
+        // Store the selection data even if we don't have a DOM element
+        selectedTimeSlotData = {
+            date: date,
+            start: time,
+            end: `${parseInt(time.split(':')[0]) + 1}:${time.split(':')[1]}`
+        };
+        
+        console.log("Virtual time slot data stored:", selectedTimeSlotData);
     }
+    
+    // Update summary regardless of which path we took
+    updateSummary(date, time);
 }
 
 /**
@@ -777,65 +837,93 @@ function updateSummary(date, time) {
 }
 
 /**
- * Confirm appointment
+ * Confirm appointment - Fixed version
  */
 async function confirmAppointment() {
-    // Get selected date from the calendar
-    const selectedDate = calendar.getDate().toISOString().split('T')[0];
-    
-    // Validate required fields
-    if (!selectedDate) {
-        showMessage('Please select a date.', 'error');
-        return;
-    }
-    
-    if (!selectedDoctor) {
-        showMessage('Please select a doctor.', 'error');
-        doctorInputEl.focus();
-        return;
-    }
-    
-    // Check if a time slot is selected
-    const selectedTimeSlotElement = document.querySelector('.time-slot.selected');
-    if (!selectedTimeSlotElement) {
-        showMessage('Please select a time slot.', 'error');
-        return;
-    }
-    
-    // Get the selected time
-    const selectedTime = selectedTimeSlotElement.dataset.start;
-    
-    // Prepare appointment data
-    const appointmentData = {
-        doctor_id: selectedDoctor.id || selectedDoctor.doctor_id, // Handle different API formats
-        date_time: `${selectedDate}-${selectedTime.split(':')[0]}`,
-        appointment_type: appointmentType.value,
-        notes: appointmentNotes.value || '',
-    };
-    
-    // Add recurring appointment details if enabled
-    if (recurring.checked) {
-        appointmentData.recurrence_pattern = document.getElementById('recurrencePattern').value;
-        appointmentData.recurrence_count = parseInt(document.getElementById('sessions').value, 10);
-    }
-    
-    // Add caregiver notification preferences if configured
-    const smsToCaregiverReminder = document.getElementById('smsToCaregiverReminder');
-    const emailToCaregiverReminder = document.getElementById('emailToCaregiverReminder');
-    const caregiverPhone = document.getElementById('caregiverPhone');
-    const caregiverEmail = document.getElementById('caregiverEmail');
-    
-    if (smsToCaregiverReminder && smsToCaregiverReminder.checked && caregiverPhone && caregiverPhone.value) {
-        appointmentData.caregiver_sms = true;
-        appointmentData.caregiver_phone = caregiverPhone.value;
-    }
-    
-    if (emailToCaregiverReminder && emailToCaregiverReminder.checked && caregiverEmail && caregiverEmail.value) {
-        appointmentData.caregiver_email = true;
-        appointmentData.caregiver_email_address = caregiverEmail.value;
-    }
-    
     try {
+        console.log("Starting confirmAppointment function");
+        
+        // Get selected date from the calendar
+        const selectedDate = calendar.getDate().toISOString().split('T')[0];
+        console.log("Selected date:", selectedDate);
+        
+        // Validate required fields
+        if (!selectedDate) {
+            showMessage('Please select a date.', 'error');
+            return;
+        }
+        
+        if (!selectedDoctor) {
+            showMessage('Please select a doctor.', 'error');
+            doctorInputEl.focus();
+            return;
+        }
+        
+        // Get the selected time either from DOM element or from stored data
+        let selectedTime;
+        let selectedTimeSlotElement = document.querySelector('.time-slot.selected');
+        
+        // First try to get from the DOM
+        if (selectedTimeSlotElement) {
+            selectedTime = selectedTimeSlotElement.dataset.start;
+            console.log("Selected time from DOM element:", selectedTime);
+        } 
+        // If not found in DOM, try the stored data
+        else if (selectedTimeSlotData) {
+            selectedTime = selectedTimeSlotData.start;
+            console.log("Selected time from stored data:", selectedTime);
+        } 
+        // No time slot selected
+        else {
+            showMessage('Please select a time slot.', 'error');
+            return;
+        }
+        
+        if (!selectedTime) {
+            showMessage('Invalid time slot selection.', 'error');
+            return;
+        }
+        
+        console.log("Selected doctor:", selectedDoctor);
+        console.log("Final selected time:", selectedTime);
+        
+        // Format the appointment data
+        const appointmentData = {
+            doctor_id: selectedDoctor.id,
+            date_time: `${selectedDate}-${selectedTime.split(':')[0]}`,
+            appointment_type: appointmentType.value,
+            notes: appointmentNotes.value || ''
+        };
+        
+        // Add recurring appointment details if enabled
+        if (recurring && recurring.checked) {
+            const recurrencePattern = document.getElementById('recurrencePattern');
+            const sessions = document.getElementById('sessions');
+            
+            if (recurrencePattern && sessions) {
+                appointmentData.recurrence_pattern = recurrencePattern.value;
+                appointmentData.recurrence_count = parseInt(sessions.value, 10);
+            }
+        }
+        
+        // Add caregiver notification preferences if configured
+        const smsToCaregiverReminder = document.getElementById('smsToCaregiverReminder');
+        const emailToCaregiverReminder = document.getElementById('emailToCaregiverReminder');
+        const caregiverPhone = document.getElementById('caregiverPhone');
+        const caregiverEmail = document.getElementById('caregiverEmail');
+        
+        if (smsToCaregiverReminder && smsToCaregiverReminder.checked && caregiverPhone && caregiverPhone.value) {
+            appointmentData.caregiver_sms = true;
+            appointmentData.caregiver_phone = caregiverPhone.value;
+        }
+        
+        if (emailToCaregiverReminder && emailToCaregiverReminder.checked && caregiverEmail && caregiverEmail.value) {
+            appointmentData.caregiver_email = true;
+            appointmentData.caregiver_email_address = caregiverEmail.value;
+        }
+        
+        console.log("Final appointment data being sent:", JSON.stringify(appointmentData, null, 2));
+        
         showMessage('Booking appointment...', 'info');
         
         // Get authentication token
@@ -846,23 +934,41 @@ async function confirmAppointment() {
         
         // Call booking API
         const API_URL = `${API_BASE_URL}/appointments`;
+        
+        console.log(`Sending POST request to ${API_URL}`);
+        console.log(`Authorization: Bearer ${token.substring(0, 10)}...`);
+        
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
+                'Accept': 'application/json',
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(appointmentData)
         });
         
-        // Parse response
-        const responseData = await response.json();
+        console.log(`Response status: ${response.status} ${response.statusText}`);
         
-        if (!response.ok) {
-            throw new Error(responseData.error || 'Failed to book appointment');
+        // Parse response - log the raw response first
+        const responseText = await response.text();
+        console.log("Raw response:", responseText);
+        
+        // Try to parse as JSON
+        let responseData;
+        try {
+            responseData = JSON.parse(responseText);
+            console.log("Parsed response data:", responseData);
+        } catch (e) {
+            console.error("Could not parse response as JSON:", e);
+            throw new Error("Invalid response from server");
         }
         
-        console.log('Appointment booked successfully:', responseData);
+        if (!response.ok) {
+            throw new Error(responseData.error || responseData.message || 'Failed to book appointment');
+        }
+        
+        console.log('Appointment booked successfully!');
         
         // Show success message
         showMessage('Appointment booked successfully!', 'success');
@@ -915,6 +1021,8 @@ function resetAppointmentForm() {
     
     // Reset selections
     selectedDoctor = null;
+    selectedTimeSlot = null;
+    selectedTimeSlotData = null;
     
     // Reset UI
     toggleElement(doctorInfoEl, false);
