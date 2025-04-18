@@ -17,6 +17,16 @@ doctors_to_register = [
         "specialty": "DOCTOR", # General Doctor
         "phone": "111-222-3333"
     },
+        {
+        "email": "patient@gmail.com",
+        "password": "password123",
+        "first_name": "Mohammad Jawad",
+        "last_name": "Willson",
+        "role": "PATIENT",
+        "phone": "111-222-3333"
+    },
+
+
     {
         "email": "dr.therapist@.com",
         "password": "password123",
