@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doctor – Appointments | Mediplus</title>
+    <title>Doctor – Availability Management | Mediplus</title>
     <!-- Icons & Calendar -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet" />
@@ -41,23 +41,43 @@
 
         /* ---  Filters --- */
         .filters { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
-        .filters select, .filters input { padding: 10px 14px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
-        .filters input { width: 220px; }
+        .filters input { padding: 10px 14px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
 
-        /* ---  Grid Layout --- */
-        .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,.05); }
-        #calendar { height: 600px; }
-
-        /* ---  Appointment List --- */
-        .appointment-item { display: flex; gap: 12px; padding: 12px; border-radius: 8px; background: #f8f9fa; margin-bottom: 10px; transition: .25s; }
-        .appointment-item:hover { background: #eef6ff; }
-        .time-badge { background: #0066cc; color:#fff; padding: 6px 12px; border-radius:6px; font-size: 13px; }
-        .appointment-info h4 { margin:0; font-size: 16px; color:#333; }
-        .appointment-info p { margin:2px 0 0; font-size: 13px; color:#555; }
-        .status { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .status.confirmed { background:#e8f5e9; color:#2e7d32; }
-        .status.pending { background:#fff3e0; color:#ef6c00; }
+        /* ---  Calendar Specific --- */
+        .calendar-card {
+            width: 100%;
+        }
+        #calendar {
+            height: 650px;
+        }
+        
+        .availability-controls {
+            display: flex; gap: 10px; margin-bottom: 15px;
+        }
+        
+        .legend {
+            display: flex; gap: 15px; margin-top: 15px; padding: 10px; background: #f1f8ff; border-radius: 8px;
+        }
+        
+        .legend-item {
+            display: flex; align-items: center; gap: 6px; font-size: 14px;
+        }
+        
+        .legend-color {
+            width: 16px; height: 16px; border-radius: 4px;
+        }
+        
+        .available-slot {
+            background: #4caf50;
+        }
+        
+        .booked-slot {
+            background: #f44336;
+        }
+        
+        .error-container {
+            padding: 15px; background: #fff3e0; border-left: 4px solid #ff9800; margin-bottom: 20px; border-radius: 4px; display: none;
+        }
 
         /* ---  Modal --- */
         .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); justify-content:center; align-items:center; z-index:999; }
@@ -69,22 +89,21 @@
         .close-btn:hover { opacity:1; transform:rotate(90deg); }
         .form-group { margin-bottom:15px; }
         .form-group label { display:block; margin-bottom:6px; color:#333; font-size:14px; font-weight:500; }
-        .form-group input, .form-group select, .form-group textarea { width:100%; padding:10px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; }
+        .form-group input, .form-group select { width:100%; padding:10px 14px; border:1px solid #ddd; border-radius:6px; font-size:14px; }
 
         @keyframes fadeIn { from{opacity:0; transform:translateY(-20px);} to{opacity:1; transform:none;} }
 
-        @media(max-width:1024px){ .content-grid{ grid-template-columns:1fr; } #calendar{height:500px;} }
+        @media(max-width:1024px){ #calendar{height:500px;} }
         @media(max-width:768px){ .sidebar{ width:80px; padding:20px 10px;} .sidebar span{display:none;} .doctor-profile{display:none;} }
     </style>
 </head>
 <body>
     <!-- ===== Sidebar ===== -->
     <aside class="sidebar">
-        
         <a href="doctor-dashboard.html" class="nav-link"><i class="fas fa-home"></i><span>Dashboard</span></a>
-        <a href="#" class="nav-link active"><i class="fas fa-calendar-alt"></i><span>Appointments</span></a>
+        <a href="doctor-appointments.html" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Appointments</span></a>
         <a href="doctor-patients.html" class="nav-link"><i class="fas fa-user-injured"></i><span>Patients</span></a>
-        <a href="doctor-availabilities.html" class="nav-link"><i class="fas fa-prescription"></i><span>Edit Availabilities</span></a>
+        <a href="doctor-availabilities.html" class="nav-link active"><i class="fas fa-clock"></i><span>Edit Availabilities</span></a>
         <a href="doctor-records.html" class="nav-link"><i class="fas fa-file-medical"></i><span>Medical Records</span></a>
         <a href="doctor-messages.html" class="nav-link"><i class="fas fa-comments"></i><span>Messages</span></a>
         <a href="../index.html" class="nav-link logout-btn"><i class="fas fa-door-open"></i><span>back</span></a>
@@ -93,87 +112,74 @@
     <!-- ===== Main ===== -->
     <main class="main-content">
         <header class="page-header">
-            <h1>Appointments</h1>
-            <button class="btn-primary" onclick="openAppointmentModal()"><i class="fas fa-plus"></i> New Appointment</button>
-        </header>
+            <h1>Manage Availability</h1>
+         </header>
 
-        <!-- Filters -->
-        <section class="filters">
-            <input type="text" id="searchInput" placeholder="Search patient…" oninput="filterAppointments()">
-            <select id="statusFilter" onchange="filterAppointments()">
-                <option value="all">All Statuses</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="pending">Pending</option>
-                <option value="cancelled">Cancelled</option>
-            </select>
-            <select id="typeFilter" onchange="filterAppointments()">
-                <option value="all">All Types</option>
-                <option value="Follow-up">Follow‑up</option>
-                <option value="Consultation">Consultation</option>
-                <option value="New Patient">New Patient</option>
-                <option value="Emergency">Emergency</option>
-            </select>
-        </section>
+        <!-- Error Container -->
+        <div id="errorContainer" class="error-container"></div>
 
-        <section class="content-grid">
-            <!-- Calendar -->
-            <div class="card calendar-card">
-                <div id="calendar"></div>
+
+
+        <!-- Calendar Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color available-slot"></div>
+                <span>Available Slot</span>
             </div>
-
-            <!-- Upcoming List -->
-            <div class="card">
-                <h2 style="font-size:18px;margin-bottom:15px;color:#333;">Upcoming</h2>
-                <div id="appointmentList">
-                    <!-- Items injected by JS -->
-                </div>
+            <div class="legend-item">
+                <div class="legend-color booked-slot"></div>
+                <span>Booked Appointment</span>
             </div>
+        </div>
+
+        <!-- Full-Width Calendar -->
+        <section class="card calendar-card">
+            <div id="calendar"></div>
         </section>
     </main>
 
     <!-- ===== Modal ===== -->
-    <div class="modal" id="appointmentModal">
+    <div class="modal" id="availabilityModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Schedule Appointment</h2>
-                <button class="close-btn" onclick="closeAppointmentModal()">&times;</button>
+                <h2>Add Availability Slot</h2>
+                <button class="close-btn" onclick="closeAvailabilityModal()">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="appointmentForm">
+                <form id="availabilityForm">
                     <div class="form-group">
-                        <label>Patient Name</label>
-                        <input type="text" id="patientName" required>
+                        <label>Date</label>
+                        <input type="date" id="availabilityDate" required>
                     </div>
                     <div class="form-group">
-                        <label>Appointment Type</label>
-                        <select id="appointmentType" required>
-                            <option value="">Select Type</option>
-                            <option value="Follow-up">Follow‑up</option>
-                            <option value="Consultation">Consultation</option>
-                            <option value="New Patient">New Patient</option>
-                            <option value="Emergency">Emergency</option>
+                        <label>Start Time</label>
+                        <input type="time" id="startTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Time</label>
+                        <input type="time" id="endTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Repeat</label>
+                        <select id="repeatOption">
+                            <option value="none">None</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Date</label>
-                        <input type="date" id="appointmentDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Time</label>
-                        <input type="time" id="appointmentTime" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Notes</label>
-                        <textarea id="appointmentNotes" rows="3"></textarea>
+                        <label>Until (for repeating slots)</label>
+                        <input type="date" id="repeatUntil">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn-primary" onclick="saveAppointment()">Save</button>
-                <button class="btn-primary" style="background:#e0e0e0;color:#333;" onclick="closeAppointmentModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveAvailability()">Save</button>
+                <button class="btn-primary" style="background:#e0e0e0;color:#333;" onclick="closeAvailabilityModal()">Cancel</button>
             </div>
         </div>
     </div>
+
 
     <!-- ===== JS ===== -->
     <script>
@@ -383,51 +389,7 @@
             }
         });
         
-        // Function to add a doctor selector dropdown to the page
-        function addDoctorSelector(doctors) {
-            // Create container for doctor selector
-            const container = document.createElement('div');
-            container.className = 'card';
-            container.style.marginBottom = '20px';
-            
-            // Create selector HTML
-            let selectorHtml = `
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 class="controls-title" style="margin-bottom: 0;">Doctor Selection</h3>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <select id="doctorIdSelector" style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">`;
-            
-            // Add options for each doctor
-            doctors.forEach(doctor => {
-                const selected = doctor.id.toString() === currentDoctorId.toString() ? 'selected' : '';
-                selectorHtml += `<option value="${doctor.id}" ${selected}>${doctor.first_name} ${doctor.last_name} - ${doctor.specialty}</option>`;
-            });
-            
-            selectorHtml += `
-                        </select>
-                        <button id="changeDoctorBtn" class="btn-primary" style="margin: 0;">Change Doctor</button>
-                    </div>
-                </div>
-            `;
-            
-            container.innerHTML = selectorHtml;
-            
-            // Insert before the error container
-            const errorContainer = document.getElementById('errorContainer');
-            errorContainer.parentNode.insertBefore(container, errorContainer);
-            
-            // Add event listener to the change button
-            document.getElementById('changeDoctorBtn').addEventListener('click', function() {
-                const newDoctorId = document.getElementById('doctorIdSelector').value;
-                if (newDoctorId !== currentDoctorId) {
-                    currentDoctorId = newDoctorId;
-                    localStorage.setItem('doctorId', currentDoctorId);
-                    showMessage(`Changed to doctor ID: ${currentDoctorId}`, 'info');
-                    loadAvailabilityData(); // Reload with new doctor ID
-                }
-            });
-        }
-        
+
         // Function to load doctor availability data from the API
         async function loadAvailabilityData(startDate, endDate) {
             try {
@@ -533,5 +495,8 @@
             }
         }
     </script>
+</body>
+</html>
+
 </body>
 </html>
