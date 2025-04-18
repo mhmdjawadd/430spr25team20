@@ -225,11 +225,11 @@ function initializeCalendar() {
     if (!calendarEl || typeof FullCalendar === 'undefined') return;
     
     calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'timeGridDay',
+        initialView: 'timeGridWeek', // Changed to week view by default
         headerToolbar: {
-            left: 'prev,next', // Removed 'today' button
+            left: 'prev,next', // Only navigation buttons
             center: 'title',
-            right: 'timeGridDay,timeGridWeek' // Removed dayGridMonth view
+            right: '' // Removed all view selectors
         },
         height: 'auto',
         allDaySlot: false,
@@ -292,27 +292,18 @@ function initializeCalendar() {
             }
         },
         datesSet: function(dateInfo) {
+            console.log(`View dates: ${dateInfo.startStr} to ${dateInfo.endStr}`);
             const viewDescriptionEl = document.getElementById('viewDescription');
             
             if (viewDescriptionEl) {
-                if (dateInfo.view.type === 'timeGridDay') {
-                    viewDescriptionEl.innerHTML = 'Day view: Pick an available slot from the calendar or time slot list below.';
-                } else if (dateInfo.view.type === 'timeGridWeek') {
-                    viewDescriptionEl.innerHTML = 'Week view: Get an overview of available slots throughout the week.';
-                }
+                // Only show week view description since we've removed other views
+                viewDescriptionEl.innerHTML = 'Week view: Get an overview of available slots throughout the week.';
             }
             
             // Only fetch range data if we have a selected doctor
             if (selectedDoctor) {
-                // For day view, use the regular single-date availability
-                if (dateInfo.view.type === 'timeGridDay') {
-                    const currentDate = dateInfo.start.toISOString().split('T')[0];
-                    fetchAvailability(selectedDoctor.id, currentDate);
-                } 
-                // For week view, fetch the entire date range
-                else if (dateInfo.view.type === 'timeGridWeek') {
-                    fetchAvailabilityRange(selectedDoctor.id, dateInfo.start, dateInfo.end);
-                }
+                // Always fetch for the entire visible range
+                fetchAvailabilityRange(selectedDoctor.id, dateInfo.start, dateInfo.end);
             }
         }
     });
@@ -498,6 +489,9 @@ function selectDoctorDirectly(doctor) {
     // Show time slot container
     toggleElement(timeSlotContainer, true);
     
+    // Fetch and display insurance information
+    fetchInsuranceInformation(doctor.id);
+    
     // Update summary
     updateSummary();
     
@@ -516,6 +510,126 @@ function selectDoctorDirectly(doctor) {
                 view.activeEnd
             );
         }, 100);
+    }
+}
+
+/**
+ * Fetch insurance information for the selected doctor
+ */
+async function fetchInsuranceInformation(doctorId) {
+    const insuranceInfoContainer = document.getElementById('insuranceInfoContainer');
+    const insuranceDetails = document.getElementById('insuranceDetails');
+    
+    if (!insuranceInfoContainer || !insuranceDetails) {
+        console.error('Insurance information container not found in DOM');
+        return;
+    }
+    
+    try {
+        // Show loading message
+        insuranceDetails.innerHTML = '<p>Loading insurance information...</p>';
+        insuranceInfoContainer.style.display = 'block';
+        
+        // Get authentication token
+        const token = localStorage.getItem('token');
+        if (!token) {
+            insuranceDetails.innerHTML = '<p>Please log in to view insurance information.</p>';
+            return;
+        }
+        
+        // Call the insurance verification endpoint
+        const response = await fetch(`${API_BASE_URL}/insurance/verify`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                doctor_id: doctorId
+            })
+        });
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                // No insurance record found
+                insuranceDetails.innerHTML = `
+                    <div class="alert alert-warning mb-0">
+                        <strong>No insurance record found.</strong> 
+                        <p>You will be responsible for the full appointment cost of $100.00.</p>
+                        <p>To add insurance information, please update your profile.</p>
+                    </div>
+                `;
+            } else {
+                // Other API errors
+                try {
+                    const errorData = await response.json();
+                    insuranceDetails.innerHTML = `
+                        <div class="alert alert-danger mb-0">
+                            <p>${errorData.error || 'Failed to verify insurance coverage'}</p>
+                        </div>
+                    `;
+                } catch (e) {
+                    insuranceDetails.innerHTML = `
+                        <div class="alert alert-danger mb-0">
+                            <p>Failed to verify insurance coverage: ${response.statusText}</p>
+                        </div>
+                    `;
+                }
+            }
+            return;
+        }
+        
+        // Parse the insurance data - using the correct structure
+        const insuranceData = await response.json();
+        console.log("Insurance verification response:", insuranceData);
+        
+        // Check if user has insurance and it's covered
+        if (insuranceData.has_insurance && insuranceData.is_covered) {
+            // Extract coverage details from the correct field
+            const coverageDetails = insuranceData.coverage_details || {};
+            const coveredAmount = coverageDetails.covered_amount || 0;
+            const patientResponsibility = coverageDetails.patient_responsibility || 100;
+            const baseCost = coverageDetails.base_cost || 100;
+            const coveragePercent = coverageDetails.coverage_percent || '0%';
+            const coverageType = coverageDetails.coverage_type || 'NONE';
+            
+            // Format the verified insurance information
+            insuranceDetails.innerHTML = `
+                <div class="alert alert-success mb-0">
+                    <strong>Insurance Verification Complete</strong>
+                    <p>${insuranceData.message}</p>
+                    <div class="insurance-details mt-2">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Coverage Type:</strong> ${coverageType}</p>
+                                <p><strong>Coverage Amount:</strong> $${coveredAmount.toFixed(2)}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Coverage Level:</strong> ${coveragePercent}</p>
+                                <p><strong>Your Responsibility:</strong> $${patientResponsibility.toFixed(2)}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Insurance not verified or not covered
+            insuranceDetails.innerHTML = `
+                <div class="alert alert-warning mb-0">
+                    <strong>Insurance Not Verified</strong>
+                    <p>${insuranceData.message || 'Your insurance may not cover this appointment.'}</p>
+                    <p>Estimated cost: $100.00</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error fetching insurance information:', error);
+        insuranceDetails.innerHTML = `
+            <div class="alert alert-danger mb-0">
+                <p>Failed to load insurance information: ${error.message}</p>
+            </div>
+        `;
     }
 }
 
@@ -744,7 +858,7 @@ function updateTimeSlots(slots) {
                 
                 console.log("Time slot selected from list:", selectedTimeSlotData);
                 
-                // Update summary
+                // Update summary - use the current date from selectedTimeSlotData since we're only in week view
                 updateSummary(selectedTimeSlotData.date, slot.start);
             });
         }
@@ -841,8 +955,16 @@ async function confirmAppointment() {
     try {
         console.log("Starting confirmAppointment function");
         
-        // Get selected date from the calendar
-        const selectedDate = calendar.getDate().toISOString().split('T')[0];
+        // Get the selected date from selectedTimeSlotData since we're only showing week view
+        let selectedDate;
+        
+        if (selectedTimeSlotData && selectedTimeSlotData.date) {
+            selectedDate = selectedTimeSlotData.date;
+        } else {
+            // Fallback to getting date from calendar
+            selectedDate = calendar.getDate().toISOString().split('T')[0];
+        }
+        
         console.log("Selected date:", selectedDate);
         
         // Validate required fields
