@@ -1,32 +1,1063 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Doctor – Messages | Mediplus</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"><style>*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}body{display:flex;min-height:100vh;background:#f8f9fa}.sidebar{width:280px;background:linear-gradient(180deg,#0066cc 0%,#0052a3 100%);padding:30px;color:#fff;display:flex;flex-direction:column}.nav-link{display:flex;gap:12px;align-items:center;color:rgba(255,255,255,.85);padding:12px 15px;border-radius:8px;text-decoration:none;transition:.3s}.nav-link i{font-size:18px}.nav-link:hover,.nav-link.active{background:rgba(255,255,255,.15);color:#fff;transform:translateX(4px)}.logout-btn{margin-top:auto;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25)}.main-content{flex:1;display:flex;overflow:hidden}.threads{width:320px;background:#fff;border-right:1px solid #eee;padding:20px;overflow-y:auto}.thread{display:flex;gap:12px;align-items:center;padding:12px;border-radius:10px;cursor:pointer;transition:.3s}.thread:hover,.thread.active{background:#eef6ff}.avatar{width:48px;height:48px;border-radius:50%;background:#0066cc;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600}.thread-info h4{font-size:15px;color:#333;margin-bottom:4px}.thread-info p{font-size:12px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}.chat-window{flex:1;display:flex;flex-direction:column}.chat-header{background:#fff;padding:18px 24px;border-bottom:1px solid #eee;font-weight:600}.messages{flex:1;padding:24px;overflow-y:auto;background:#f8f9fa;display:flex;flex-direction:column;gap:15px}.message{max-width:70%;padding:12px 16px;border-radius:12px;font-size:14px;line-height:1.4}.incoming{background:#fff;border:1px solid #eee}.outgoing{background:#0066cc;color:#fff;align-self:flex-end;border-bottom-right-radius:0}.composer{display:flex;gap:12px;padding:16px;background:#fff;border-top:1px solid #eee}.composer input{flex:1;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px}.composer button{background:#0066cc;color:#fff;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;transition:.3s}.composer button:hover{background:#0052a3}@media(max-width:768px){.sidebar{width:80px;padding:20px 10px}.sidebar span{display:none}.threads{width:240px}}</style></head><body>
-<aside class="sidebar">
-<a href="doctor-dashboard.html" class="nav-link"><i class="fas fa-home"></i><span>Dashboard</span></a>
-<a href="doctor-appointments.html" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Appointments</span></a>
-<a href="doctor-patients.html" class="nav-link"><i class="fas fa-user-injured"></i><span>Patients</span></a>
-<a href="doctor-prescriptions.html" class="nav-link"><i class="fas fa-prescription"></i><span>Prescriptions</span></a>
-<a href="doctor-records.html" class="nav-link"><i class="fas fa-file-medical"></i><span>Medical Records</span></a>
-<a href="doctor-analytics.html" class="nav-link"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
-<a href="#" class="nav-link active"><i class="fas fa-comments"></i><span>Messages</span></a>
-<a href="doctor-settings.html" class="nav-link"><i class="fas fa-cog"></i><span>Settings</span></a>
-<a href="login.html" class="nav-link logout-btn"><i class="fas fa-door-open"></i><span>Logout</span></a>
-</aside>
-<main class="main-content">
- <section class="threads" id="threads"></section>
- <section class="chat-window">
-  <div class="chat-header" id="chatHeader">Select a conversation</div>
-  <div class="messages" id="messages"></div>
-  <form class="composer" onsubmit="sendMessage(event)">
-   <input type="text" id="msgInput" placeholder="Type a message…" autocomplete="off"><button type="submit"><i class="fas fa-paper-plane"></i></button>
-  </form>
- </section>
-</main>
-<script>
-const threadData=[{id:1,name:'Dr. Smith',avatar:'DS',snippet:'Please upload lab results…',messages:[{role:'incoming',text:'Please upload the recent lab results.'},{role:'outgoing',text:'Sure, will do.'}]},{id:2,name:'Nurse Johnson',avatar:'NJ',snippet:'Patient in room 205',messages:[{role:'incoming',text:'Patient in room 205 needs vitals check.'}]}];
-const threadsEl=document.getElementById('threads');const messagesEl=document.getElementById('messages');const headerEl=document.getElementById('chatHeader');let currentThread=null;
-threadData.forEach(t=>{const el=document.createElement('div');el.className='thread';el.innerHTML=`<div class='avatar'>${t.avatar}</div><div class='thread-info'><h4>${t.name}</h4><p>${t.snippet}</p></div>`;el.onclick=()=>openThread(t);threadsEl.appendChild(el);});
-function openThread(t){currentThread=t;document.querySelectorAll('.thread').forEach(e=>e.classList.remove('active'));event.currentTarget.classList.add('active');headerEl.textContent=t.name;renderMessages();}
-function renderMessages(){messagesEl.innerHTML='';if(!currentThread)return;currentThread.messages.forEach(m=>{const msg=document.createElement('div');msg.className='message '+m.role;msg.textContent=m.text;messagesEl.appendChild(msg);messagesEl.scrollTop=messagesEl.scrollHeight;});}
-function sendMessage(e){e.preventDefault();const txt=document.getElementById('msgInput');if(!currentThread||!txt.value.trim())return;currentThread.messages.push({role:'outgoing',text:txt.value.trim()});txt.value='';renderMessages();}
-</script>
-</body></html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor – Messages | Mediplus</title>
+    <!-- Icons & Calendar -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="../js/doctor-calendar.js"></script>
+
+    <style>
+        /* ---  Core Reset --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        body { display: flex; min-height: 100vh; background: #f8f9fa; }
+
+        /* ---  Sidebar --- */
+        .sidebar {
+            width: 280px; flex-shrink: 0;
+            background: linear-gradient(180deg, #0066cc 0%, #0052a3 100%);
+            color: #fff; padding: 30px;
+            display: flex; flex-direction: column; box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+        .doctor-profile { text-align: center; margin-bottom: 25px; }
+        .doctor-avatar { width: 90px; height: 90px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.25); margin-bottom: 10px; }
+        .doctor-name { font-size: 18px; font-weight: 600; }
+        .doctor-specialty { font-size: 14px; opacity: .8; }
+        .nav-link { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.85); text-decoration: none; padding: 12px 15px; border-radius: 8px; transition: all .3s; }
+        .nav-link i { font-size: 18px; }
+        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.15); color: #fff; transform: translateX(4px); }
+        .logout-btn { margin-top: auto; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); }
+
+        /* ---  Main Content --- */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .page-header h1 { font-size: 26px; color: #333; }
+
+        /* --- Messaging Styles --- */
+        .messaging-container {
+            display: flex;
+            min-height: 500px;
+            margin: 20px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            background-color: white;
+        }
+        
+        .contacts-sidebar {
+            width: 300px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            overflow-y: auto;
+        }
+        
+        .contacts-header {
+            padding: 15px;
+            background: #0066cc;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .contact-search {
+            padding: 10px;
+            background: #f1f3f5;
+        }
+        
+        .contact-search input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .contact-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .contact-item {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .contact-item:hover {
+            background: #e9ecef;
+        }
+        
+        .contact-item.active {
+            background: #e2f0fd;
+            border-left: 3px solid #0066cc;
+        }
+        
+        .contact-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 15px;
+            background: #0066cc;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .contact-role {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+        
+        .unread-badge {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #0066cc;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+        
+        .chat-header {
+            padding: 15px 20px;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .chat-recipient-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .recipient-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 15px;
+            background: #0066cc;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .recipient-details h4 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .recipient-details .role {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .chat-actions .btn {
+            font-size: 14px;
+            padding: 5px 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .chat-actions .btn:hover {
+            background-color: #e9ecef;
+        }
+        
+        .chat-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message {
+            max-width: 75%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            position: relative;
+            word-break: break-word;
+        }
+        
+        .message.sent {
+            background: #cce5ff;
+            border-bottom-right-radius: 0;
+            align-self: flex-end;
+        }
+        
+        .message.received {
+            background: #f1f3f5;
+            border-bottom-left-radius: 0;
+            align-self: flex-start;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: #6c757d;
+            position: absolute;
+            bottom: -18px;
+            white-space: nowrap;
+        }
+        
+        .message.sent .message-time {
+            right: 5px;
+        }
+        
+        .message.received .message-time {
+            left: 5px;
+        }
+        
+        .chat-footer {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+        }
+        
+        .chat-footer textarea {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #e9ecef;
+            border-radius: 20px;
+            resize: none;
+            height: 40px;
+            line-height: 20px;
+            max-height: 100px;
+        }
+        
+        .chat-footer button {
+            margin-left: 10px;
+            border: none;
+            background: #0066cc;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .chat-footer button:hover {
+            background: #0052a3;
+        }
+        
+        .empty-chat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #6c757d;
+        }
+        
+        .empty-chat i {
+            font-size: 60px;
+            margin-bottom: 20px;
+            color: #e9ecef;
+        }
+        
+        .empty-chat-message {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .empty-chat-subtext {
+            font-size: 14px;
+            text-align: center;
+            max-width: 300px;
+        }
+        
+        .message-loader {
+            text-align: center;
+            padding: 20px 0;
+            color: #6c757d;
+        }
+
+        /* Alert message styles */
+        .alert {
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border-radius: 6px;
+        }
+        .alert-info {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+        .alert-success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .alert-warning {
+            background-color: #fff3e0;
+            color: #ef6c00;
+        }
+        .alert-error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== Sidebar ===== -->
+    <aside class="sidebar">
+        <div class="doctor-profile">
+            <img src="avatar.jpg" alt="Doctor" class="doctor-avatar">
+            <div class="doctor-name">Dr. John Smith</div>
+            <div class="doctor-specialty">Cardiologist</div>
+        </div>
+        <a href="doctor-dashboard.html" class="nav-link"><i class="fas fa-home"></i><span>Dashboard</span></a>
+        <a href="doctor-appointments.html" class="nav-link"><i class="fas fa-calendar-alt"></i><span>Appointments</span></a>
+        <a href="doctor-patients.html" class="nav-link"><i class="fas fa-user-injured"></i><span>Patients</span></a>
+        <a href="doctor-prescriptions.html" class="nav-link"><i class="fas fa-prescription"></i><span>Prescriptions</span></a>
+        <a href="doctor-records.html" class="nav-link"><i class="fas fa-file-medical"></i><span>Medical Records</span></a>
+        <a href="doctor-analytics.html" class="nav-link"><i class="fas fa-chart-line"></i><span>Analytics</span></a>
+        <a href="doctor-messages.html" class="nav-link active"><i class="fas fa-comments"></i><span>Messages</span></a>
+        <a href="doctor-settings.html" class="nav-link"><i class="fas fa-cog"></i><span>Settings</span></a>
+        <a href="login.html" class="nav-link logout-btn"><i class="fas fa-door-open"></i><span>Logout</span></a>
+    </aside>
+
+    <!-- ===== Main ===== -->
+    <main class="main-content">
+        <header class="page-header">
+            <h1>Messages</h1>
+            <div id="notificationBadge" style="display: none; background-color: #0066cc; color: white; font-size: 12px; padding: 4px 8px; border-radius: 12px;">
+                <i class="fas fa-envelope"></i> <span id="unreadCount">0</span> Unread
+            </div>
+        </header>
+
+        <div id="errorContainer" style="margin-bottom: 20px;"></div>
+
+        <div class="messaging-container">
+            <!-- Contacts Sidebar -->
+            <div class="contacts-sidebar">
+                <div class="contacts-header">
+                    Patients
+                </div>
+                <div class="contact-search">
+                    <input type="text" placeholder="Search patients..." id="contactSearchInput">
+                </div>
+                <ul class="contact-list" id="contactList">
+                    <!-- Will be populated by JavaScript -->
+                    <li class="contact-item" id="loading-contacts">
+                        <div style="text-align: center; width: 100%; padding: 15px 0;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <div style="margin-top: 10px;">Loading contacts...</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Chat Area -->
+            <div class="chat-area">
+                <div id="emptyChatView" class="empty-chat">
+                    <i class="fas fa-comments"></i>
+                    <div class="empty-chat-message">Select a patient to start messaging</div>
+                    <div class="empty-chat-subtext">You can message patients who have appointments with you</div>
+                </div>
+                
+                <div id="chatView" style="display: none; flex-direction: column; height: 100%;">
+                    <div class="chat-header">
+                        <div class="chat-recipient-info">
+                            <div class="recipient-avatar" id="recipientAvatar">AP</div>
+                            <div class="recipient-details">
+                                <h4 id="recipientName">Ahmed Patient</h4>
+                                <div class="role" id="recipientRole">Patient</div>
+                            </div>
+                        </div>
+                        <div class="chat-actions">
+                            <button class="btn" id="refreshChat">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                            <button class="btn" id="viewPatientInfo" style="margin-left: 8px;">
+                                <i class="fas fa-info-circle"></i> Patient Info
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chat-body" id="chatBody">
+                        <!-- Will be populated by JavaScript -->
+                        <div class="message-loader">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <div style="margin-top: 10px;">Loading messages...</div>
+                        </div>
+                    </div>
+                    <div class="chat-footer">
+                        <textarea id="messageInput" placeholder="Type a message..."></textarea>
+                        <button id="sendButton">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ===== JS ===== -->
+    <script>
+        // Global variables
+        let currentUser = null;
+        let currentRecipient = null;
+        let contacts = [];
+        let messages = [];
+        const API_URL = 'http://localhost:5000';
+        
+        // DOM elements
+        const contactList = document.getElementById('contactList');
+        const emptyChatView = document.getElementById('emptyChatView');
+        const chatView = document.getElementById('chatView');
+        const chatBody = document.getElementById('chatBody');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const recipientName = document.getElementById('recipientName');
+        const recipientRole = document.getElementById('recipientRole');
+        const recipientAvatar = document.getElementById('recipientAvatar');
+        const contactSearchInput = document.getElementById('contactSearchInput');
+        const refreshChatButton = document.getElementById('refreshChat');
+        const viewPatientInfoButton = document.getElementById('viewPatientInfo');
+        const notificationBadge = document.getElementById('notificationBadge');
+        const unreadCount = document.getElementById('unreadCount');
+        const errorContainer = document.getElementById('errorContainer');
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initMessaging);
+        
+        /**
+         * Initialize the messaging functionality
+         */
+        async function initMessaging() {
+            try {
+                // Setup event listeners
+                setupEventListeners();
+                
+                // Update doctor profile from localStorage
+                updateDoctorProfile();
+                
+                // Load contacts (patients)
+                await loadContacts();
+                
+                // Periodically check for new messages
+                setInterval(checkUnreadMessages, 60000); // Check every minute
+                
+            } catch (error) {
+                console.error('Error initializing messaging:', error);
+                showMessage('Error initializing messaging: ' + error.message, 'error');
+            }
+        }
+        
+        /**
+         * Update doctor profile information from localStorage
+         */
+        function updateDoctorProfile() {
+            try {
+                // Try to parse doctor profile from localStorage
+                const userDataStr = localStorage.getItem('user');
+                if (userDataStr) {
+                    const userData = JSON.parse(userDataStr);
+                    currentUser = userData;
+                    
+                    // Update doctor profile display
+                    const doctorNameEl = document.querySelector('.doctor-name');
+                    const doctorSpecialtyEl = document.querySelector('.doctor-specialty');
+                    
+                    if (doctorNameEl && userData.first_name) {
+                        doctorNameEl.textContent = `Dr. ${userData.first_name} ${userData.last_name || ''}`;
+                    }
+                    
+                    if (doctorSpecialtyEl && userData.specialty) {
+                        doctorSpecialtyEl.textContent = userData.specialty;
+                    }
+                }
+            } catch (error) {
+                console.warn('Error updating doctor profile:', error);
+            }
+        }
+        
+        /**
+         * Setup event listeners
+         */
+        function setupEventListeners() {
+            // Send message on button click
+            sendButton.addEventListener('click', sendMessage);
+            
+            // Send message on Enter key (but allow Shift+Enter for new line)
+            messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // Filter contacts on search input
+            contactSearchInput.addEventListener('input', (e) => {
+                filterContacts(e.target.value);
+            });
+            
+            // Refresh chat on button click
+            refreshChatButton.addEventListener('click', () => {
+                if (currentRecipient) {
+                    loadMessages(currentRecipient.id);
+                }
+            });
+            
+            // View patient info button
+            viewPatientInfoButton.addEventListener('click', () => {
+                if (currentRecipient) {
+                    // In a real app, this would open patient info or redirect to patient page
+                    window.open(`doctor-patients.html?patient=${currentRecipient.id}`, '_blank');
+                }
+            });
+            
+            // Auto-resize textarea
+            messageInput.addEventListener('input', () => {
+                messageInput.style.height = 'auto';
+                messageInput.style.height = Math.min(messageInput.scrollHeight, 100) + 'px';
+            });
+        }
+        
+        /**
+         * Load contacts (patients the doctor can message)
+         */
+        async function loadContacts() {
+            try {
+                const token = getAuthToken();
+                if (!token) {
+                    showMessage('Authentication required. Please log in again.', 'warning');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 3000);
+                    return;
+                }
+                
+                showMessage('Loading your patients...', 'info');
+                
+                // Make API request to get contacts
+                const response = await fetch(`${API_URL}/messages/contacts`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load contacts: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                contacts = data.contacts || [];
+                
+                // Filter to only show patients
+                contacts = contacts.filter(contact => contact.role === 'Patient');
+                
+                // Display contacts
+                renderContacts(contacts);
+                
+                // Check unread messages
+                checkUnreadMessages();
+                
+                showMessage('Patients loaded successfully', 'success');
+            } catch (error) {
+                console.error('Error loading contacts:', error);
+                showMessage(`Error loading patients: ${error.message}`, 'error');
+                
+                // Load sample data for testing
+                loadSampleData();
+            }
+        }
+        
+        /**
+         * Load sample data for testing
+         */
+        function loadSampleData() {
+            // Sample patient contacts
+            contacts = [
+                { id: 1, name: 'Ahmed Mohamed', role: 'Patient', unread_count: 2 },
+                { id: 2, name: 'Sara Ali', role: 'Patient', unread_count: 0 },
+                { id: 3, name: 'Mohamed Hassan', role: 'Patient', unread_count: 1 },
+                { id: 4, name: 'Fatima Ibrahim', role: 'Patient', unread_count: 0 }
+            ];
+            
+            // Display contacts
+            renderContacts(contacts);
+        }
+        
+        /**
+         * Render contacts in the sidebar
+         */
+        function renderContacts(contactsArray) {
+            contactList.innerHTML = '';
+            
+            if (contactsArray.length === 0) {
+                contactList.innerHTML = `
+                    <li class="contact-item">
+                        <div style="text-align: center; width: 100%;">
+                            <div style="margin: 20px 0;">No patients available</div>
+                        </div>
+                    </li>
+                `;
+                return;
+            }
+            
+            // Sort contacts by unread count (highest first), then by name
+            contactsArray.sort((a, b) => {
+                if (b.unread_count !== a.unread_count) {
+                    return b.unread_count - a.unread_count;
+                }
+                return a.name.localeCompare(b.name);
+            });
+            
+            contactsArray.forEach(contact => {
+                const initials = getInitials(contact.name);
+                const unreadCount = contact.unread_count || 0;
+                
+                const contactItem = document.createElement('li');
+                contactItem.className = 'contact-item';
+                contactItem.dataset.id = contact.id;
+                contactItem.dataset.role = contact.role;
+                contactItem.innerHTML = `
+                    <div class="contact-avatar">${initials}</div>
+                    <div>
+                        <div>${contact.name}</div>
+                        <div class="contact-role">${contact.role}</div>
+                    </div>
+                    ${unreadCount > 0 ? `<span class="unread-badge">${unreadCount}</span>` : ''}
+                `;
+                
+                contactItem.addEventListener('click', () => selectContact(contact));
+                contactList.appendChild(contactItem);
+            });
+        }
+        
+        /**
+         * Select a contact to chat with
+         */
+        function selectContact(contact) {
+            currentRecipient = contact;
+            
+            // Update UI
+            document.querySelectorAll('.contact-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const selectedItem = document.querySelector(`.contact-item[data-id="${contact.id}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('active');
+            }
+            
+            // Update chat header
+            recipientName.textContent = contact.name;
+            recipientRole.textContent = contact.role;
+            recipientAvatar.textContent = getInitials(contact.name);
+            
+            // Show chat view
+            emptyChatView.style.display = 'none';
+            chatView.style.display = 'flex';
+            
+            // Load messages
+            loadMessages(contact.id);
+        }
+        
+        /**
+         * Load messages for the selected contact
+         */
+        async function loadMessages(contactId) {
+            try {
+                chatBody.innerHTML = `
+                    <div class="message-loader">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <div style="margin-top: 10px;">Loading messages...</div>
+                    </div>
+                `;
+                
+                const token = getAuthToken();
+                if (!token) {
+                    throw new Error('Authentication required. Please log in again.');
+                }
+                
+                // Make API request to get messages
+                const response = await fetch(`${API_URL}/messages/${contactId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load messages: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                messages = data.messages || [];
+                
+                // Display messages
+                renderMessages(messages);
+                
+                // Mark messages as read
+                markMessagesAsRead(contactId);
+                
+                // Update unread count in the contact list
+                updateContactUnreadCount(contactId, 0);
+                
+                // Check unread messages
+                checkUnreadMessages();
+                
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                showMessage(`Error loading messages: ${error.message}`, 'error');
+                
+                // For development/testing, load sample messages
+                loadSampleMessages(contactId);
+            }
+        }
+        
+        /**
+         * Load sample messages for testing
+         */
+        function loadSampleMessages(contactId) {
+            // Convert contactId to a number to ensure comparison works properly
+            contactId = parseInt(contactId);
+            
+            // Sample messages for different patients
+            if (contactId === 1) {
+                messages = [
+                    { id: 1, content: "Hello Dr. Smith, I'm experiencing severe headaches again.", is_sent: false, timestamp: "2023-04-15T09:30:00" },
+                    { id: 2, content: "Hi Ahmed, are you taking the medication I prescribed?", is_sent: true, timestamp: "2023-04-15T09:35:00" },
+                    { id: 3, content: "Yes, I've been taking it regularly but the pain persists.", is_sent: false, timestamp: "2023-04-15T09:40:00" },
+                    { id: 4, content: "I'll need to adjust your dosage. Please come in for a check-up tomorrow.", is_sent: true, timestamp: "2023-04-15T09:45:00" }
+                ];
+            } else if (contactId === 2) {
+                messages = [
+                    { id: 1, content: "Dr. Smith, I'd like to discuss the test results from last week.", is_sent: false, timestamp: "2023-04-14T14:20:00" },
+                    { id: 2, content: "Of course, Sara. Your test results look good, but there are a few values we should monitor.", is_sent: true, timestamp: "2023-04-14T14:25:00" },
+                    { id: 3, content: "Is it something serious I should be concerned about?", is_sent: false, timestamp: "2023-04-14T14:30:00" },
+                    { id: 4, content: "Not at all, it's just routine monitoring. We'll discuss it in detail at your next appointment.", is_sent: true, timestamp: "2023-04-14T14:35:00" }
+                ];
+            } else if (contactId === 3) {
+                messages = [
+                    { id: 1, content: "Hello doctor, the new medication is causing me some side effects.", is_sent: false, timestamp: "2023-04-16T11:10:00" },
+                    { id: 2, content: "What kind of side effects are you experiencing, Mohamed?", is_sent: true, timestamp: "2023-04-16T11:15:00" },
+                    { id: 3, content: "I'm feeling nauseous and dizzy after taking it.", is_sent: false, timestamp: "2023-04-16T11:20:00" }
+                ];
+            } else if (contactId === 4) {
+                messages = [
+                    { id: 1, content: "Dr. Smith, when should I schedule my follow-up appointment?", is_sent: false, timestamp: "2023-04-13T10:00:00" },
+                    { id: 2, content: "Hi Fatima, let's schedule it for next month. My assistant will contact you with available dates.", is_sent: true, timestamp: "2023-04-13T10:05:00" },
+                    { id: 3, content: "Thank you, doctor. I'll wait for the call.", is_sent: false, timestamp: "2023-04-13T10:10:00" }
+                ];
+            } else {
+                messages = [];
+            }
+            
+            // Display messages
+            renderMessages(messages);
+        }
+        
+        /**
+         * Render messages in the chat body
+         */
+        function renderMessages(messagesArray) {
+            chatBody.innerHTML = '';
+            
+            if (messagesArray.length === 0) {
+                chatBody.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #6c757d;">
+                        <i class="fas fa-comments" style="font-size: 40px; margin-bottom: 10px; display: block;"></i>
+                        <div>No messages yet</div>
+                        <div style="font-size: 14px;">Start the conversation!</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            messagesArray.forEach(msg => {
+                const messageElement = document.createElement('div');
+                messageElement.className = `message ${msg.is_sent ? 'sent' : 'received'}`;
+                messageElement.textContent = msg.content;
+                
+                const timeElement = document.createElement('div');
+                timeElement.className = 'message-time';
+                timeElement.textContent = formatMessageTime(msg.timestamp);
+                messageElement.appendChild(timeElement);
+                
+                chatBody.appendChild(messageElement);
+            });
+            
+            // Scroll to bottom
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+        
+        /**
+         * Send a message
+         */
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || !currentRecipient) return;
+            
+            try {
+                const token = getAuthToken();
+                if (!token) {
+                    throw new Error('Authentication required. Please log in again.');
+                }
+                
+                // Add message to UI immediately (optimistic update)
+                const tempMessageElement = document.createElement('div');
+                tempMessageElement.className = 'message sent';
+                tempMessageElement.textContent = message;
+                
+                const tempTimeElement = document.createElement('div');
+                tempTimeElement.className = 'message-time';
+                tempTimeElement.textContent = 'Sending...';
+                tempMessageElement.appendChild(tempTimeElement);
+                
+                chatBody.appendChild(tempMessageElement);
+                chatBody.scrollTop = chatBody.scrollHeight;
+                
+                // Clear input
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+                
+                // Make API request to send message
+                const response = await fetch(`${API_URL}/messages/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        recipient_id: currentRecipient.id,
+                        content: message
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to send message: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Update the temporary message with the actual message data
+                tempTimeElement.textContent = 'Just now';
+                
+                // Reload messages to ensure we have the latest
+                await loadMessages(currentRecipient.id);
+                
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showMessage(`Error sending message: ${error.message}`, 'error');
+                
+                // For testing, update the UI with a local message
+                messages.push({
+                    id: messages.length + 1,
+                    content: message,
+                    is_sent: true,
+                    timestamp: new Date().toISOString()
+                });
+                
+                renderMessages(messages);
+            }
+        }
+        
+        /**
+         * Mark messages as read
+         */
+        async function markMessagesAsRead(contactId) {
+            try {
+                const token = getAuthToken();
+                if (!token) return;
+                
+                // Make API request to mark messages as read
+                const response = await fetch(`${API_URL}/messages/mark-read/${contactId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    console.warn(`Failed to mark messages as read: ${response.status}`);
+                }
+                
+            } catch (error) {
+                console.error('Error marking messages as read:', error);
+            }
+        }
+        
+        /**
+         * Check for unread messages
+         */
+        async function checkUnreadMessages() {
+            try {
+                const token = getAuthToken();
+                if (!token) return;
+                
+                // Make API request to get unread message count
+                const response = await fetch(`${API_URL}/messages/unread-count`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to get unread message count: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const count = data.unread_count || 0;
+                
+                // Update notification badge
+                if (count > 0) {
+                    unreadCount.textContent = count;
+                    notificationBadge.style.display = 'inline-block';
+                } else {
+                    notificationBadge.style.display = 'none';
+                }
+                
+            } catch (error) {
+                console.error('Error checking unread messages:', error);
+            }
+        }
+        
+        /**
+         * Update unread count for a specific contact
+         */
+        function updateContactUnreadCount(contactId, count) {
+            // Update in the contacts array
+            contacts = contacts.map(contact => {
+                if (contact.id == contactId) {
+                    return { ...contact, unread_count: count };
+                }
+                return contact;
+            });
+            
+            // Update in the DOM
+            const contactItem = document.querySelector(`.contact-item[data-id="${contactId}"]`);
+            if (contactItem) {
+                const badge = contactItem.querySelector('.unread-badge');
+                if (badge) {
+                    if (count > 0) {
+                        badge.textContent = count;
+                    } else {
+                        badge.remove();
+                    }
+                } else if (count > 0) {
+                    const newBadge = document.createElement('span');
+                    newBadge.className = 'unread-badge';
+                    newBadge.textContent = count;
+                    contactItem.appendChild(newBadge);
+                }
+            }
+        }
+        
+        /**
+         * Filter contacts by search term
+         */
+        function filterContacts(searchTerm) {
+            const filtered = contacts.filter(contact => 
+                contact.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            renderContacts(filtered);
+        }
+        
+        /**
+         * Get initials from a name
+         */
+        function getInitials(name) {
+            if (!name) return '?';
+            return name.split(' ').map(n => n[0]).join('').toUpperCase();
+        }
+        
+        /**
+         * Format message time for display
+         */
+        function formatMessageTime(timestamp) {
+            if (!timestamp) return '';
+            
+            const date = new Date(timestamp);
+            const now = new Date();
+            const yesterday = new Date(now);
+            yesterday.setDate(now.getDate() - 1);
+            
+            // Same day
+            if (date.toDateString() === now.toDateString()) {
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+            // Yesterday
+            else if (date.toDateString() === yesterday.toDateString()) {
+                return `Yesterday, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            }
+            // This week
+            else if (now.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000) {
+                return `${date.toLocaleDateString([], { weekday: 'short' })}, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            }
+            // Older
+            else {
+                return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            }
+        }
+        
+        /**
+         * Get auth token from localStorage
+         */
+        function getAuthToken() {
+            return localStorage.getItem('token');
+        }
+        
+        /**
+         * Show message to the user
+         */
+        function showMessage(message, type = 'info') {
+            const messageElement = document.createElement('div');
+            messageElement.className = `alert alert-${type}`;
+            messageElement.textContent = message;
+            
+            // Clear existing messages
+            errorContainer.innerHTML = '';
+            errorContainer.appendChild(messageElement);
+            
+            // Auto-dismiss success and info messages
+            if (type === 'success' || type === 'info') {
+                setTimeout(() => {
+                    messageElement.remove();
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+</html>
