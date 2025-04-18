@@ -83,34 +83,46 @@ function displayDashboardAppointments(appointments) {
     if (!appointmentsList) {
         console.error('Cannot find upcomingAppointmentsList element in the DOM');
         return;
+    } else {
+        console.log('Found upcomingAppointmentsList element.'); // Confirm element is found
     }
     
     // Clear the container
     appointmentsList.innerHTML = '';
     
     if (!appointments || appointments.length === 0) {
-        console.log('No appointments to display');
-        appointmentsList.innerHTML = '<div class="no-appointments">No upcoming appointments.</div>';
+        console.log('No appointments received from API or array is empty.');
+        appointmentsList.innerHTML = '<div class="no-appointments">No upcoming appointments found.</div>';
         return;
     }
+    
+    const now = new Date();
+    console.log(`Current time for comparison: ${now.toISOString()}`);
     
     // Filter to only upcoming appointments and sort by date
     const upcomingAppointments = appointments
         .filter(appointment => {
-            const isUpcoming = new Date(appointment.date_time) > new Date() && 
-                  (!appointment.status || !appointment.status.includes('CANCEL'));
-            console.log(`Appointment ${appointment.appointment_id}: isUpcoming=${isUpcoming}`);
+            // Add detailed logging for date comparison
+            const appointmentDate = new Date(appointment.date_time);
+            const isDateValid = !isNaN(appointmentDate);
+            const isFuture = isDateValid && appointmentDate > now;
+            const isNotCancelled = !appointment.status || !appointment.status.includes('CANCEL');
+            const isUpcoming = isFuture && isNotCancelled;
+            
+            console.log(`Appointment ID: ${appointment.appointment_id}, DateTime: ${appointment.date_time}, Parsed Date: ${isDateValid ? appointmentDate.toISOString() : 'Invalid Date'}, Is Future: ${isFuture}, Not Cancelled: ${isNotCancelled}, Is Upcoming: ${isUpcoming}`);
+            
             return isUpcoming;
         })
         .sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
     
-    console.log(`Found ${upcomingAppointments.length} upcoming appointments to display`);
+    console.log(`Found ${upcomingAppointments.length} upcoming appointments after filtering.`);
     
     // Show only the first 3 upcoming appointments
     const appointmentsToShow = upcomingAppointments.slice(0, 3);
     
     if (appointmentsToShow.length === 0) {
-        appointmentsList.innerHTML = '<div class="no-appointments">No upcoming appointments.</div>';
+        console.log('Filtered list resulted in 0 upcoming appointments to show.');
+        appointmentsList.innerHTML = '<div class="no-appointments">No upcoming appointments scheduled.</div>';
         return;
     }
     
@@ -122,6 +134,7 @@ function displayDashboardAppointments(appointments) {
         const appointmentCard = document.createElement('div');
         appointmentCard.className = 'appointment-card';
         appointmentCard.dataset.id = appointment.appointment_id;
+        appointmentCard.dataset.doctorId = appointment.doctor_id || (appointment.doctor && appointment.doctor.id) || '1';
         
         appointmentCard.innerHTML = `
             <div class="appointment-info">
@@ -136,10 +149,6 @@ function displayDashboardAppointments(appointments) {
                         <span>${formatTime(appointmentDate)}</span>
                     </div>
                 </div>
-            </div>
-            <div class="appointment-actions">
-                <button class="btn-reschedule">Reschedule</button>
-                <button class="btn-cancel">Cancel</button>
             </div>
         `;
         
@@ -158,9 +167,6 @@ function displayDashboardAppointments(appointments) {
     }
     
     console.log('Appointment display complete');
-    
-    // After adding all appointments to the DOM, re-setup the event listeners
-    setupAppointmentActions();
 }
 
 /**
@@ -303,10 +309,13 @@ function setupAppointmentActions() {
                 `;
             }
             
-            // Store appointment ID in the form for submission
+            // Store appointment ID and doctor ID in the form for submission
             const rescheduleForm = document.getElementById('reschedule-form');
             if (rescheduleForm) {
                 rescheduleForm.dataset.appointmentId = appointmentId;
+                // In a real app, you would get the actual doctor ID from the appointment data
+                // For now, we'll use a placeholder value
+                rescheduleForm.dataset.doctorId = appointmentCard.dataset.doctorId || '1';
             }
             
             // Set minimum date to tomorrow
@@ -330,6 +339,24 @@ function setupAppointmentActions() {
             const errorContainer = document.getElementById('reschedule-error-container');
             if (errorContainer) {
                 errorContainer.innerHTML = '';
+            }
+            
+            // Clear any previous selection confirmation
+            const selectionConfirmation = document.getElementById('selected-slot-confirmation');
+            if (selectionConfirmation) {
+                selectionConfirmation.style.display = 'none';
+            }
+            
+            // Refresh the calendar with doctor's availability if calendar exists
+            if (window.rescheduleCalendar) {
+                const doctorId = rescheduleForm.dataset.doctorId;
+                const dateInfo = window.rescheduleCalendar.view;
+                
+                fetchAvailabilityRange(
+                    doctorId,
+                    dateInfo.activeStart,
+                    dateInfo.activeEnd
+                );
             }
             
             // Show the modal
@@ -398,6 +425,286 @@ function closeRescheduleModal() {
 }
 
 /**
+ * Initialize the FullCalendar for rescheduling
+ */
+function initializeRescheduleCalendar() {
+    const calendarEl = document.getElementById('reschedule-calendar');
+    if (!calendarEl || typeof FullCalendar === 'undefined') {
+        console.warn('FullCalendar not available or calendar element not found');
+        return;
+    }
+    
+    window.rescheduleCalendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek', // Week view by default
+        headerToolbar: {
+            left: 'prev,next', // Only navigation buttons
+            center: 'title',
+            right: '' // No view selectors
+        },
+        height: 'auto',
+        allDaySlot: false,
+        slotMinTime: '08:00:00',
+        slotMaxTime: '18:00:00',
+        slotDuration: '01:00:00',
+        selectable: true,
+        selectMirror: true,
+        businessHours: {
+            daysOfWeek: [1, 2, 3, 4, 5], // Monday - Friday
+            startTime: '08:00',
+            endTime: '18:00',
+        },
+        select: function(info) {
+            // Format date as YYYY-MM-DD
+            const clickedDate = info.start.toISOString().split('T')[0];
+            
+            // Format time as HH:MM
+            const clickedTime = info.start.toTimeString().slice(0, 5);
+            
+            selectRescheduleTimeSlot(clickedDate, clickedTime);
+            console.log(`Calendar selection: date=${clickedDate}, time=${clickedTime}`);
+        },
+        eventClick: function(info) {
+            const eventData = info.event.extendedProps;
+            
+            // Only allow selecting available slots
+            if (eventData.isAvailable) {
+                // Clear previous selected events styling
+                window.rescheduleCalendar.getEvents().forEach(event => {
+                    if (event.extendedProps.isAvailable) {
+                        event.setProp('backgroundColor', '#1A76D1');
+                        event.setProp('borderColor', '#1A76D1');
+                    }
+                });
+                
+                // Update event styling to indicate selection
+                info.event.setProp('backgroundColor', '#28a745');
+                info.event.setProp('borderColor', '#28a745');
+                
+                // Get the date and time
+                const eventDate = info.event.start.toISOString().split('T')[0];
+                const eventTime = info.event.start.toTimeString().slice(0, 5);
+                
+                // Update time slot selection
+                selectRescheduleTimeSlot(eventDate, eventTime);
+                console.log(`Calendar event clicked: date=${eventDate}, time=${eventTime}`);
+                
+                // Store selected time slot data
+                window.selectedRescheduleTimeSlotData = {
+                    date: eventDate,
+                    start: eventTime,
+                    end: info.event.end ? info.event.end.toTimeString().slice(0, 5) : 
+                        `${parseInt(eventTime.split(':')[0]) + 1}:${eventTime.split(':')[1]}`
+                };
+                
+                console.log("Selected time slot data from calendar:", window.selectedRescheduleTimeSlotData);
+            }
+        },
+        datesSet: function(dateInfo) {
+            console.log(`View dates: ${dateInfo.startStr} to ${dateInfo.endStr}`);
+            
+            const form = document.getElementById('reschedule-form');
+            if (form && form.dataset.doctorId && form.closest('#reschedule-modal').style.display === 'flex') {
+                const doctorId = form.dataset.doctorId;
+                
+                // Fetch availability for the entire visible range
+                fetchAvailabilityRange(
+                    doctorId,
+                    dateInfo.start,
+                    dateInfo.end
+                );
+            }
+        }
+    });
+    
+    console.log('Rendering reschedule calendar');
+    window.rescheduleCalendar.render();
+}
+
+/**
+ * Fetch doctor availability for a date range (for the calendar)
+ */
+async function fetchAvailabilityRange(doctorId, startDate, endDate) {
+    const errorContainer = document.getElementById('reschedule-error-container');
+    
+    try {
+        // Format dates in YYYY-MM-DD format
+        const formattedStartDate = startDate.toISOString().split('T')[0];
+        const formattedEndDate = endDate.toISOString().split('T')[0];
+        
+        console.log(`Fetching availability for doctor: ${doctorId} from: ${formattedStartDate} to: ${formattedEndDate}`);
+        
+        // Show loading message on the calendar
+        if (errorContainer) {
+            errorContainer.innerHTML = '<div class="loading-message">Loading doctor availability...</div>';
+        }
+        
+        // Get authentication token
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showErrorMessage("Authentication required. Please log in again.", errorContainer);
+            return;
+        }
+        
+        // Make API request
+        const response = await fetch(`http://localhost:5000/appointments/availability-range`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                doctor_id: doctorId,
+                start_date: formattedStartDate,
+                end_date: formattedEndDate
+            })
+        });
+        
+        if (!response.ok) {
+            let errorText = 'Failed to fetch availability data';
+            try {
+                const errorData = await response.json();
+                errorText = errorData.error || errorText;
+            } catch (e) {
+                // If we can't parse the JSON, just use the default error message
+            }
+            throw new Error(errorText);
+        }
+        
+        const data = await response.json();
+        console.log('Availability data received:', data);
+        
+        // Clear any loading or error messages
+        if (errorContainer) {
+            errorContainer.innerHTML = '';
+        }
+        
+        // Update the calendar with the availability data
+        if (data && data.availability) {
+            updateRescheduleCalendarWithAvailability(data.availability);
+        }
+    } catch (error) {
+        console.error('Error fetching availability range:', error);
+        showErrorMessage(`Error: ${error.message}`, errorContainer);
+    }
+}
+
+/**
+ * Update calendar with availability data
+ */
+function updateRescheduleCalendarWithAvailability(availabilityData) {
+    if (!window.rescheduleCalendar) {
+        console.error('Reschedule calendar not initialized');
+        return;
+    }
+    
+    console.log('Updating reschedule calendar with availability data');
+    
+    // Clear existing events
+    window.rescheduleCalendar.getEvents().forEach(event => event.remove());
+    
+    // Track if we have any available slots
+    let hasAvailableSlots = false;
+    
+    // Process each date in the availability data
+    Object.keys(availabilityData).forEach(dateStr => {
+        const slots = availabilityData[dateStr];
+        
+        // Add each slot as an event on the calendar
+        slots.forEach(slot => {
+            // Skip if no start/end time
+            if (!slot.start) return;
+            
+            // Extract start and end times
+            const [startHour, startMinute] = slot.start.split(':').map(Number);
+            const endTime = slot.end || `${(startHour + 1).toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}`;
+            
+            // Create date objects for the start and end times
+            const startDateTime = `${dateStr}T${slot.start}:00`;
+            const endDateTime = `${dateStr}T${endTime}:00`;
+            
+            if (!slot.is_booked) {
+                hasAvailableSlots = true;
+            }
+            
+            // Add event to calendar
+            window.rescheduleCalendar.addEvent({
+                title: slot.is_booked ? 'Booked' : 'Available',
+                start: startDateTime,
+                end: endDateTime,
+                color: slot.is_booked ? '#ccc' : '#1A76D1',
+                textColor: slot.is_booked ? '#666' : '#fff',
+                extendedProps: {
+                    isAvailable: !slot.is_booked,
+                    time: slot.time || `${slot.start} - ${endTime}`
+                }
+            });
+        });
+    });
+    
+    // Show message if no available slots
+    if (!hasAvailableSlots) {
+        const errorContainer = document.getElementById('reschedule-error-container');
+        if (errorContainer) {
+            errorContainer.innerHTML = '<div class="notice-message">No available slots found in this date range. Try another week.</div>';
+        }
+    }
+}
+
+/**
+ * Select a time slot for rescheduling
+ */
+function selectRescheduleTimeSlot(date, time) {
+    console.log(`Selecting reschedule time slot: date=${date}, time=${time}`);
+    
+    // Update the date picker
+    const datePicker = document.getElementById('reschedule-date');
+    if (datePicker) {
+        datePicker.value = date;
+    }
+    
+    // Store the selected time globally
+    window.selectedRescheduleTime = time;
+    window.selectedRescheduleDate = date;
+    
+    // Find the matching time slot in the list and select it
+    const timeSlots = document.querySelectorAll('#reschedule-time-slots .time-slot');
+    let found = false;
+    
+    timeSlots.forEach(slot => {
+        slot.classList.remove('selected');
+        if (slot.dataset.time === time) {
+            // Select this one
+            slot.classList.add('selected');
+            found = true;
+        }
+    });
+    
+    // If we didn't find a matching slot in the list, we need to fetch/update the list
+    if (!found) {
+        fetchAvailableTimeSlots(date);
+    }
+    
+    // Update the schedule button state
+    const scheduleButton = document.getElementById('submit-reschedule');
+    if (scheduleButton) {
+        scheduleButton.disabled = false;
+    }
+    
+    // Show selection confirmation
+    const selectionConfirmation = document.getElementById('selected-slot-confirmation');
+    if (selectionConfirmation) {
+        const dateObj = new Date(`${date}T${time}`);
+        selectionConfirmation.innerHTML = `
+            <div class="selected-slot-info">
+                <i class="fas fa-check-circle"></i> 
+                Selected: ${dateObj.toLocaleDateString()} at ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+            </div>
+        `;
+        selectionConfirmation.style.display = 'block';
+    }
+}
+
+/**
  * Fetch available time slots for a given date
  */
 async function fetchAvailableTimeSlots(date) {
@@ -425,8 +732,7 @@ async function fetchAvailableTimeSlots(date) {
         }
         
         // Get doctor ID from the form dataset
-        // Alternatively, we could fetch this from the appointment details
-        // For now, we'll create a placeholder API call to get doctor availability
+        const doctorId = form.dataset.doctorId || '1'; // Fallback to 1 if not set
         
         // Make a request to get available time slots
         const response = await fetch(`http://localhost:5000/appointments/availability-range`, {
@@ -436,7 +742,7 @@ async function fetchAvailableTimeSlots(date) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                doctor_id: 1, // This would be dynamically populated in a real app
+                doctor_id: doctorId,
                 start_date: date,
                 end_date: date
             })
@@ -448,7 +754,7 @@ async function fetchAvailableTimeSlots(date) {
         }
         
         const availabilityData = await response.json();
-        console.log('Availability data:', availabilityData);
+        console.log('Availability data for specific date:', availabilityData);
         
         // Extract slots for the selected date
         const slots = availabilityData.availability[date] || [];
@@ -460,23 +766,80 @@ async function fetchAvailableTimeSlots(date) {
         }
         
         timeSlotsContainer.innerHTML = '';
+        let availableSlotCount = 0;
+        
         slots.forEach(slot => {
             if (slot.is_booked) return; // Skip booked slots
             
+            availableSlotCount++;
             const timeSlot = document.createElement('div');
             timeSlot.className = 'time-slot';
             timeSlot.dataset.time = slot.start;
+            timeSlot.dataset.end = slot.end || '';
             timeSlot.textContent = slot.time || slot.start;
+            
+            // Check if this slot matches our previously selected time
+            if (window.selectedRescheduleTime === slot.start && window.selectedRescheduleDate === date) {
+                timeSlot.classList.add('selected');
+            }
             
             timeSlot.addEventListener('click', function() {
                 // Clear previous selections
                 document.querySelectorAll('.time-slot').forEach(ts => ts.classList.remove('selected'));
                 // Select this slot
                 timeSlot.classList.add('selected');
+                
+                // Store the selected time
+                window.selectedRescheduleTime = slot.start;
+                window.selectedRescheduleDate = date;
+                
+                // Highlight the corresponding event in the calendar
+                if (window.rescheduleCalendar) {
+                    // First reset all events to default color
+                    window.rescheduleCalendar.getEvents().forEach(event => {
+                        if (event.extendedProps.isAvailable) {
+                            event.setProp('backgroundColor', '#1A76D1');
+                            event.setProp('borderColor', '#1A76D1');
+                        }
+                    });
+                    
+                    // Then find and highlight the matching event
+                    window.rescheduleCalendar.getEvents().forEach(event => {
+                        if (event.extendedProps.isAvailable && 
+                            event.start.toISOString().split('T')[0] === date &&
+                            event.start.toTimeString().slice(0, 5) === slot.start) {
+                            event.setProp('backgroundColor', '#28a745');
+                            event.setProp('borderColor', '#28a745');
+                        }
+                    });
+                }
+                
+                // Enable the submit button
+                const scheduleButton = document.getElementById('submit-reschedule');
+                if (scheduleButton) {
+                    scheduleButton.disabled = false;
+                }
+                
+                // Show selection confirmation
+                const selectionConfirmation = document.getElementById('selected-slot-confirmation');
+                if (selectionConfirmation) {
+                    const dateObj = new Date(`${date}T${slot.start}`);
+                    selectionConfirmation.innerHTML = `
+                        <div class="selected-slot-info">
+                            <i class="fas fa-check-circle"></i> 
+                            Selected: ${dateObj.toLocaleDateString()} at ${dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </div>
+                    `;
+                    selectionConfirmation.style.display = 'block';
+                }
             });
             
             timeSlotsContainer.appendChild(timeSlot);
         });
+        
+        if (availableSlotCount === 0) {
+            timeSlotsContainer.innerHTML = '<p>No available time slots for the selected date. Please choose another date.</p>';
+        }
         
     } catch (error) {
         console.error('Error fetching time slots:', error);
@@ -489,27 +852,32 @@ async function fetchAvailableTimeSlots(date) {
  */
 async function submitReschedule() {
     const form = document.getElementById('reschedule-form');
-    const datePicker = document.getElementById('reschedule-date');
     const reasonInput = document.getElementById('reschedule-reason');
     const errorContainer = document.getElementById('reschedule-error-container');
     
-    if (!form || !datePicker) return;
+    if (!form) return;
     
     const appointmentId = form.dataset.appointmentId;
-    const selectedDate = datePicker.value;
-    const reason = reasonInput ? reasonInput.value : '';
+    let selectedDate, selectedTime;
     
-    // Get selected time slot
-    const selectedTimeSlot = document.querySelector('.time-slot.selected');
-    if (!selectedTimeSlot) {
-        showErrorMessage("Please select a time slot", errorContainer);
-        return;
+    // First try to get the date and time from our global variables (set by calendar selection)
+    if (window.selectedRescheduleDate && window.selectedRescheduleTime) {
+        selectedDate = window.selectedRescheduleDate;
+        selectedTime = window.selectedRescheduleTime;
+    } 
+    // Fall back to the DOM elements if global variables aren't set
+    else {
+        const datePicker = document.getElementById('reschedule-date');
+        selectedDate = datePicker ? datePicker.value : null;
+        
+        const selectedTimeSlot = document.querySelector('.time-slot.selected');
+        selectedTime = selectedTimeSlot ? selectedTimeSlot.dataset.time : null;
     }
     
-    const selectedTime = selectedTimeSlot.dataset.time;
+    const reason = reasonInput ? reasonInput.value : '';
     
     if (!appointmentId || !selectedDate || !selectedTime) {
-        showErrorMessage("Please fill out all required fields", errorContainer);
+        showErrorMessage("Please select a date and time slot", errorContainer);
         return;
     }
     
@@ -524,6 +892,8 @@ async function submitReschedule() {
         // Format the new date time as expected by the API (YYYY-MM-DD-HH)
         const hour = selectedTime.split(':')[0];
         const newDateTime = `${selectedDate}-${hour}`;
+        
+        console.log(`Submitting reschedule request for appointment ${appointmentId} to ${newDateTime}`);
         
         // Call the reschedule API
         const response = await fetch('http://localhost:5000/appointments/reschedule', {
@@ -704,6 +1074,9 @@ function initializeDashboard() {
     } else {
         console.warn('User profile element not found in the DOM');
     }
+    
+    // Initialize calendar if available
+    initializeRescheduleCalendar();
     
     console.log('Dashboard initialization complete');
 }

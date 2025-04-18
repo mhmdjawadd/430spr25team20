@@ -8,7 +8,7 @@
         <meta name='copyright' content=''>
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         
-        <title>Book Appointment - Mediplus Medical Center</title>
+        <title>Book Appointment - Nabad</title>
         
         <!-- Favicon -->
         <link rel="icon" href="img/favicon.png">
@@ -77,24 +77,26 @@
                                 <div class="mobile-nav"></div>
                             </div>
                             <div class="col-lg-9 col-md-9 col-12">
-                                <!-- Main Menu -->
+                        
                                 <div class="main-menu">
                                     <nav class="navigation">
                                         <ul class="nav menu">
-                                            <li><a href="index.html">Home</a></li>
                                             <li><a href="doctors.html">Doctors</a></li>
-                                            <li><a href="services.html">Services</a></li>
-                                            <li><a href="contact.html">Contact Us</a></li>
+                                            <li><a href="#" id="dashboardLink">Dashboard</a></li>
+                                            <li><a href="appointments.html">Book Appointment</a></li>
+                                            
                                             <li class="reminder-icon">
                                                 <a href="reminder-preferences.html">
                                                     <i class="fa fa-bell"></i>
                                                     <span class="reminder-tooltip"></span>
                                                 </a>
                                             </li>
-                                            <li class="user-greeting"><span id="userGreeting"></span></li>
-                                            <li><a href="login.html" class="logout-btn" id="logoutBtn">
-                                                <i class="fas fa-door-open"></i>
+                                            <li><a href="login.html" class="logout-btn" onclick="handleLogout()">
+                                                <i class="fas fa-door-open"></i> 
                                             </a></li>
+                                            <li class="nav-item user-greeting">
+                                                <span id="userGreeting"></span>
+                                            </li>
                                         </ul>
                                     </nav>
                                 </div>
@@ -357,7 +359,7 @@
                                         <ul>
                                             <li><a href="index.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Home</a></li>
                                             <li><a href="doctors.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Doctors</a></li>
-                                            <li><a href="services.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Services</a></li>
+                                            <li><a href="#" id="dashboardLink">Dashboard</a></li>
                                             <li><a href="contact.html"><i class="fa fa-caret-right" aria-hidden="true"></i>Contact Us</a></li>    
                                         </ul>
                                     </div>
@@ -427,8 +429,68 @@
         <!-- Custom JS -->
         <script src="js/main.js"></script>
         <script src="js/auth.js"></script>
+        <script src="js/auth-api.js"></script>
         
         <!-- Appointment-specific JS - now using single unified file -->
         <script src="js/appointments/appointments.js"></script>
     </body>
 </html>
+<script>
+    // Handle dashboard link and user greeting
+    document.addEventListener('DOMContentLoaded', function() {
+        const userGreetingElement = document.getElementById('userGreeting');
+        const dashboardLink = document.getElementById('dashboardLink');
+        const logoutBtn = document.getElementById('logoutBtn');
+        
+        // Check if user is logged in
+        const token = localStorage.getItem('token');
+        if (!token) {
+            // User is not logged in
+            userGreetingElement.innerHTML = `<i class="fas fa-user-circle"></i> Hi, Guest!`;
+            dashboardLink.href = 'login.html';
+            return;
+        }
+        
+        // User is logged in, try to get their profile
+        try {
+            // Parse the user data from localStorage
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            // Update greeting with user's name
+            let displayName = userData.first_name || userData.email?.split('@')[0] || 'User';
+            userGreetingElement.innerHTML = `<i class="fas fa-user-circle"></i> Hi, ${displayName}!`;
+            
+            // Set dashboard link based on user role
+            if (userData.role) {
+                if (userData.role.toLowerCase() === 'doctor') {
+                    dashboardLink.href = './Doctor Dashboard/doctor_dashboard.html';
+                } else {
+                    dashboardLink.href = './Patient Dashboard/patient_dashboard.html';
+                }
+            } else {
+                // Default to patient dashboard if role is not defined
+                dashboardLink.href = './Patient Dashboard/patient_dashboard.html';
+            }
+            
+            console.log('User data loaded:', userData);
+        } catch (error) {
+            console.error('Error loading user data:', error);
+            // Even if there's an error parsing the data, don't redirect to login
+            // since we've confirmed there is a token
+            dashboardLink.href = './Patient Dashboard/patient_dashboard.html';
+        }
+        
+        // Add logout functionality
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Clear all authentication data
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                
+                // Redirect to login page
+                window.location.href = 'login.html';
+            });
+        }
+    });
+</script>

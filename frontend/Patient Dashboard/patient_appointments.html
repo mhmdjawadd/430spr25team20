@@ -6,6 +6,180 @@
     <title>My Appointments | Patient Dashboard</title>
     <link rel="stylesheet" href="css/patient_dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Add FullCalendar CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+    <style>
+        /* Custom styles for the calendar */
+        .reschedule-calendar {
+            height: 250px; /* Even smaller from 300px */
+            margin-bottom: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .fc .fc-toolbar-title {
+            font-size: 1em;
+            margin: 0;
+        }
+        
+        .fc .fc-button {
+            background-color: #1A76D1;
+            border-color: #1A76D1;
+        }
+        
+        .fc .fc-button:hover {
+            background-color: #0d5ca9;
+            border-color: #0d5ca9;
+        }
+        
+        .fc .fc-daygrid-day.fc-day-today {
+            background-color: rgba(26, 118, 209, 0.1);
+        }
+        
+        .time-slots-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            max-height: 100px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        
+        .time-slot {
+            padding: 6px 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12px;
+        }
+        
+        .time-slot:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .time-slot.selected {
+            background-color: #1A76D1;
+            color: white;
+        }
+        
+        .time-slot.booked {
+            background-color: #ddd;
+            color: #999;
+            cursor: not-allowed;
+        }
+        
+        #selected-slot-confirmation {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e8f4ff;
+            border-radius: 5px;
+            border-left: 4px solid #1A76D1;
+            display: none;
+        }
+        
+        .selected-slot-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .selected-slot-info i {
+            color: #28a745;
+            font-size: 1.2em;
+        }
+        
+        .loading-message, .notice-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .loading-message {
+            background-color: #f8f9fa;
+            border-left: 4px solid #6c757d;
+        }
+        
+        .notice-message {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .modal-content {
+            max-width: 500px; /* Even smaller from 650px */
+            width: 85%;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #reschedule-modal .modal-body {
+            padding: 12px;
+            overflow-y: auto;
+            max-height: calc(80vh - 60px); /* Allow scrolling in the modal body */
+        }
+        
+        #reschedule-modal .form-group {
+            margin-bottom: 10px;
+        }
+        
+        #reschedule-info {
+            margin-bottom: 10px !important;
+        }
+        
+        #reschedule-info h4 {
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        
+        #current-appointment-details {
+            font-size: 13px;
+            line-height: 1.2;
+        }
+        
+        .fc .fc-toolbar {
+            margin-bottom: 0;
+        }
+        
+        .fc .fc-timegrid-slot {
+            height: 1.2em !important;
+        }
+        
+        .fc-timegrid-event {
+            padding: 2px !important;
+        }
+        
+        .fc-theme-standard td, .fc-theme-standard th {
+            border: 1px solid #ddd;
+        }
+        
+        #reschedule-reason {
+            min-height: 60px;
+            height: 60px;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .reschedule-calendar {
+                height: 200px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                max-height: 85vh;
+                overflow-y: auto;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -49,9 +223,9 @@
             <div class="dashboard">
                 <div class="section-header">
                     <h2>My Appointments</h2>
-                    <button class="btn-primary" id="new-appointment-btn">
+                    <a href="../appointments.html" class="btn-primary" id="new-appointment-btn">
                         <i class="fas fa-plus"></i> Book New Appointment
-                    </button>
+                    </a>
                 </div>
 
                 <div class="appointment-filters">
@@ -188,71 +362,6 @@
         </div>
     </div>
 
-    <!-- Modal for booking new appointment -->
-    <div class="modal" id="book-appointment-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Book New Appointment</h3>
-                <button class="close-modal"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <form id="appointment-form">
-                    <div class="form-group">
-                        <label for="specialty">Specialty</label>
-                        <select id="specialty" required>
-                            <option value="">Select Specialty</option>
-                            <option value="cardiology">Cardiology</option>
-                            <option value="neurology">Neurology</option>
-                            <option value="dermatology">Dermatology</option>
-                            <option value="orthopedics">Orthopedics</option>
-                            <option value="pediatrics">Pediatrics</option>
-                            <option value="general">General Medicine</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="doctor">Doctor</label>
-                        <select id="doctor" required>
-                            <option value="">Select Doctor</option>
-                            <option value="dr-sarah">Dr. Sarah Johnson</option>
-                            <option value="dr-james">Dr. James Wilson</option>
-                            <option value="dr-emily">Dr. Emily Chen</option>
-                            <option value="dr-michael">Dr. Michael Brown</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="appointment-date">Date</label>
-                        <input type="date" id="appointment-date" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="appointment-time">Time</label>
-                        <select id="appointment-time" required>
-                            <option value="">Select Time</option>
-                            <option value="09:00">09:00 AM</option>
-                            <option value="09:30">09:30 AM</option>
-                            <option value="10:00">10:00 AM</option>
-                            <option value="10:30">10:30 AM</option>
-                            <option value="11:00">11:00 AM</option>
-                            <option value="11:30">11:30 AM</option>
-                            <option value="14:00">02:00 PM</option>
-                            <option value="14:30">02:30 PM</option>
-                            <option value="15:00">03:00 PM</option>
-                            <option value="15:30">03:30 PM</option>
-                            <option value="16:00">04:00 PM</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="reason">Reason for Visit</label>
-                        <textarea id="reason" rows="3" required></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn-cancel-form">Cancel</button>
-                        <button type="submit" class="btn-submit">Book Appointment</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <!-- Modal for rescheduling appointment -->
     <div class="modal" id="reschedule-modal">
         <div class="modal-content">
@@ -269,20 +378,20 @@
                 <div id="reschedule-error-container" class="error-message mb-3"></div>
                 
                 <form id="reschedule-form">
+                    <!-- Hidden date field for backward compatibility -->
+                    <input type="hidden" id="reschedule-date">
+                    
                     <div class="form-group">
-                        <label for="reschedule-date">New Date</label>
-                        <input type="date" id="reschedule-date" required>
+                        <label>Select a new date and time</label>
+                        <div id="reschedule-calendar" class="reschedule-calendar"></div>
                     </div>
                     
-                    <div class="form-group" id="calendar-container">
-                        <label>Doctor's Availability</label>
-                        <div id="reschedule-calendar" class="reschedule-calendar mb-3"></div>
-                    </div>
+                    <div id="selected-slot-confirmation"></div>
                     
                     <div class="form-group">
                         <label>Available Time Slots</label>
                         <div id="reschedule-time-slots" class="time-slots-container">
-                            <p>Please select a date to see available time slots.</p>
+                            <p>Please select a date on the calendar to see available time slots.</p>
                         </div>
                     </div>
                     
@@ -293,7 +402,7 @@
                     
                     <div class="form-actions">
                         <button type="button" class="btn-cancel-form" id="cancel-reschedule">Cancel</button>
-                        <button type="submit" class="btn-submit" id="confirm-reschedule">Confirm Reschedule</button>
+                        <button type="submit" class="btn-submit" id="submit-reschedule" disabled>Confirm Reschedule</button>
                     </div>
                 </form>
             </div>

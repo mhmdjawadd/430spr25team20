@@ -202,20 +202,6 @@ function setupEventListeners() {
     }
 }
 
-/**
- * Add a simple function to check for button connectivity on page load
- */
-function checkButtonConnections() {
-    console.log('Checking button connections...');
-    const confirmBtn = document.getElementById('confirmBtn');
-    if (confirmBtn) {
-        console.log('Confirm button found:', confirmBtn);
-        // Test click
-        confirmBtn.dispatchEvent(new Event('click', { bubbles: true }));
-    } else {
-        console.error('Confirm button not found - DOM may not be fully loaded');
-    }
-}
 
 /**
  * Initialize the calendar
