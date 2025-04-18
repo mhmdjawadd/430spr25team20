@@ -314,7 +314,7 @@
                 <li><a href="patient_appointments.html"><i class="fas fa-calendar-check"></i> My Appointments</a></li>
                 <li><a href="patient_medical_records.html"><i class="fas fa-file-medical"></i> Medical Records</a></li>
                 <li class="active"><a href="patient_messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
-                <li><a href="../index.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                <li><a href="../index.html" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </div>
 
@@ -413,6 +413,14 @@
 
     <script src="js/patient_messages.js"></script>
     <script>
+        // Add logout functionality
+        document.getElementById('logout-link').addEventListener('click', function(e) {
+            // Clear authentication token on logout
+            localStorage.removeItem('token');
+            console.log('User logged out, token removed');
+            // Continue to index page
+        });
+        
         // Global variables
         let currentUser = null;
         let currentRecipient = null;

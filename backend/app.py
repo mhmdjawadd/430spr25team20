@@ -176,6 +176,18 @@ def get_doctor_availability_range_route():
     """Get available appointment slots for a doctor across a date range (week/month view)"""
     return AppointmentController.get_doctor_availability_range()
 
+@app.route('/appointments/patient', methods=['GET'])
+@jwt_required()
+def get_patient_appointments():
+    """Get all appointments for the current patient"""
+    return AppointmentController.get_patient_appointments()
+
+@app.route('/appointments/reschedule', methods=['PUT'])
+@jwt_required()
+def reschedule_appointment():
+    """Reschedule an existing appointment to a new date/time"""
+    return AppointmentController.reschedule_appointment()
+
 # Insurance routes
 @app.route('/insurance', methods=['GET'])
 @jwt_required()

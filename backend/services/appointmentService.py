@@ -412,185 +412,12 @@ class AppointmentController:
             "appointments": appointments_list
         }), 200
         
-    @staticmethod
-    @jwt_required()
-    def auto_schedule_appointments():
-        """
-        Automatically schedule recurring appointments for patients
-        This endpoint is primarily for receptionists to batch process appointments
-        """
-        # Get the current user
-        current_user_id = get_jwt_identity()
-        current_user = User.query.get(current_user_id)
-        
-        if not current_user:
-            return jsonify({"error": "User not found"}), 404
-            
-        # Only receptionists can use this endpoint
-        if current_user.role.name != "RECEPTIONIST":
-            return jsonify({"error": "Only receptionists can auto-schedule appointments"}), 403
-            
-        # Get request data
-        data = request.get_json()
-        
-        # Process different auto-scheduling options
-        schedule_type = data.get("schedule_type", "recurring")
-        results = {"scheduled": 0, "errors": 0, "details": []}
-        
-        if schedule_type == "recurring":
-            # Schedule new recurring appointments based on patterns
-            # Find appointments that need to be renewed (e.g., last in series is within a week)
-            now = datetime.now()
-            one_week_from_now = now + timedelta(days=7)
-            
-            # Get appointments that are recurring and the last one in the series is coming up soon
-            patients_needing_renewal = db.session.query(
-                Appointment.patient_id,
-                Appointment.doctor_id,
-                Appointment.recurrence_pattern,
-                db.func.max(Appointment.date_time).label('last_date')
-            ).filter(
-                Appointment.type == AppointmentType.RECURRING,
-                Appointment.recurrence_pattern != RecurrencePattern.NONE,
-                
-            ).group_by(
-                Appointment.patient_id,
-                Appointment.doctor_id,
-                Appointment.recurrence_pattern
-            ).having(
-                db.func.max(Appointment.date_time) < one_week_from_now
-            ).all()
-            
-            # Schedule new appointments for each pattern
-            for patient_id, doctor_id, recurrence_pattern, last_date in patients_needing_renewal:
-                try:
-                    # Get the last appointment details
-                    last_appointment = Appointment.query.filter(
-                        Appointment.patient_id == patient_id,
-                        Appointment.doctor_id == doctor_id,
-                        Appointment.date_time == last_date
-                    ).first()
-                    
-                    if not last_appointment:
-                        continue
-                        
-                    # Calculate the next date based on recurrence pattern
-                    if recurrence_pattern == RecurrencePattern.WEEKLY:
-                        next_date = last_date + timedelta(days=7)
-                    elif recurrence_pattern == RecurrencePattern.BIWEEKLY:
-                        next_date = last_date + timedelta(days=14)
-                    elif recurrence_pattern == RecurrencePattern.MONTHLY:
-                        # Handle month incrementation
-                        month = last_date.month % 12 + 1
-                        year = last_date.year + (1 if month == 1 else 0)
-                        day = min(last_date.day, calendar.monthrange(year, month)[1])
-                        next_date = last_date.replace(year=year, month=month, day=day)
-                    else:
-                        continue
-                        
-                    # Skip weekends
-                    while next_date.weekday() >= 5:  # 5=Saturday, 6=Sunday
-                        next_date = next_date + timedelta(days=1)
-                        
-                    # Check if the time slot is available
-                    appointment_end = next_date + timedelta(minutes=30)
-                    
-                    existing = Appointment.query.filter(
-                        Appointment.doctor_id == doctor_id,
-                        Appointment.date_time >= next_date.replace(hour=0, minute=0, second=0),
-                        Appointment.date_time < next_date.replace(hour=23, minute=59, second=59),
-                        
-                    ).all()
-                    
-                    # Check for conflicts
-                    conflict = False
-                    for appt in existing:
-                        existing_start = appt.date_time
-                        existing_end = existing_start + timedelta(minutes=30)
-                        
-                        if (next_date < existing_end and appointment_end > existing_start):
-                            conflict = True
-                            break
-                            
-                    if conflict:
-                        # Try the next day
-                        next_date = next_date + timedelta(days=1)
-                        # Skip weekends again
-                        while next_date.weekday() >= 5:
-                            next_date = next_date + timedelta(days=1)
-                    
-                    # Create the new appointment
-                    new_appointment = Appointment(
-                        patient_id=patient_id,
-                        doctor_id=doctor_id,
-                        date_time=next_date,
-                        
-                        type=AppointmentType.RECURRING,
-                        recurrence_pattern=recurrence_pattern,
-                        base_cost=last_appointment.base_cost,
-                        insurance_verified=last_appointment.insurance_verified,
-                        insurance_coverage_amount=last_appointment.insurance_coverage_amount,
-                        patient_responsibility=last_appointment.patient_responsibility,
-                        
-                    )
-                    
-                    db.session.add(new_appointment)
-                    
-                    # Create notifications
-                    patient = Patient.query.get(patient_id)
-                    doctor = Doctor.query.get(doctor_id)
-                    
-                    if patient and doctor and hasattr(patient, 'user') and hasattr(doctor, 'user'):
-                        # Notification for doctor
-                        doctor_notification = Notification(
-                            user_id=doctor_id,
-                            appointment_id=new_appointment.appointment_id,
-                            message=f"Recurring appointment automatically scheduled with {patient.user.first_name} {patient.user.last_name} on {next_date.strftime('%Y-%m-%d at %H:%M')}",
-                            scheduled_time=next_date - timedelta(hours=24)
-                        )
-                        
-                        # Notification for patient
-                        patient_notification = Notification(
-                            user_id=patient_id,
-                            appointment_id=new_appointment.appointment_id,
-                            message=f"Your recurring appointment with Dr. {doctor.user.first_name} {doctor.user.last_name} has been scheduled for {next_date.strftime('%Y-%m-%d at %H:%M')}",
-                            scheduled_time=next_date - timedelta(hours=24)
-                        )
-                        
-                        db.session.add(doctor_notification)
-                        db.session.add(patient_notification)
-                    
-                    results["scheduled"] += 1
-                    results["details"].append({
-                        "patient_id": patient_id,
-                        "doctor_id": doctor_id,
-                        "date_time": next_date.strftime("%Y-%m-%d %H:%M"),
-                        "pattern": recurrence_pattern.name
-                    })
-                    
-                except Exception as e:
-                    results["errors"] += 1
-                    print(f"Error auto-scheduling appointment: {str(e)}")
-            
-            # Commit all changes
-            try:
-                db.session.commit()
-            except Exception as e:
-                db.session.rollback()
-                return jsonify({"error": f"Failed to auto-schedule appointments: {str(e)}"}), 500
-        
-        return jsonify({
-            "message": "Auto-scheduling complete",
-            "appointments_scheduled": results["scheduled"],
-            "errors": results["errors"],
-            "details": results["details"]
-        }), 200
 
     @staticmethod
     @jwt_required()
     def cancel_appointment():
         """
-        Cancel an existing appointment and notify relevant parties
+        Cancel an existing appointment by deleting it from the database and notify relevant parties
         
         Request body:
         {
@@ -629,20 +456,25 @@ class AppointmentController:
         if not is_authorized:
             return jsonify({"error": "Unauthorized to cancel this appointment"}), 403
             
-        
-            
-        
-        
         try:
             # Get patient and doctor information for notifications
             patient = Patient.query.get(appointment.patient_id) 
             doctor_user = User.query.get(appointment.doctor_id)
             
+            # Store appointment details before deletion for response and notifications
+            appointment_details = {
+                "appointment_id": appointment.appointment_id,
+                "patient_id": appointment.patient_id,
+                "doctor_id": appointment.doctor_id,
+                "date_time": appointment.date_time.strftime("%Y-%m-%d %H:%M"),
+                "patient_name": patient.full_name() if patient else "Unknown",
+                "doctor_name": f"Dr. {doctor_user.first_name} {doctor_user.last_name}" if doctor_user else "Unknown"
+            }
+            
             if patient and doctor_user:
                 # Create cancellation notification for patient
                 patient_notification = Notification(
                     user_id=patient.patient_id,
-                    appointment_id=appointment.appointment_id,
                     message=f"Appointment with Dr. {doctor_user.first_name} {doctor_user.last_name} on {appointment.date_time.strftime('%Y-%m-%d at %H:%M')} has been cancelled. Reason: {reason}",
                     scheduled_time=datetime.now()
                 )
@@ -651,7 +483,6 @@ class AppointmentController:
                 # Create cancellation notification for doctor
                 doctor_notification = Notification(
                     user_id=doctor_user.user_id,
-                    appointment_id=appointment.appointment_id,
                     message=f"Appointment with {patient.full_name()} on {appointment.date_time.strftime('%Y-%m-%d at %H:%M')} has been cancelled. Reason: {reason}",
                     scheduled_time=datetime.now()
                 )
@@ -661,22 +492,25 @@ class AppointmentController:
                 if patient.caregiver_id:
                     caregiver_notification = Notification(
                         user_id=patient.caregiver_id,
-                        appointment_id=appointment.appointment_id,
                         message=f"Appointment for {patient.full_name()} with Dr. {doctor_user.first_name} {doctor_user.last_name} on {appointment.date_time.strftime('%Y-%m-%d at %H:%M')} has been cancelled.",
                         scheduled_time=datetime.now()
                     )
                     db.session.add(caregiver_notification)
+            
+            # Delete the appointment from the database
+            print(f"Deleting appointment ID: {appointment.appointment_id}")
+            db.session.delete(appointment)
             
             # Commit changes
             db.session.commit()
             
             # If requested, notify other patients about the availability
             response_data = {
-                "message": "Appointment cancelled successfully",
-                "appointment_id": appointment.appointment_id,
-                "patient": patient.full_name() if patient else "Unknown",
-                "doctor": f"Dr. {doctor_user.first_name} {doctor_user.last_name}" if doctor_user else "Unknown",
-                "date_time": appointment.date_time.strftime("%Y-%m-%d %H:%M")
+                "message": "Appointment cancelled and deleted successfully",
+                "appointment_id": appointment_details["appointment_id"],
+                "patient": appointment_details["patient_name"],
+                "doctor": appointment_details["doctor_name"],
+                "date_time": appointment_details["date_time"]
             }
             
             # Import here to avoid circular imports
@@ -691,6 +525,7 @@ class AppointmentController:
             
         except Exception as e:
             db.session.rollback()
+            print(f"Error deleting appointment: {str(e)}")
             return jsonify({"error": f"Failed to cancel appointment: {str(e)}"}), 500
 
     @staticmethod
@@ -821,3 +656,209 @@ class AppointmentController:
             current_date += timedelta(days=1)
         
         return availability
+
+    @staticmethod
+    @jwt_required()
+    def get_patient_appointments():
+        """
+        Get all appointments for the current patient
+        """
+        # Get the current user
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+        
+        if not current_user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # Check if user is a patient
+        if current_user.role == UserRole.PATIENT:
+            patient_id = current_user.user_id
+        else:
+            # For non-patients, they must specify which patient's appointments to get
+            patient_id = request.args.get('patient_id')
+            if not patient_id:
+                return jsonify({"error": "patient_id parameter required for non-patient users"}), 400
+            
+            # Check if the non-patient user is authorized to view this patient's appointments
+            # Doctors can view their patients' appointments, caregivers can view their assigned patients
+            if current_user.role == UserRole.DOCTOR:
+                # Check if this patient is assigned to this doctor
+                patient = Patient.query.get(patient_id)
+                if not patient or patient.doctor_id != current_user.user_id:
+                    return jsonify({"error": "Not authorized to view this patient's appointments"}), 403
+            elif current_user.role == UserRole.CAREGIVER:
+                # Check if this patient is assigned to this caregiver
+                patient = Patient.query.get(patient_id)
+                if not patient or patient.caregiver_id != current_user.user_id:
+                    return jsonify({"error": "Not authorized to view this patient's appointments"}), 403
+            elif current_user.role != UserRole.RECEPTIONIST and current_user.role != UserRole.ADMIN:
+                # Other roles not authorized to view patient appointments
+                return jsonify({"error": "Not authorized to view patient appointments"}), 403
+        
+        # Query appointments for this patient
+        appointments = Appointment.query.filter_by(patient_id=patient_id).order_by(Appointment.date_time).all()
+        
+        # Format appointments for response
+        appointments_list = []
+        for appointment in appointments:
+            # Get doctor information
+            doctor = User.query.get(appointment.doctor_id)
+            doctor_info = Doctor.query.get(appointment.doctor_id)
+            
+            appointment_data = {
+                "appointment_id": appointment.appointment_id,
+                "date_time": appointment.date_time.strftime("%Y-%m-%d %H:%M"),
+                "doctor_id": appointment.doctor_id,
+                "doctor_name": f"Dr. {doctor.first_name} {doctor.last_name}" if doctor else "Unknown",
+                "doctor_specialty": doctor_info.specialty.name if doctor_info and hasattr(doctor_info, "specialty") else "General",
+                "type": appointment.type.name,
+                "recurrence_pattern": appointment.recurrence_pattern.name,
+                "status": "UPCOMING" if appointment.date_time > datetime.now() else "COMPLETED"
+            }
+            appointments_list.append(appointment_data)
+        
+        return jsonify(appointments_list), 200
+
+    @staticmethod
+    @jwt_required()
+    def reschedule_appointment():
+        """
+        Reschedule an existing appointment to a new date/time
+        
+        Request body:
+        {
+            "appointment_id": int,
+            "new_date_time": "YYYY-MM-DD-HH",
+            "reason": string (optional)
+        }
+        """
+        # Get the current user
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+        
+        if not current_user:
+            return jsonify({"error": "User not found"}), 404
+            
+        # Get request data
+        data = request.get_json()
+        appointment_id = data.get('appointment_id')
+        new_date_time_str = data.get('new_date_time')
+        reason = data.get('reason', 'No reason provided')
+        
+        # Validate required fields
+        if not appointment_id:
+            return jsonify({"error": "Missing required field: appointment_id"}), 400
+            
+        if not new_date_time_str:
+            return jsonify({"error": "Missing required field: new_date_time"}), 400
+            
+        # Parse the new date time
+        try:
+            new_date_time = datetime.strptime(new_date_time_str, "%Y-%m-%d-%H")
+        except ValueError:
+            return jsonify({"error": "Invalid date_time format. Use YYYY-MM-DD-HH"}), 400
+            
+        # Get the appointment
+        appointment = Appointment.query.get(appointment_id)
+        if not appointment:
+            return jsonify({"error": "Appointment not found"}), 404
+            
+        # Check authorization - only the patient, doctor, or receptionist can reschedule
+        is_authorized = (current_user.user_id == appointment.patient_id or
+                        current_user.user_id == appointment.doctor_id or
+                        current_user.role == UserRole.RECEPTIONIST)
+                        
+        if not is_authorized:
+            return jsonify({"error": "Unauthorized to reschedule this appointment"}), 403
+            
+        # Save old appointment time for notifications
+        old_date_time = appointment.date_time.strftime("%Y-%m-%d at %H:%M")
+        
+        # Check if the new time is valid
+        new_date = new_date_time.date()
+        new_time = new_date_time.time()
+        weekday_num = new_date.weekday()
+        
+        # 1. Check if it's a weekday (doctor available)
+        if weekday_num >= 5:  # Weekend
+            return jsonify({"error": "Cannot reschedule to a weekend. Doctor is not available on weekends"}), 400
+        
+        # 2. Check if the time is within working hours (8 AM to 5 PM)
+        if new_time < time(8, 0) or new_time >= time(17, 0):
+            return jsonify({"error": "Appointment time must be between 8:00 AM and 5:00 PM"}), 400
+        
+        # 3. Check if the slot is already booked
+        appointment_end = new_date_time + timedelta(minutes=60)
+        
+        existing_appointments = Appointment.query.filter(
+            Appointment.doctor_id == appointment.doctor_id,
+            Appointment.appointment_id != appointment.appointment_id,  # Exclude the current appointment
+            Appointment.date_time >= new_date_time.replace(hour=0, minute=0, second=0),  # Start of day
+            Appointment.date_time < new_date_time.replace(hour=23, minute=59, second=59),  # End of day
+        ).all()
+        
+        # Check for conflicts
+        for existing in existing_appointments:
+            existing_start = existing.date_time
+            existing_end = existing_start + timedelta(minutes=60)
+            
+            # Check if new appointment overlaps with existing one
+            if (new_date_time < existing_end and appointment_end > existing_start):
+                return jsonify({
+                    "error": "Time slot not available. Doctor already has an appointment at this time.",
+                    "conflict_with": existing_start.strftime("%H:%M")
+                }), 409
+                
+        try:
+            # Get patient and doctor information for notifications
+            patient = Patient.query.get(appointment.patient_id) 
+            doctor_user = User.query.get(appointment.doctor_id)
+            
+            # Update the appointment date and time
+            appointment.date_time = new_date_time
+            
+            # Create notification for doctor
+            if doctor_user:
+                doctor_notification = Notification(
+                    user_id=doctor_user.user_id,
+                    appointment_id=appointment.appointment_id,
+                    message=f"Appointment with {patient.full_name() if patient else 'Unknown'} has been rescheduled from {old_date_time} to {new_date_time.strftime('%Y-%m-%d at %H:%M')}. Reason: {reason}",
+                    scheduled_time=datetime.now()
+                )
+                db.session.add(doctor_notification)
+            
+            # Create notification for patient
+            if patient:
+                patient_notification = Notification(
+                    user_id=patient.patient_id,
+                    appointment_id=appointment.appointment_id,
+                    message=f"Your appointment with Dr. {doctor_user.first_name} {doctor_user.last_name if doctor_user else 'Unknown'} has been rescheduled from {old_date_time} to {new_date_time.strftime('%Y-%m-%d at %H:%M')}. Reason: {reason}",
+                    scheduled_time=datetime.now()
+                )
+                db.session.add(patient_notification)
+                
+                # If patient has a caregiver, notify them too
+                if patient.caregiver_id:
+                    caregiver_notification = Notification(
+                        user_id=patient.caregiver_id,
+                        message=f"Appointment for {patient.full_name()} with Dr. {doctor_user.first_name} {doctor_user.last_name if doctor_user else 'Unknown'} has been rescheduled from {old_date_time} to {new_date_time.strftime('%Y-%m-%d at %H:%M')}",
+                        scheduled_time=datetime.now()
+                    )
+                    db.session.add(caregiver_notification)
+            
+            # Commit changes
+            db.session.commit()
+            
+            return jsonify({
+                "message": "Appointment rescheduled successfully",
+                "appointment_id": appointment.appointment_id,
+                "old_date_time": old_date_time,
+                "new_date_time": new_date_time.strftime("%Y-%m-%d %H:%M"),
+                "doctor": f"Dr. {doctor_user.first_name} {doctor_user.last_name}" if doctor_user else "Unknown",
+                "patient": patient.full_name() if patient else "Unknown"
+            }), 200
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error rescheduling appointment: {str(e)}")
+            return jsonify({"error": f"Failed to reschedule appointment: {str(e)}"}), 500
