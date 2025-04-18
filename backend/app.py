@@ -25,7 +25,7 @@ jwt = JWTManager(app)
 
 # Initialize database
 from services.db import init_db
-db =init_db(app)  # Initialize with our Flask app
+db =init_db(app,True)  # Initialize with our Flask app
 
 @jwt.user_identity_loader
 def user_identity_lookup(user):

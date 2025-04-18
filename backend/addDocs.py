@@ -9,7 +9,7 @@ SIGNUP_ENDPOINT = "/signup"         # Adjust if your signup route is different
 
 doctors_to_register = [
     {
-        "email": "dr.general@nabad.com",
+        "email": "doc@gmail.com",
         "password": "password123",
         "first_name": "James",
         "last_name": "Willson",
@@ -18,7 +18,7 @@ doctors_to_register = [
         "phone": "111-222-3333"
     },
     {
-        "email": "dr.therapist@nabad.com",
+        "email": "dr.therapist@.com",
         "password": "password123",
         "first_name": "Sarah",
         "last_name": "Johnson",
@@ -27,7 +27,7 @@ doctors_to_register = [
         "phone": "444-555-6666"
     },
     {
-        "email": "dr.surgeon@nabad.com",
+        "email": "dr.surgeon@gmail.com",
         "password": "password123",
         "first_name": "Michael",
         "last_name": "Chen",

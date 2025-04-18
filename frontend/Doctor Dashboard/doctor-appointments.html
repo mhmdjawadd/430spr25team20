@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <!-- Add our custom doctor calendar script -->
+    <script src="../js/doctor-calendar.js"></script>
 
     <style>
         /* ---  Core Reset --- */
@@ -181,81 +183,166 @@
 
     <!-- ===== JS ===== -->
     <script>
-        // ------ Calendar ------ //
+        // ------ Appointments List ------ //
+        let appointments = []; // Will be populated from API
+
         document.addEventListener('DOMContentLoaded', function() {
-            const calendarEl = document.getElementById('calendar');
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'timeGridWeek',
-                height: 'auto',
-                headerToolbar: { left: 'prev,next today', center: 'title', right: 'timeGridDay,timeGridWeek,dayGridMonth' },
-                selectable: true,
-                events: [] // Will be populated below
+            // Initialize the doctor calendar using our custom script
+            initDoctorCalendar('calendar', {
+                // Custom calendar options can be added here
+                eventTimeFormat: {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    meridiem: 'short'
+                }
             });
-            calendar.render();
-            window.appCalendar = calendar; // expose for later use
+            
+            // Set up filter event listeners
+            setupFilters();
         });
-
-        // ------ Sample Data ------ //
-        let appointments = [
-            { id:1, patient:'Sarah Johnson', type:'Follow-up', date:'2025-04-17', time:'10:30', status:'confirmed' },
-            { id:2, patient:'Michael Brown', type:'Consultation', date:'2025-04-17', time:'11:15', status:'pending' },
-            { id:3, patient:'Emma Davis', type:'New Patient', date:'2025-04-17', time:'14:00', status:'confirmed' }
-        ];
-
-        function renderAppointments(){
-            const listEl = document.getElementById('appointmentList');
-            listEl.innerHTML = '';
-            // Clear calendar events
-            appCalendar.getEvents().forEach(e=>e.remove());
-            appointments.forEach(appt=>{
-                // List Item
-                const wrapper = document.createElement('div'); wrapper.className = 'appointment-item';
-                wrapper.innerHTML = `<span class="time-badge">${formatTime(appt.time)}</span>
-                    <div class="appointment-info"><h4>${appt.patient}</h4><p>${appt.type}</p></div>
-                    <span class="status ${appt.status}">${capitalize(appt.status)}</span>`;
-                listEl.appendChild(wrapper);
-                // Calendar Event
-                const dateTime = `${appt.date}T${appt.time}`;
-                appCalendar.addEvent({ id: appt.id, title: `${appt.patient} – ${appt.type}`, start: dateTime, allDay:false });
-            });
-        }
-
-        function formatTime(t){ return new Date(`2000-01-01T${t}`).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
-        function capitalize(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
-
+        
         // ------ Filters ------ //
-        function filterAppointments(){
-            const text = document.getElementById('searchInput').value.toLowerCase();
-            const status = document.getElementById('statusFilter').value;
-            const type = document.getElementById('typeFilter').value;
-            document.querySelectorAll('#appointmentList .appointment-item').forEach(item=>{
-                const [timeBadge, infoDiv, statusSpan] = item.children;
-                const patientName = infoDiv.querySelector('h4').textContent.toLowerCase();
-                const typeText = infoDiv.querySelector('p').textContent;
-                const statusText = statusSpan.textContent.toLowerCase();
-                const match = (text==''||patientName.includes(text)) &&
-                              (status=='all'|| statusText===status) &&
-                              (type=='all' || typeText===type);
-                item.style.display = match ? 'flex':'none';
-            });
+        function setupFilters() {
+            const searchInput = document.getElementById('searchInput');
+            const statusFilter = document.getElementById('statusFilter');
+            const typeFilter = document.getElementById('typeFilter');
+            
+            if (searchInput) searchInput.addEventListener('input', filterAppointments);
+            if (statusFilter) statusFilter.addEventListener('change', filterAppointments);
+            if (typeFilter) typeFilter.addEventListener('change', filterAppointments);
+        }
+        
+        function filterAppointments() {
+            // ...existing code...
         }
 
         // ------ Modal ------ //
-        function openAppointmentModal(){ document.getElementById('appointmentModal').style.display='flex'; }
-        function closeAppointmentModal(){ document.getElementById('appointmentModal').style.display='none'; document.getElementById('appointmentForm').reset(); }
-        function saveAppointment(){
+        function openAppointmentModal() { 
+            document.getElementById('appointmentModal').style.display='flex'; 
+        }
+        
+        function closeAppointmentModal() { 
+            document.getElementById('appointmentModal').style.display='none'; 
+            document.getElementById('appointmentForm').reset(); 
+        }
+        
+        async function saveAppointment() {
             const name = document.getElementById('patientName').value.trim();
             const type = document.getElementById('appointmentType').value;
             const date = document.getElementById('appointmentDate').value;
             const time = document.getElementById('appointmentTime').value;
-            if(!name||!type||!date||!time){alert('Please fill all required fields'); return;}
-            appointments.push({ id:Date.now(), patient:name, type, date, time, status:'confirmed' });
-            closeAppointmentModal();
-            renderAppointments();
+            const notes = document.getElementById('appointmentNotes').value.trim();
+            
+            if(!name || !type || !date || !time) {
+                alert('Please fill all required fields');
+                return;
+            }
+            
+            try {
+                showMessage('Saving appointment...', 'info');
+                
+                const token = getAuthToken();
+                if (!token) {
+                    throw new Error('Authentication required. Please log in again.');
+                }
+                
+                // Create appointment data
+                const appointmentData = {
+                    doctor_id: getCurrentDoctorId(),
+                    patient_name: name,
+                    appointment_type: type,
+                    date: date,
+                    time: time,
+                    notes: notes,
+                    status: 'confirmed'
+                };
+                
+                // Call API to create appointment
+                const response = await fetch('http://localhost:5000/appointments', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(appointmentData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to save appointment: ${response.status}`);
+                }
+                
+                const savedAppointment = await response.json();
+                
+                showMessage('Appointment saved successfully!', 'success');
+                closeAppointmentModal();
+                
+                // Refresh calendar with latest data
+                if (doctorCalendar) {
+                    fetchDoctorAppointments(getCurrentDoctorId());
+                }
+            } catch (error) {
+                console.error('Error saving appointment:', error);
+                showMessage(`Failed to save appointment: ${error.message}`, 'error');
+            }
         }
 
-        // Initial render once calendar exists
-        setTimeout(renderAppointments, 500);
+        /**
+         * Render the appointment list
+         */
+        function renderAppointmentList() {
+            const listEl = document.getElementById('appointmentList');
+            if (!listEl) return;
+            
+            // Get events from the calendar
+            const events = doctorCalendar.getEvents();
+            const now = new Date();
+            
+            // Filter only future booked appointments
+            const futureBookedEvents = events.filter(event => {
+                return event.start >= now && event.extendedProps.isBooked;
+            });
+            
+            // Sort by date
+            futureBookedEvents.sort((a, b) => a.start - b.start);
+            
+            // Get only the next 5 appointments
+            const upcomingAppointments = futureBookedEvents.slice(0, 5);
+            
+            // Clear the list
+            listEl.innerHTML = '';
+            
+            if (upcomingAppointments.length === 0) {
+                listEl.innerHTML = '<p>No upcoming appointments</p>';
+                return;
+            }
+            
+            // Add each appointment to the list
+            upcomingAppointments.forEach(event => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'appointment-item';
+                
+                const startTime = event.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const patientName = event.extendedProps.patientName || event.title;
+                const type = event.extendedProps.type || 'Consultation';
+                const status = event.extendedProps.status || 'confirmed';
+                
+                wrapper.innerHTML = `
+                    <span class="time-badge">${startTime}</span>
+                    <div class="appointment-info">
+                        <h4>${patientName}</h4>
+                        <p>${type}</p>
+                    </div>
+                    <span class="status ${status.toLowerCase()}">${capitalize(status)}</span>
+                `;
+                
+                listEl.appendChild(wrapper);
+            });
+        }
+        
+        function capitalize(s) { 
+            return s.charAt(0).toUpperCase() + s.slice(1); 
+        }
     </script>
 </body>
 </html>
