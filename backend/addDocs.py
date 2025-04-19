@@ -15,7 +15,8 @@ doctors_to_register = [
         "last_name": "Willson",
         "role": "DOCTOR",
         "specialty": "DOCTOR", # General Doctor
-        "phone": "111-222-3333"
+        "phone": "111-222-3333",
+        "description": "General practitioner with 10 years of experience."
     },
         {
         "email": "patient@gmail.com",
@@ -24,6 +25,7 @@ doctors_to_register = [
         "last_name": "Willson",
         "role": "PATIENT",
         "phone": "111-222-3333"
+
     },
      
 
@@ -34,7 +36,8 @@ doctors_to_register = [
         "last_name": "Johnson",
         "role": "THERAPIST",
         "specialty": "THERAPIST", # Therapist
-        "phone": "444-555-6666"
+        "phone": "444-555-6666",
+        "description": "Licensed therapist specializing in cognitive behavioral therapy."
     },
     {
         "email": "dr.surgeon@gmail.com",
@@ -43,7 +46,8 @@ doctors_to_register = [
         "last_name": "Chen",
         "role": "SURGEON",
         "specialty": "SURGEON", # Surgeon
-        "phone": "777-888-9999"
+        "phone": "777-888-9999",
+        "description": "Board-certified surgeon with expertise in minimally invasive procedures."
     },
      {
         "email": "dr.cardio@nabad.com",
@@ -52,7 +56,8 @@ doctors_to_register = [
         "last_name": "Martinez",
         "role": "DOCTOR",
         "specialty": "DOCTOR", # Another Doctor, could be specialized if needed
-        "phone": "123-456-7890"
+        "phone": "123-456-7890",
+        "description": "Cardiologist with a focus on preventive care."
     }
 ]
 

@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify , request
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity
 import os
@@ -9,7 +9,14 @@ from services.caregiverService import CaregiverController
 from services.messagingService import MessagingController
 from services.notificationService import NotificationController
 from services.reminderService import ReminderController
+from dotenv import load_dotenv
+import os
+from services.chatgpt import ChatGPTAPIService
+# Load environment variables from .env file
+load_dotenv()
 
+# Access the API key
+api_key = os.getenv('API_KEY')
 
 # Initialize Flask application
 app = Flask(__name__)
@@ -18,7 +25,7 @@ CORS(app)  # Enable CORS for all routes
 # Configuration
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key")
 app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "dev-jwt-secret")
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 36000  # 1 hour
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600 * 2  # 2 hour
 
 # Initialize JWT
 jwt = JWTManager(app)
@@ -26,6 +33,64 @@ jwt = JWTManager(app)
 # Initialize database
 from services.db import init_db
 db =init_db(app)  # Initialize with our Flask app
+
+chatgpt = ChatGPTAPIService(api_key , db=db)
+
+
+
+# Endpoint to get current user's ID
+@app.route('/ai/book', methods=['POST'])
+@jwt_required()
+def book_ai():
+    
+    data = request.get_json()
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+    else:
+        return jsonify({"error": "Invalid token format"}), 401
+    query = data.get('query')
+    return chatgpt.book_appointment_ai(patient_query=query, token=token)
+
+# Endpoint to get current user's ID
+@app.route('/ai/recomendation', methods=['POST'])
+@jwt_required()
+def recommened_ai():
+    
+    data = request.get_json()
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+    else:
+        return jsonify({"error": "Invalid token format"}), 401
+    query = data.get('query')
+    return chatgpt.recommend_doctor_ai(patient_query=query, token=token)
+
+@app.route('/ai/reschedule', methods=['POST'])
+@jwt_required()
+def ai_reschudle():
+    
+    data = request.get_json()
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+    else:
+        return jsonify({"error": "Invalid token format"}), 401
+    query = data.get('query')
+    return chatgpt.reschdule_appointment_ai(patient_query=query, token=token)
+
+
+@app.route('/ai/cancel', methods=['POST'])
+@jwt_required() 
+def cancel_ai():
+    data = request.get_json()
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+    else:
+        return jsonify({"error": "Invalid token format"}), 401
+    query = data.get('query')
+    return chatgpt.cancel_appointment_ai(patient_query=query, token=token)
 
 @jwt.user_identity_loader
 def user_identity_lookup(user):
@@ -133,7 +198,6 @@ def get_patient_appointments():
 def reschedule_appointment():
     """Reschedule an existing appointment to a new date/time"""
     return AppointmentController.reschedule_appointment()
-
 
 # Insurance routes
 @app.route('/insurance', methods=['GET'])
