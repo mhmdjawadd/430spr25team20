@@ -17,6 +17,7 @@ class Doctor(Base):
     "saturday": [],
     "sunday": []
 })
+    description = Column(String(255), nullable=True)  # Description of the doctor or their practice
 
     # Relationships
     user = relationship("User", back_populates="doctor")

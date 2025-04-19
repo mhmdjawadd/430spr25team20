@@ -134,6 +134,7 @@ def reschedule_appointment():
     """Reschedule an existing appointment to a new date/time"""
     return AppointmentController.reschedule_appointment()
 
+
 # Insurance routes
 @app.route('/insurance', methods=['GET'])
 @jwt_required()

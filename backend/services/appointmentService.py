@@ -531,7 +531,6 @@ class AppointmentController:
 
 
 
-
     @staticmethod
     def get_doctor_availability_range():
         """
