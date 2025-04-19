@@ -78,179 +78,242 @@
   </main>
 
   <script>
-    let dashboardCalendar;
-    let upcomingAppointments = [];
-    
-    document.addEventListener('DOMContentLoaded', function() {
-      initializeDashboard();
-    });
-    
-    async function initializeDashboard() {
-      try {
-        dashboardCalendar = initDoctorCalendar('calendar', {
-          initialView: 'timeGridDay',
-          height: 500,
-          headerToolbar: {start: 'title', center: '', end: 'today prev,next'},
-          nowIndicator: true,
-          dayMaxEvents: true,
-          eventContent: function(arg) {
-            const isBooked = arg.event.extendedProps.isBooked;
-            if (!isBooked) return;
-            
-            return {
-              html: `
-                <div style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                  <div><strong>${arg.timeText}</strong> - ${arg.event.title}</div>
-                  <div style="opacity:0.8;font-size:11px;">${arg.event.extendedProps.type || 'Consultation'}</div>
-                </div>
-              `
-            };
-          }
-        });
+    // ------ Appointments List ------ //
+    let appointments = []; // Will be populated from API
+
+    /**
+     * Load doctor availability based on the current calendar view
+     */
+    async function loadDoctorAvailability() {
+        if (!doctorCalendar) return;
         
-        updateDashboardStats();
-        setInterval(updateDashboardStats, 60000);
-      } catch (error) {
-        console.error('Error initializing dashboard:', error);
-        showMessage('Failed to initialize dashboard: ' + error.message, 'error');
-      }
-    }
-    
-    async function updateDashboardStats() {
-      try {
-        const token = getAuthToken();
+        // Get the authentication token from localStorage
+        const token = localStorage.getItem('token');
         if (!token) {
-          showMessage('Authentication required. Please log in again.', 'warning');
-          return;
+            showMessage('Authentication required. Please log in again.', 'error');
+            return;
         }
         
-        const doctorId = getCurrentDoctorId();
-        
-        updateUpcomingPatientsFromCalendar();
+        const view = doctorCalendar.view;
+        const startDate = view.activeStart;
+        const endDate = view.activeEnd;
         
         try {
-          const response = await fetch(`http://localhost:5000/doctors/${doctorId}/stats`, {
-            method: 'GET',
-            headers: {
-              'Accept': 'application/json',
-              'Authorization': `Bearer ${token}`
+            // Wait for async getCurrentDoctorId() to resolve
+            const doctorId = await getCurrentDoctorId();
+            
+            // Format dates for API request
+            const formattedStartDate = startDate.toISOString().split('T')[0];
+            const formattedEndDate = endDate.toISOString().split('T')[0];
+            
+            console.log('Fetching availability for doctor ID:', doctorId);
+            
+            // Call the API to get doctor availability range
+            const response = await fetch('http://localhost:5000/appointments/availability-range', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    doctor_id: doctorId,
+                    start_date: formattedStartDate,
+                    end_date: formattedEndDate
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch availability: ${response.status}`);
             }
-          });
-          
-          if (response.ok) {
-            const statsData = await response.json();
-            document.getElementById('todayAppointmentsCount').textContent = statsData.today_appointments || '0';
-            document.getElementById('activePatientCount').textContent = statsData.active_patients || '0';
-            document.getElementById('pendingPrescriptionsCount').textContent = statsData.pending_prescriptions || '0';
-            document.getElementById('satisfactionRate').textContent = statsData.satisfaction_rate || 'N/A';
-          } else {
-            console.warn('Could not fetch doctor stats, using dummy data');
-          }
+            
+            const availabilityData = await response.json();
+            console.log('Availability data:', availabilityData);
+            updateCalendarWithAvailability(availabilityData);
         } catch (error) {
-          console.warn('Error fetching doctor stats:', error);
-          document.getElementById('todayAppointmentsCount').textContent = '8';
-          document.getElementById('activePatientCount').textContent = '24';
-          document.getElementById('pendingPrescriptionsCount').textContent = '12';
-          document.getElementById('satisfactionRate').textContent = '95%';
+            console.error('Error fetching doctor availability:', error);
+            showMessage(`Failed to fetch availability: ${error.message}`, 'error');
         }
-      } catch (error) {
-        console.error('Error updating dashboard stats:', error);
-      }
     }
-    
-    function updateUpcomingPatientsFromCalendar() {
-      const upcomingList = document.getElementById('upcomingPatientsList');
-      if (!upcomingList) return;
-      
-      upcomingList.innerHTML = '';
-      
-      let events = [];
-      if (window.doctorCalendar) {
-        events = window.doctorCalendar.getEvents();
-      } else if (dashboardCalendar) {
-        events = dashboardCalendar.getEvents();
-      }
-      
-      const now = new Date();
-      const bookedEvents = events.filter(event => 
-        event.extendedProps && event.extendedProps.isBooked && event.start >= now
-      ).sort((a, b) => a.start - b.start);
-      
-      const upcomingEvents = bookedEvents.slice(0, 3);
-      
-      if (upcomingEvents.length === 0) {
-        upcomingList.innerHTML = `
-          <div style="text-align:center;padding:20px;color:#666;">
-            <i class="far fa-calendar-times" style="font-size:24px;margin-bottom:10px;display:block;"></i>
-            <p>No upcoming appointments</p>
-          </div>
-        `;
-        return;
-      }
-      
-      upcomingEvents.forEach(event => {
-        const patientName = event.extendedProps.patientName || event.title;
-        const appointmentType = event.extendedProps.type || 'Consultation';
-        const time = event.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+    /**
+     * Update calendar with doctor availability data
+     * @param {Object} availabilityData - Availability data from the API
+     */
+    function updateCalendarWithAvailability(availabilityData) {
+        if (!doctorCalendar || !availabilityData || !availabilityData.availability) return;
         
-        const appointmentItem = document.createElement('div');
-        appointmentItem.style.cssText = 'background:#f8f9fa;padding:15px;border-radius:10px;display:flex;justify-content:space-between;align-items:center';
-        appointmentItem.innerHTML = `
-          <div>
-            <div style="font-weight:600;color:#333">${patientName}</div>
-            <small style="color:#666">${time} – ${appointmentType}</small>
-          </div>
-          <button onclick="viewPatientDetails('${patientName}')" style="padding:6px 12px;border:1px solid #0066cc;background:#fff;color:#0066cc;border-radius:6px;cursor:pointer">View</button>
-        `;
+        // Remove existing availability events
+        const existingEvents = doctorCalendar.getEvents();
+        existingEvents.forEach(event => {
+            if (event.extendedProps.isAvailabilitySlot) {
+                event.remove();
+            }
+        });
         
-        upcomingList.appendChild(appointmentItem);
-      });
+        // Process availability data
+        const events = [];
+        
+        // Loop through each date in the availability data
+        Object.entries(availabilityData.availability).forEach(([dateStr, slots]) => {
+            slots.forEach(slot => {
+                // Create a proper date object combining the date and time
+                const startDateTime = new Date(`${dateStr}T${slot.start}`);
+                const endDateTime = new Date(`${dateStr}T${slot.end}`);
+                
+                // Set the color and title based on booking status
+                let color, title;
+                
+                if (slot.is_booked) {
+                    color = '#f44336'; // Red for booked
+                    title = 'Booked';
+                } else {
+                    color = '#4caf50'; // Green for available
+                    title = 'Available';
+                }
+                
+                                    events.push({
+                    title: title,
+                    start: startDateTime,
+                    end: endDateTime,
+                    color: color,
+                    textColor: '#ffffff', // White text for better contrast
+                    extendedProps: {
+                        isAvailabilitySlot: true,
+                        isAvailable: !slot.is_booked,
+                        status: slot.is_booked ? 'booked' : 'available'
+                    }
+                });
+            });
+        });
+        
+        // Add events to the calendar
+        doctorCalendar.addEventSource(events);
+    }
+
+    /**
+     * Get current doctor ID (from localStorage or session)
+     * @returns {string} The doctor ID
+     */
+     async function getCurrentDoctorId() {
+try {
+    const response = await fetch('http://localhost:5000/api/auth/me', {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${getAuthToken()}`
+        }
+    });
+
+    if (!response.ok) throw new Error(`Failed: ${response.status}`);
+
+    const data = await response.json();
+    console.log('Current user data:', data);
+    return parseInt(data.user_id);
+} catch (error) {
+    console.error('Error getting doctor ID:', error);
+    return 1; // fallback ID
+}
+}
+
+    // Override the getAuthToken function to use 'token' key instead of 'auth_token'
+    function getAuthToken() {
+        return localStorage.getItem('token');
+    }
+
+    // Update the document ready function to add calendar initialization with availability loading
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the doctor calendar using our custom script
+        initDoctorCalendar('calendar', {
+            // Custom calendar options can be added here
+            eventTimeFormat: {
+                hour: '2-digit',
+                minute: '2-digit',
+                meridiem: 'short'
+            },
+            datesSet: function(info) {
+                // Load doctor availability when the view changes
+                loadDoctorAvailability();
+            }
+        });
+        
+        // Set up date change handler in the appointment form
+        const dateInput = document.getElementById('appointmentDate');
+        if (dateInput) {
+            dateInput.addEventListener('change', function() {
+                checkDateAvailability(this.value);
+            });
+        }
+        
+        // Initial load of doctor availability
+        setTimeout(loadDoctorAvailability, 500);
+        
+        // Set up filter event listeners
+        setupFilters();
+    });
+    
+    /**
+     * Check availability for the selected date
+     * @param {string} selectedDate - The date to check for availability
+     */
+    async function checkDateAvailability(selectedDate) {
+        try {
+            const doctorId = getCurrentDoctorId();
+            
+            if (!selectedDate || !doctorId) {
+                return;
+            }
+            
+            showMessage('Checking availability...', 'info');
+            
+            // Call the backend to check availability for this date
+            const response = await fetch(`http://localhost:5000/appointments/timeslots?doctor_id=${doctorId}&date=${selectedDate}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${getAuthToken()}`
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Failed to get availability: ${response.status}`);
+            }
+            
+            const timeSlots = await response.json();
+            
+            // Update the time dropdown or display availability info
+            updateTimeOptions(timeSlots);
+            
+            // If no slots available, show a message
+            if (timeSlots.length === 0) {
+                showMessage('No available time slots on the selected date', 'warning');
+            }
+        } catch (error) {
+            console.error('Error checking date availability:', error);
+            showMessage(`Failed to check availability: ${error.message}`, 'error');
+        }
     }
     
-    function viewPatientDetails(patientName) {
-      showMessage(`Viewing patient details for: ${patientName}`, 'info');
+    /**
+     * Update the time input options based on available slots
+     * @param {Array} timeSlots - Available time slots from the API
+     */
+    function updateTimeOptions(timeSlots) {
+        const timeInput = document.getElementById('appointmentTime');
+        
+        // If we want to convert to a select dropdown with available times only
+        // We could replace the time input with a select element
+        
+        // For now, just using the time input field directly
+        // But we can add visual feedback if needed
+        
+        if (timeSlots.length > 0) {
+            // Store the available times as a data attribute to validate later
+            timeInput.dataset.availableTimes = JSON.stringify(timeSlots);
+        } else {
+            timeInput.dataset.availableTimes = '[]';
+        }
     }
-    
-    function addAppointment() {
-      window.location.href = 'doctor-appointments.html';
-    }
-    
-    function showMessage(message, type = 'info') {
-      const errorContainer = document.getElementById('errorContainer');
-      if (!errorContainer) return;
-      
-      const messageEl = document.createElement('div');
-      messageEl.className = `alert-${type}`;
-      messageEl.style.cssText = 'padding:10px 15px;border-radius:4px;margin-bottom:10px;box-shadow:0 2px 5px rgba(0,0,0,0.1);';
-      
-      switch(type) {
-        case 'success':
-          messageEl.style.background = '#e8f5e9';
-          messageEl.style.color = '#2e7d32';
-          break;
-        case 'info':
-          messageEl.style.background = '#e3f2fd';
-          messageEl.style.color = '#0d47a1';
-          break;
-        case 'warning':
-          messageEl.style.background = '#fff3e0';
-          messageEl.style.color = '#ef6c00';
-          break;
-        case 'error':
-          messageEl.style.background = '#ffebee';
-          messageEl.style.color = '#c62828';
-          break;
-      }
-      
-      messageEl.textContent = message;
-      errorContainer.appendChild(messageEl);
-      
-      if (type !== 'error') {
-        setTimeout(() => {
-          messageEl.remove();
-        }, 3000);
-      }
-    }
-  </script>
+</script>
 </body>
 </html>

@@ -234,450 +234,606 @@
         </div>
     </div>
 
+    <!-- Weekly Availability Modal -->
+    <div class="modal" id="weeklyAvailabilityModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Set Weekly Availability</h2>
+                <button class="close-btn" onclick="closeWeeklyAvailabilityModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 15px;">
+                <p style="margin-bottom: 10px; font-size: 14px;">Select your available hours:</p>
+                <div class="weekly-schedule-container" style="display: grid; grid-template-columns: 90px 1fr; gap: 8px; max-height: 400px; overflow-y: auto;">
+                    <!-- Days of week will be generated here -->
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 12px 15px;">
+                <button class="btn-primary" onclick="saveWeeklyAvailability()">Save</button>
+                <button class="btn-primary" style="background:#e0e0e0;color:#333;" onclick="closeWeeklyAvailabilityModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== JS ===== -->
     <script>
-        // ------ Global Variables ------ //
-        let currentDoctorId;
-        let calendar;
-        let selectedEventToRemove = null;
+        // ------ Appointments List ------ //
+        let appointments = []; // Will be populated from API
 
+        /**
+         * Load doctor availability based on the current calendar view
+         */
+        async function loadDoctorAvailability() {
+            if (!doctorCalendar) return;
+            
+            // Get the authentication token from localStorage
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showMessage('Authentication required. Please log in again.', 'error');
+                return;
+            }
+            
+            const view = doctorCalendar.view;
+            const startDate = view.activeStart;
+            const endDate = view.activeEnd;
+            
+            try {
+                // Wait for async getCurrentDoctorId() to resolve
+                const doctorId = await getCurrentDoctorId();
+                
+                // Format dates for API request
+                const formattedStartDate = startDate.toISOString().split('T')[0];
+                const formattedEndDate = endDate.toISOString().split('T')[0];
+                
+                console.log('Fetching availability for doctor ID:', doctorId);
+                
+                // Call the API to get doctor availability range
+                const response = await fetch('http://localhost:5000/appointments/availability-range', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        doctor_id: doctorId,
+                        start_date: formattedStartDate,
+                        end_date: formattedEndDate
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch availability: ${response.status}`);
+                }
+                
+                const availabilityData = await response.json();
+                console.log('Availability data:', availabilityData);
+                updateCalendarWithAvailability(availabilityData);
+            } catch (error) {
+                console.error('Error fetching doctor availability:', error);
+                showMessage(`Failed to fetch availability: ${error.message}`, 'error');
+            }
+        }
+
+        /**
+         * Update calendar with doctor availability data
+         * @param {Object} availabilityData - Availability data from the API
+         */
+        function updateCalendarWithAvailability(availabilityData) {
+            if (!doctorCalendar || !availabilityData || !availabilityData.availability) return;
+            
+            // Remove existing availability events
+            const existingEvents = doctorCalendar.getEvents();
+            existingEvents.forEach(event => {
+                if (event.extendedProps.isAvailabilitySlot) {
+                    event.remove();
+                }
+            });
+            
+            // Process availability data
+            const events = [];
+            
+            // Loop through each date in the availability data
+            Object.entries(availabilityData.availability).forEach(([dateStr, slots]) => {
+                slots.forEach(slot => {
+                    // Create a proper date object combining the date and time
+                    const startDateTime = new Date(`${dateStr}T${slot.start}`);
+                    const endDateTime = new Date(`${dateStr}T${slot.end}`);
+                    
+                    // Set the color and title based on booking status
+                    let color, title;
+                    
+                    if (slot.is_booked) {
+                        color = '#f44336'; // Red for booked
+                        title = 'Booked';
+                    } else {
+                        color = '#4caf50'; // Green for available
+                        title = 'Available';
+                    }
+                    
+                    events.push({
+                        title: title,
+                        start: startDateTime,
+                        end: endDateTime,
+                        color: color,
+                        textColor: '#ffffff', // White text for better contrast
+                        extendedProps: {
+                            isAvailabilitySlot: true,
+                            isAvailable: !slot.is_booked,
+                            status: slot.is_booked ? 'booked' : 'available'
+                        }
+                    });
+                });
+            });
+            
+            // Add events to the calendar
+            doctorCalendar.addEventSource(events);
+        }
+
+        /**
+         * Get current doctor ID (from localStorage or session)
+         * @returns {string} The doctor ID
+         */
+        async function getCurrentDoctorId() {
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/me', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    }
+                });
+
+                if (!response.ok) throw new Error(`Failed: ${response.status}`);
+
+                const data = await response.json();
+                console.log('Current user data:', data);
+                return parseInt(data.user_id);
+            } catch (error) {
+                console.error('Error getting doctor ID:', error);
+                return 1; // fallback ID
+            }
+        }
+
+        // Override the getAuthToken function to use 'token' key instead of 'auth_token'
+        function getAuthToken() {
+            return localStorage.getItem('token');
+        }
+
+        /**
+         * Set doctor availability for the selected date range
+         * @param {string} startDate - Start date of the range (YYYY-MM-DD format)
+         * @param {string} endDate - End date of the range (YYYY-MM-DD format)
+         * @param {Object} availabilityData - Object containing availability data for each date
+         */
+        async function setDoctorAvailability(startDate, endDate, availabilityData) {
+            try {
+                const doctorId = await getCurrentDoctorId();
+                
+                if (!startDate || !endDate || !doctorId || !availabilityData) {
+                    showMessage('Missing required data for setting availability', 'error');
+                    return false;
+                }
+                
+                // Ensure availability data is in the correct format
+                // It should be an object where keys are dates and values are arrays of slots
+                if (!Object.keys(availabilityData).length) {
+                    showMessage('No availability data provided', 'error');
+                    return false;
+                }
+                
+                console.log('Sending availability data:', {
+                    doctor_id: doctorId,
+                    start_date: startDate,
+                    end_date: endDate,
+                    availability: availabilityData
+                });
+                
+                // Call the correct API endpoint to set availability
+                const response = await fetch('http://localhost:5000/appointments/set-availability', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    },
+                    body: JSON.stringify({
+                        doctor_id: doctorId,
+                        start_date: startDate,
+                        end_date: endDate,
+                        availability: availabilityData
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to set availability: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('Availability update result:', result);
+                
+                // Show success message
+                showMessage('Availability updated successfully', 'success');
+                
+                // Reload calendar to show updated availability
+                loadDoctorAvailability();
+                
+                return true;
+            } catch (error) {
+                console.error('Error setting doctor availability:', error);
+                showMessage(`Failed to set availability: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        /**
+         * Delete a time slot (mark as unavailable) for a specific date
+         * @param {Date} dateTime - The date and time to mark as unavailable
+         */
+        async function deleteTimeSlot(dateTime) {
+            if (!dateTime) return;
+            
+            const date = dateTime.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+            const hours = dateTime.getHours();
+            const minutes = dateTime.getMinutes();
+            
+            // Format the time as HH:MM
+            const time = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            // Calculate end time (1 hour later)
+            const endHours = (hours + 1) % 24;
+            const endTime = `${endHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            
+            // Create properly formatted availability data structure for the selected date
+            // The key is the date string, and the value is an array of time slot objects
+            const availabilityData = {
+                [date]: [
+                    {
+                        start: time,
+                        end: endTime,
+                        available: false // Mark as unavailable
+                    }
+                ]
+            };
+            
+            console.log('Marking slot as unavailable:', {
+                date: date,
+                start: time,
+                end: endTime
+            });
+            
+            // Call the API to update availability
+            return setDoctorAvailability(date, date, availabilityData);
+        }
+
+        // Update the document ready function to add calendar initialization with availability loading
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize the doctor calendar using our custom script
-            calendar = initDoctorCalendar('calendar', {
-                // Custom calendar options
+            initDoctorCalendar('calendar', {
+                // Custom calendar options can be added here
                 eventTimeFormat: {
                     hour: '2-digit',
                     minute: '2-digit',
                     meridiem: 'short'
                 },
-                // Add event click handler
+                datesSet: function(info) {
+                    // Load doctor availability when the view changes
+                    loadDoctorAvailability();
+                },
                 eventClick: function(info) {
-                    // Only allow removal of available slots (not booked appointments)
-                    if (!info.event.extendedProps.isBooked) {
-                        selectedEventToRemove = info.event;
-                        openRemoveModal();
+                    // Only handle availability slots
+                    if (info.event.extendedProps.isAvailabilitySlot) {
+                        if (confirm(`Do you want to mark this slot as ${info.event.extendedProps.isAvailable ? 'unavailable' : 'available'}?`)) {
+                            deleteTimeSlot(info.event.start);
+                        }
                     }
-                },
-                // Show tooltip on hover
-                eventMouseEnter: function(info) {
-                    if (!info.event.extendedProps.isBooked) {
-                        showEventTooltip(info.el, "Click to remove this availability");
-                    }
-                },
-                eventMouseLeave: function() {
-                    hideEventTooltip();
                 }
             });
             
+            // Set up date change handler in the appointment form
+            const dateInput = document.getElementById('appointmentDate');
+            if (dateInput) {
+                dateInput.addEventListener('change', function() {
+                    checkDateAvailability(this.value);
+                });
+            }
+            
+            // Initial load of doctor availability
+            setTimeout(loadDoctorAvailability, 500);
+            
             // Set up filter event listeners
             setupFilters();
-            
-            // Try to load real availability data from the API
-            loadAvailabilityData();
         });
         
-        // ------ Filters ------ //
-        function setupFilters() {
-            const searchInput = document.getElementById('searchInput');
-            const statusFilter = document.getElementById('statusFilter');
-            const typeFilter = document.getElementById('typeFilter');
-            
-            if (searchInput) searchInput.addEventListener('input', filterAppointments);
-            if (statusFilter) statusFilter.addEventListener('change', filterAppointments);
-            if (typeFilter) typeFilter.addEventListener('change', filterAppointments);
-        }
-        
-        function filterAppointments() {
-            // ...existing code...
-        }
-
-        // ------ Modal Functions ------ //
-        function openAvailabilityModal() {
-            document.getElementById('availabilityModal').style.display = 'flex';
-        }
-        
-        function closeAvailabilityModal() {
-            document.getElementById('availabilityModal').style.display = 'none';
-            document.getElementById('availabilityForm').reset();
-        }
-        
-        function openRemoveModal() {
-            document.getElementById('removeAvailabilityModal').style.display = 'flex';
-        }
-        
-        function closeRemoveModal() {
-            document.getElementById('removeAvailabilityModal').style.display = 'none';
-            selectedEventToRemove = null;
-        }
-        
-        // ------ Tooltip Functions ------ //
-        function showEventTooltip(element, text) {
-            const tooltip = document.createElement('div');
-            tooltip.className = 'fc-event-tooltip';
-            tooltip.textContent = text;
-            
-            // Position the tooltip near the event
-            const rect = element.getBoundingClientRect();
-            tooltip.style.left = rect.left + 'px';
-            tooltip.style.top = (rect.top - 30) + 'px';
-            
-            tooltip.id = 'event-tooltip';
-            document.body.appendChild(tooltip);
-        }
-        
-        function hideEventTooltip() {
-            const tooltip = document.getElementById('event-tooltip');
-            if (tooltip) {
-                tooltip.remove();
-            }
-        }
-        
-        // ------ Save Availability ------ //
-        async function saveAvailability() {
-            const date = document.getElementById('availabilityDate').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-            const repeatOption = document.getElementById('repeatOption').value;
-            const repeatUntil = document.getElementById('repeatUntil').value;
-            
-            if (!date || !startTime || !endTime) {
-                showMessage('Please fill all required fields', 'error');
-                return;
-            }
-            
-            if (repeatOption !== 'none' && !repeatUntil) {
-                showMessage('Please specify an end date for repeating availability', 'error');
-                return;
-            }
-            
-            // Validate time range
-            if (startTime >= endTime) {
-                showMessage('End time must be after start time', 'error');
-                return;
-            }
-            
+        /**
+         * Check availability for the selected date
+         * @param {string} selectedDate - The date to check for availability
+         */
+        async function checkDateAvailability(selectedDate) {
             try {
-                showMessage('Saving availability...', 'info');
+                const doctorId = getCurrentDoctorId();
                 
-                const availabilityData = {
-                    doctor_id: currentDoctorId,
-                    date: date,
-                    start_time: startTime,
-                    end_time: endTime,
-                    repeat: repeatOption,
-                    repeat_until: repeatUntil
-                };
-                
-                // Call API to create availability
-                const response = await fetch('http://localhost:5000/appointments/availability', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(availabilityData)
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Failed to save availability: ${response.status}`);
-                }
-                
-                showMessage('Availability saved successfully!', 'success');
-                closeAvailabilityModal();
-                
-                // Refresh calendar with latest data
-                loadAvailabilityData();
-            } catch (error) {
-                console.error('Error saving availability:', error);
-                showMessage(`Failed to save availability: ${error.message}`, 'error');
-            }
-        }
-        
-        // ------ Remove Availability ------ //
-        async function confirmRemoveAvailability() {
-            if (!selectedEventToRemove) {
-                showMessage('No availability slot selected', 'error');
-                closeRemoveModal();
-                return;
-            }
-            
-            try {
-                showMessage('Removing availability...', 'info');
-                
-                const availabilityId = selectedEventToRemove.extendedProps.availabilityId;
-                
-                // Call API to remove availability
-                const response = await fetch(`http://localhost:5000/appointments/availability/${availabilityId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Failed to remove availability: ${response.status}`);
-                }
-                
-                // Remove the event from the calendar
-                selectedEventToRemove.remove();
-                
-                showMessage('Availability removed successfully!', 'success');
-                closeRemoveModal();
-            } catch (error) {
-                console.error('Error removing availability:', error);
-                showMessage(`Failed to remove availability: ${error.message}`, 'error');
-                
-                // If there's an API error, we can fallback to just removing from UI
-                if (selectedEventToRemove) {
-                    selectedEventToRemove.remove();
-                    showMessage('Availability removed from display (but API failed)', 'warning');
-                }
-                closeRemoveModal();
-            }
-        }
-        
-        // ------ Helper Functions ------ //
-        function showMessage(message, type = 'info') {
-            const errorContainer = document.getElementById('errorContainer');
-            if (!errorContainer) return;
-            
-            errorContainer.textContent = message;
-            errorContainer.style.display = 'block';
-            
-            // Set colors based on message type
-            switch(type) {
-                case 'error':
-                    errorContainer.style.backgroundColor = '#ffebee';
-                    errorContainer.style.borderLeftColor = '#f44336';
-                    break;
-                case 'success':
-                    errorContainer.style.backgroundColor = '#e8f5e9';
-                    errorContainer.style.borderLeftColor = '#4caf50';
-                    break;
-                case 'warning':
-                    errorContainer.style.backgroundColor = '#fff3e0';
-                    errorContainer.style.borderLeftColor = '#ff9800';
-                    break;
-                default: // info
-                    errorContainer.style.backgroundColor = '#e3f2fd';
-                    errorContainer.style.borderLeftColor = '#2196f3';
-            }
-            
-            // Auto-hide after 5 seconds for success messages
-            if (type === 'success') {
-                setTimeout(() => {
-                    errorContainer.style.display = 'none';
-                }, 5000);
-            }
-        }
-        
-        // ------ Demo Data Function ------ //
-        function loadDemoAvailabilityData() {
-            const today = new Date();
-            const events = [];
-            
-            // Generate some availability slots for the next 7 days
-            for (let i = 0; i < 7; i++) {
-                const day = new Date(today);
-                day.setDate(today.getDate() + i);
-                
-                // Morning slots (9 AM - 12 PM)
-                events.push({
-                    title: 'Available',
-                    start: new Date(day.setHours(9, 0, 0)),
-                    end: new Date(day.setHours(12, 0, 0)),
-                    color: '#4caf50',
-                    extendedProps: {
-                        isBooked: false,
-                        availabilityId: 'demo-' + i + '-morning'
-                    }
-                });
-                
-                // Afternoon slots (2 PM - 5 PM)
-                day.setHours(14, 0, 0);
-                events.push({
-                    title: 'Available',
-                    start: new Date(day),
-                    end: new Date(day.setHours(17, 0, 0)),
-                    color: '#4caf50',
-                    extendedProps: {
-                        isBooked: false,
-                        availabilityId: 'demo-' + i + '-afternoon'
-                    }
-                });
-                
-                // Add a booked appointment on alternating days
-                if (i % 2 === 0) {
-                    day.setHours(10, 0, 0);
-                    events.push({
-                        title: 'Appointment with Patient',
-                        start: new Date(day),
-                        end: new Date(day.setHours(11, 0, 0)),
-                        color: '#f44336',
-                        extendedProps: {
-                            isBooked: true,
-                            patientName: 'Demo Patient',
-                            appointmentId: 'demo-appt-' + i
-                        }
-                    });
-                }
-            }
-            
-            // Add events to calendar
-            if (calendar) {
-                calendar.removeAllEvents();
-                events.forEach(event => calendar.addEvent(event));
-            } else {
-                initDoctorCalendar('calendar', {}, events);
-            }
-            
-            showMessage('Demo availability data loaded', 'info');
-        }
-
-        // Function to convert API availability data to calendar events
-        function convertAvailabilityToEvents(availabilityData) {
-            const events = [];
-            
-            if (availabilityData && availabilityData.available) {
-                availabilityData.available.forEach(slot => {
-                    events.push({
-                        title: 'Available',
-                        start: new Date(slot.start_time),
-                        end: new Date(slot.end_time),
-                        color: '#4caf50',
-                        extendedProps: {
-                            isBooked: false,
-                            availabilityId: slot.id.toString()
-                        }
-                    });
-                });
-            }
-            
-            if (availabilityData && availabilityData.booked) {
-                availabilityData.booked.forEach(appointment => {
-                    events.push({
-                        title: `Appointment: ${appointment.patient_name || 'Patient'}`,
-                        start: new Date(appointment.start_time),
-                        end: new Date(appointment.end_time),
-                        color: '#f44336',
-                        extendedProps: {
-                            isBooked: true,
-                            patientName: appointment.patient_name,
-                            appointmentId: appointment.id.toString()
-                        }
-                    });
-                });
-            }
-            
-            return events;
-        }
-
-        // ------ Load Availability Data ------ //
-        async function loadAvailabilityData() {
-            try {
-                // Get the current doctor ID from local storage or a global variable
-                // This assumes you've stored the doctor's ID somewhere when they login
-                const doctorId = localStorage.getItem('doctorId') || currentDoctorId;
-                
-                if (!doctorId) {
-                    showMessage('Doctor ID not found. Please log in again.', 'error');
+                if (!selectedDate || !doctorId) {
                     return;
                 }
                 
-                // Calculate date range (current month)
-                const today = new Date();
-                const startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-                const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                showMessage('Checking availability...', 'info');
                 
-                // Format dates as YYYY-MM-DD
-                const formatDate = (date) => {
-                    return date.toISOString().split('T')[0];
+                // Call the backend to check availability for this date
+                const response = await fetch(`http://localhost:5000/appointments/timeslots?doctor_id=${doctorId}&date=${selectedDate}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to get availability: ${response.status}`);
+                }
+                
+                const timeSlots = await response.json();
+                
+                // Update the time dropdown or display availability info
+                updateTimeOptions(timeSlots);
+                
+                // If no slots available, show a message
+                if (timeSlots.length === 0) {
+                    showMessage('No available time slots on the selected date', 'warning');
+                }
+            } catch (error) {
+                console.error('Error checking date availability:', error);
+                showMessage(`Failed to check availability: ${error.message}`, 'error');
+            }
+        }
+        
+        /**
+         * Update the time input options based on available slots
+         * @param {Array} timeSlots - Available time slots from the API
+         */
+        function updateTimeOptions(timeSlots) {
+            const timeInput = document.getElementById('appointmentTime');
+            
+            // If we want to convert to a select dropdown with available times only
+            // We could replace the time input with a select element
+            
+            // For now, just using the time input field directly
+            // But we can add visual feedback if needed
+            
+            if (timeSlots.length > 0) {
+                // Store the available times as a data attribute to validate later
+                timeInput.dataset.availableTimes = JSON.stringify(timeSlots);
+            } else {
+                timeInput.dataset.availableTimes = '[]';
+            }
+        }
+
+        // Add a button to the page header to open the weekly availability modal
+        document.addEventListener('DOMContentLoaded', function() {
+            const pageHeader = document.querySelector('.page-header');
+            if (pageHeader) {
+                const weeklyBtn = document.createElement('button');
+                weeklyBtn.className = 'btn-primary';
+                weeklyBtn.innerHTML = '<i class="fas fa-calendar-week"></i> Weekly Schedule';
+                weeklyBtn.style.marginRight = '10px';
+                weeklyBtn.onclick = openWeeklyAvailabilityModal;
+                
+                // Insert before the existing "Add Availability" button
+                const existingBtn = pageHeader.querySelector('button');
+                pageHeader.insertBefore(weeklyBtn, existingBtn);
+            }
+        });
+
+        // Create the weekly availability UI
+        function createWeeklyAvailabilityUI() {
+            const container = document.querySelector('.weekly-schedule-container');
+            if (!container) return;
+            
+            // Clear existing content
+            container.innerHTML = '';
+            
+            // Days of the week
+            const days = [
+                { name: 'Monday', value: 'monday' },
+                { name: 'Tuesday', value: 'tuesday' },
+                { name: 'Wednesday', value: 'wednesday' },
+                { name: 'Thursday', value: 'thursday' },
+                { name: 'Friday', value: 'friday' },
+                { name: 'Saturday', value: 'saturday' },
+                { name: 'Sunday', value: 'sunday' }
+            ];
+            
+            // Time slots from 8 AM to 6 PM (18:00)
+            const timeSlots = [];
+            for (let hour = 8; hour < 18; hour++) {
+                const nextHour = hour + 1;
+                const slotValue = `${hour.toString().padStart(2, '0')}-${nextHour.toString().padStart(2, '0')}`;
+                const displayTime = `${hour}:00 - ${nextHour}:00`;
+                timeSlots.push({ value: slotValue, display: displayTime });
+            }
+            
+            // Create UI for each day
+            days.forEach(day => {
+                // Create day label
+                const dayLabel = document.createElement('div');
+                dayLabel.className = 'day-label';
+                dayLabel.textContent = day.name;
+                dayLabel.style.fontWeight = 'bold';
+                dayLabel.style.padding = '10px 0';
+                
+                // Create time slots container for this day
+                const timeSlotsContainer = document.createElement('div');
+                timeSlotsContainer.className = 'time-slots-container';
+                timeSlotsContainer.style.display = 'flex';
+                timeSlotsContainer.style.flexWrap = 'wrap';
+                timeSlotsContainer.style.gap = '10px';
+                timeSlotsContainer.style.padding = '10px 0';
+                
+                // Create checkbox for each time slot
+                timeSlots.forEach(slot => {
+                    const slotContainer = document.createElement('div');
+                    slotContainer.className = 'slot-checkbox';
+                    slotContainer.style.display = 'inline-block';
+                    slotContainer.style.padding = '8px 12px';
+                    slotContainer.style.border = '1px solid #ddd';
+                    slotContainer.style.borderRadius = '4px';
+                    slotContainer.style.cursor = 'pointer';
+                    slotContainer.style.userSelect = 'none';
+                    slotContainer.style.fontSize = '12px'; // Smaller font
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `${day.value}-${slot.value}`;
+                    checkbox.dataset.day = day.value;
+                    checkbox.dataset.slot = slot.value;
+                    checkbox.style.marginRight = '4px'; // Reduce margin
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = checkbox.id;
+                    
+                    // Use shorter time format (e.g. "8-9" instead of "8:00 - 9:00")
+                    const hourStart = parseInt(slot.value.substring(0, 2));
+                    const hourEnd = parseInt(slot.value.substring(3, 5));
+                    label.textContent = `${hourStart}-${hourEnd}`;
+                    
+                    slotContainer.appendChild(checkbox);
+                    slotContainer.appendChild(label);
+                    
+                    // Make the whole container clickable
+                    slotContainer.addEventListener('click', function(e) {
+                        if (e.target !== checkbox) {
+                            checkbox.checked = !checkbox.checked;
+                        }
+                        
+                        // Update styling based on checked state
+                        slotContainer.style.backgroundColor = checkbox.checked ? '#e3f2fd' : '';
+                        slotContainer.style.borderColor = checkbox.checked ? '#1a76d1' : '#ddd';
+                    });
+                    
+                    timeSlotsContainer.appendChild(slotContainer);
+                });
+                
+                // Add day label and time slots to the container
+                container.appendChild(dayLabel);
+                container.appendChild(timeSlotsContainer);
+            });
+        }
+        
+        // Fill the weekly availability form with existing data
+        async function fillWeeklyAvailabilityForm() {
+            try {
+                // Try to get current availability data
+                const availabilityData = await loadDoctorWeeklyAvailability();
+                
+                if (!availabilityData || !availabilityData.availability) {
+                    console.log('No existing availability data found');
+                    return;
+                }
+                
+                // For each day in the availability data
+                Object.entries(availabilityData.availability).forEach(([day, slots]) => {
+                    // Check the corresponding checkboxes
+                    slots.forEach(slot => {
+                        const checkboxId = `${day}-${slot}`;
+                        const checkbox = document.getElementById(checkboxId);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                            // Update styling of parent container
+                            const container = checkbox.closest('.slot-checkbox');
+                            if (container) {
+                                container.style.backgroundColor = '#e3f2fd';
+                                container.style.borderColor = '#1a76d1';
+                            }
+                        }
+                    });
+                });
+                console.log('Weekly availability form filled with existing data');
+            } catch (error) {
+                console.error('Error filling weekly availability form:', error);
+            }
+        }
+        
+        // Open the weekly availability modal
+        function openWeeklyAvailabilityModal() {
+            // Create the UI
+            createWeeklyAvailabilityUI();
+            
+            // Fill with existing data
+            fillWeeklyAvailabilityForm();
+            
+            // Show the modal
+            document.getElementById('weeklyAvailabilityModal').style.display = 'flex';
+        }
+        
+        // Close the weekly availability modal
+        function closeWeeklyAvailabilityModal() {
+            document.getElementById('weeklyAvailabilityModal').style.display = 'none';
+        }
+        
+        // Save the weekly availability settings
+        async function saveWeeklyAvailability() {
+            try {
+                const doctorId = await getCurrentDoctorId();
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    showMessage('Authentication required. Please log in again.', 'error');
+                    return;
+                }
+                
+                // Collect data from checkboxes
+                const availabilityData = {
+                    monday: [],
+                    tuesday: [],
+                    wednesday: [],
+                    thursday: [],
+                    friday: [],
+                    saturday: [],
+                    sunday: []
                 };
                 
-                showMessage('Loading availability data...', 'info');
+                // Find all checked checkboxes
+                const checkedBoxes = document.querySelectorAll('.weekly-schedule-container input[type="checkbox"]:checked');
+                checkedBoxes.forEach(checkbox => {
+                    const day = checkbox.dataset.day;
+                    const slot = checkbox.dataset.slot;
+                    
+                    if (day && slot && availabilityData[day]) {
+                        availabilityData[day].push(slot);
+                    }
+                });
+                    
+                console.log('Sending weekly availability data:', availabilityData);
                 
-                // Call the backend API to get availability data
-                const response = await fetch('http://localhost:5000/appointments/availability-range', {
+                // Send to the server
+                const response = await fetch('http://localhost:5000/appointments/set-availability', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
                         doctor_id: doctorId,
-                        start_date: formatDate(startDate),
-                        end_date: formatDate(endDate)
+                        availability: availabilityData
                     })
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`Failed to load availability data: ${response.status}`);
+                    const errorText = await response.text();
+                    throw new Error(`Failed to update availability: ${response.status} - ${errorText}`);
                 }
                 
-                const availabilityData = await response.json();
+                const result = await response.json();
+                console.log('Weekly availability updated successfully:', result);
+                showMessage('Weekly availability schedule updated successfully', 'success');
                 
-                // Convert the availability data to calendar events
-                const events = [];
-                
-                // Process the availability data
-                if (availabilityData && availabilityData.availability) {
-                    // For each date in the response
-                    Object.entries(availabilityData.availability).forEach(([dateStr, slots]) => {
-                        // Process each time slot for this date
-                        slots.forEach(slot => {
-                            const [startHour, startMinute] = slot.start.split(':').map(Number);
-                            const [endHour, endMinute] = slot.end.split(':').map(Number);
-                            
-                            const startDate = new Date(`${dateStr}T${slot.start}:00`);
-                            const endDate = new Date(`${dateStr}T${slot.end}:00`);
-                            
-                            // Create event based on booking status
-                            if (slot.is_booked) {
-                                // This is a booked appointment
-                                events.push({
-                                    title: 'Booked Appointment',
-                                    start: startDate,
-                                    end: endDate,
-                                    color: '#f44336', // Red for booked
-                                    extendedProps: {
-                                        isBooked: true,
-                                        appointmentId: slot.appointment_id || 'unknown'
-                                    }
-                                });
-                            } else {
-                                // This is an available slot
-                                events.push({
-                                    title: 'Available',
-                                    start: startDate,
-                                    end: endDate,
-                                    color: '#4caf50', // Green for available
-                                    extendedProps: {
-                                        isBooked: false,
-                                        availabilityId: `${dateStr}-${slot.start}` // Generate an ID
-                                    }
-                                });
-                            }
-                        });
-                    });
-                }
-                
-                // Update the calendar with the events
-                if (calendar) {
-                    calendar.removeAllEvents();
-                    events.forEach(event => calendar.addEvent(event));
-                    showMessage('Availability data loaded successfully', 'success');
-                } else {
-                    showMessage('Calendar not initialized', 'error');
-                }
+                // Close modal and refresh calendar
+                closeWeeklyAvailabilityModal();
+                loadDoctorAvailability();
             } catch (error) {
-                console.error('Error loading availability data:', error);
-                showMessage(`Failed to load availability data: ${error.message}`, 'error');
-                
-                // Fallback to demo data if API fails
-                loadDemoAvailabilityData();
+                console.error('Error saving weekly availability:', error);
+                showMessage(`Failed to update weekly availability: ${error.message}`, 'error');
             }
         }
     </script>
-</body>
-</html>
 </body>
 </html>

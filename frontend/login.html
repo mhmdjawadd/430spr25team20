@@ -212,35 +212,30 @@
                 try {
                     const response = await loginUser(email, password);
                     
+                    // Successful login, store the token and redirect
+                    const token = response.access_token;
+                    localStorage.setItem('token', token);
+                    
+                    // Store user data if available
+                    if (response.user) {
+                        localStorage.setItem('user', JSON.stringify(response.user));
+                    }
+                    
                     // Show success message
                     showAlert('Login successful! Redirecting...', 'success');
                     
+                    // Redirect after a short delay
                     setTimeout(() => {
                         // Check for redirect param in URL
                         const params = new URLSearchParams(window.location.search);
                         const redirectTo = params.get('redirect');
                         const user = getCurrentUser();
+                        
                         if (redirectTo) {
                             // Make sure we're using the full path
                             window.location.href = redirectTo.startsWith('/') ? redirectTo.substring(1) : redirectTo;
-                        } else if (user && user.role) {
-                            switch(user.role.toLowerCase()) {
-                                case 'doctor':
-                                    window.location.href = 'doctor-dashboard.html';
-                                    break;
-                                case 'nurse':
-                                    window.location.href = 'nurse-dashboard.html';
-                                    break;
-                                case 'receptionist':
-                                    window.location.href = 'receptionist-dashboard.html';
-                                    break;
-                                case 'admin':
-                                    window.location.href = 'admin-dashboard.html';
-                                    break;
-                                default:
-                                    window.location.href = 'index.html';
-                            }
                         } else {
+                            // Always redirect to index.html first, regardless of role
                             window.location.href = 'index.html';
                         }
                     }, 1000);

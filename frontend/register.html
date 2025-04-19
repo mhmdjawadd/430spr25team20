@@ -252,6 +252,12 @@
                     <label for="licenseNumber">License Number</label>
                     <input type="text" id="licenseNumber" name="licenseNumber">
                 </div>
+                <div class="form-group">
+                    <label for="doctorDescription">Professional Description</label>
+                    <textarea id="doctorDescription" name="doctorDescription" rows="4" 
+                              placeholder="Describe your expertise, experience, and areas of specialization" 
+                              style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"></textarea>
+                </div>
             </div>
 
             <button type="submit" id="registerBtn" class="register-btn">
@@ -267,7 +273,6 @@
 
     <!-- Include authentication API -->
     <script src="js/auth-api.js"></script>
-    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Check if user is already logged in
@@ -280,7 +285,6 @@
             function toggleRoleFields() {
                 const roleRadios = document.getElementsByName('role');
                 let role = '';
-                
                 for (const radio of roleRadios) {
                     if (radio.checked) {
                         role = radio.value;
@@ -290,7 +294,6 @@
                 
                 const doctorFields = document.getElementById('doctorFields');
                 const patientFields = document.getElementById('patientFields');
-                
                 doctorFields.style.display = 'none';
                 patientFields.style.display = 'none';
                 
@@ -314,7 +317,6 @@
                 // Get selected role from radio buttons
                 const roleRadios = document.getElementsByName('role');
                 let role = '';
-                
                 for (const radio of roleRadios) {
                     if (radio.checked) {
                         role = radio.value;
@@ -333,7 +335,6 @@
                     showAlert('Please fill in all required fields', 'error');
                     return;
                 }
-                
                 if (password !== confirmPassword) {
                     showAlert('Passwords do not match', 'error');
                     return;
@@ -358,9 +359,10 @@
                 if (role === 'doctor') {
                     const specialization = document.getElementById('specialization').value;
                     const licenseNumber = document.getElementById('licenseNumber').value;
+                    const doctorDescription = document.getElementById('doctorDescription').value || ''; // Use empty string as fallback
                     
                     if (!specialization || !licenseNumber) {
-                        showAlert('Please fill in all doctor-specific fields', 'error');
+                        showAlert('Please fill in all required doctor-specific fields', 'error');
                         registerBtn.disabled = false;
                         registerSpinner.style.display = 'none';
                         return;
@@ -368,8 +370,11 @@
                     
                     userData.specialization = specialization;
                     userData.license_number = licenseNumber;
-                } 
-                else if (role === 'patient') {
+                    userData.description = doctorDescription; // Always include description even if empty
+                    
+                    // Log to verify the description is being captured
+                    console.log('Doctor description:', doctorDescription);
+                } else if (role === 'patient') {
                     const dob = document.getElementById('dob').value;
                     const emergencyContactName = document.getElementById('emergencyContactName').value;
                     const emergencyContactPhone = document.getElementById('emergencyContactPhone').value;
@@ -377,7 +382,6 @@
                     if (dob) {
                         userData.date_of_birth = dob;
                     }
-                    
                     if (emergencyContactName && emergencyContactPhone) {
                         userData.emergency_contact = {
                             name: emergencyContactName,
@@ -397,7 +401,6 @@
                     setTimeout(() => {
                         window.location.href = 'index.html';
                     }, 2000);
-                    
                 } catch (error) {
                     showAlert(error.message || 'Registration failed. Please try again.', 'error');
                     registerBtn.disabled = false;
