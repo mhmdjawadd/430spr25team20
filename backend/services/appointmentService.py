@@ -528,8 +528,25 @@ class AppointmentController:
             print(f"Error deleting appointment: {str(e)}")
             return jsonify({"error": f"Failed to cancel appointment: {str(e)}"}), 500
 
+
+
+
+
     @staticmethod
     def get_doctor_availability_range():
+        """
+        Get a doctor's availability over a date range considering their hourly slots
+        and existing appointments.
+        
+        Expected request body:
+        {
+            "doctor_id": int,
+            "start_date": "YYYY-MM-DD",
+            "end_date": "YYYY-MM-DD"
+        }
+        
+        Returns JSON with availability by date
+        """
         # Get query parameters
         data = request.get_json()
         doctor_id = data.get('doctor_id')
@@ -566,11 +583,14 @@ class AppointmentController:
         # Loop through each date in the range
         current_date = start_date
         while current_date <= end_date:
-            # Skip weekends (5=Saturday, 6=Sunday)
-            if current_date.weekday() < 5:
-                # Create time slots for this day (8 AM to 5 PM, 1-hour intervals)
-                day_slots = []
-                
+            # Get day name in lowercase (monday, tuesday, etc.)
+            day_name = current_date.strftime("%A").lower()
+            
+            # Check if doctor has slots for this day
+            day_slots = doctor.availability.get(day_name, []) if doctor.availability else []
+            
+            # Only process if doctor has slots for this day
+            if day_slots:
                 # Check existing appointments for this doctor on this date
                 day_start = datetime.combine(current_date, time(0, 0, 0))
                 day_end = datetime.combine(current_date, time(23, 59, 59))
@@ -581,33 +601,43 @@ class AppointmentController:
                     Appointment.date_time <= day_end
                 ).all()
                 
-                # Convert booked appointments to a set of booked time slots
-                booked_times = set()
+                # Convert booked appointments to a set of booked hour slots
+                booked_hours = set()
                 for appt in booked_appointments:
-                    # Each appointment blocks a 1-hour slot
-                    slot_time = appt.date_time.time()
-                    slot_key = f"{slot_time.hour:02d}:00"
-                    booked_times.add(slot_key)
+                    slot_hour = appt.date_time.hour
+                    booked_hours.add(slot_hour)
                 
-                # Generate slots from 8 AM to 5 PM (working hours)
-                for hour in range(8, 17):  # 8 AM to 4 PM (last slot ends at 5 PM)
-                    # Changed from 30-minute intervals to 1-hour intervals
-                    slot_time = f"{hour:02d}:00"
-                    
-                    # Check if this slot is booked
-                    is_booked = slot_time in booked_times
-                    
-                    # Create the slot info
-                    slot = {
-                        "time": f"{hour}:00 {'PM' if hour >= 12 else 'AM'}",
-                        "is_booked": is_booked,
-                        "start": slot_time,
-                        "end": f"{(hour + 1):02d}:00"  # End time is now 1 hour later
-                    }
-                    day_slots.append(slot)
+                # Process each slot for this day
+                formatted_slots = []
+                for slot in day_slots:
+                    # Parse slot (e.g., "09-10" -> start_hour=9, end_hour=10)
+                    try:
+                        start_hour = int(slot[0:2])
+                        end_hour = int(slot[3:5])
+                        
+                        # Check if this slot is booked
+                        is_booked = start_hour in booked_hours
+                        
+                        # Format for display
+                        display_hour = start_hour if start_hour <= 12 else start_hour - 12
+                        if display_hour == 0:
+                            display_hour = 12
+                        am_pm = "PM" if start_hour >= 12 else "AM"
+                        
+                        # Create the slot info
+                        formatted_slot = {
+                            "time": f"{display_hour}:00 {am_pm}",
+                            "is_booked": is_booked,
+                            "start": f"{start_hour:02d}:00",
+                            "end": f"{end_hour:02d}:00"
+                        }
+                        formatted_slots.append(formatted_slot)
+                    except (ValueError, IndexError) as e:
+                        print(f"Error processing slot '{slot}': {e}")
+                        continue
                 
-                # Add the day's slots to the result
-                availability_by_date[current_date.isoformat()] = day_slots
+                # Add the formatted slots to the result
+                availability_by_date[current_date.isoformat()] = formatted_slots
             
             # Move to the next day
             current_date += timedelta(days=1)
@@ -617,149 +647,92 @@ class AppointmentController:
             "doctor_name": f"Dr. {doctor.user.first_name} {doctor.user.last_name}",
             "availability": availability_by_date
         })
-
+    
     @staticmethod
-    @jwt_required()
     def set_doctor_availability_range():
         """
-        Set available time slots for a doctor across a date range
+        Sets the doctor's default weekly availability using hourly slots.
         
-        Request body:
-        {
-            "doctor_id": int,
-            "start_date": "YYYY-MM-DD",
-            "end_date": "YYYY-MM-DD",
-            "availability": {
-                "date": [
-                    {"start": "HH:MM", "end": "HH:MM", "available": bool},
-                    ...
-                ],
-                ...
-            }
-        }
+        Args:
+            db_session: The SQLAlchemy Session object.
+            data: A dictionary containing:
+                - doctor_id (int): The ID of the doctor to update.
+                - availability (dict): A dictionary where keys are day names (monday, tuesday, etc.)
+                  and values are lists of hourly slots (e.g., ["09-10", "10-11", "14-15"])
+        
+        Returns:
+            A dictionary with success message or error details.
         """
-        # Get the current user
-        current_user_id = get_jwt_identity()
-        current_user = User.query.get(current_user_id)
-        
-        if not current_user:
-            return jsonify({"error": "User not found"}), 404
-            
-        # Get request data
         data = request.get_json()
         doctor_id = data.get('doctor_id')
-        start_date_str = data.get('start_date')
-        end_date_str = data.get('end_date')
         availability_data = data.get('availability')
         
-        # Validate required fields
-        if not doctor_id or not start_date_str or not end_date_str or not availability_data:
-            return jsonify({"error": "Missing required fields"}), 400
-            
-        # Check if the user is authorized (must be the doctor or an admin/receptionist)
-        is_authorized = (str(current_user.user_id) == str(doctor_id) or 
-                         current_user.role in [UserRole.ADMIN, UserRole.RECEPTIONIST])
-                         
-        if not is_authorized:
-            return jsonify({"error": "Unauthorized to set availability for this doctor"}), 403
-            
-        # Convert date strings to date objects
-        try:
-            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
-            end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
-        except ValueError:
-            return jsonify({"error": "Invalid date format. Use YYYY-MM-DD"}), 400
-            
-        # Limit range to 31 days to avoid performance issues
-        date_diff = (end_date - start_date).days
-        if date_diff > 31:
-            return jsonify({"error": "Date range too large. Maximum 31 days"}), 400
-            
-        # Get doctor record
-        doctor = Doctor.query.get(doctor_id)
+        if not doctor_id:
+            return {"error": "Missing doctor_id parameter"}, 400
+        if not isinstance(doctor_id, int):
+            return {"error": "doctor_id must be an integer"}, 400
+        
+        if not availability_data or not isinstance(availability_data, dict):
+            return {"error": "Missing or invalid availability data"}, 400
+        
+        # Fetch the doctor
+        doctor = db.session.query(Doctor).get(doctor_id)
         if not doctor:
-            return jsonify({"error": "Doctor not found"}), 404
-            
-        try:
-            # Create or update availability records
-            # For simplicity, we'll delete existing appointments that conflict with new availability
-            modified_dates = []
-            conflict_handling = []
-            
-            # Process each date in the availability data
-            for date_str, slots in availability_data.items():
-                try:
-                    date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
-                    
-                    # Skip if date is outside the specified range
-                    if date_obj < start_date or date_obj > end_date:
-                        continue
-                        
-                    # Skip weekends
-                    if date_obj.weekday() >= 5:  # 5=Saturday, 6=Sunday
-                        continue
-                        
-                    # Process each time slot for the date
-                    for slot in slots:
-                        start_time_str = slot.get('start')
-                        end_time_str = slot.get('end')
-                        is_available = slot.get('available', True)
-                        
-                        if not start_time_str or not end_time_str:
-                            continue
-                            
-                        # Parse time strings
+            return {"error": f"Doctor with ID {doctor_id} not found"}, 404
+        
+        # Initialize new availability JSON with empty slots for each day
+        new_availability_json = {
+            "monday": [],
+            "tuesday": [],
+            "wednesday": [],
+            "thursday": [],
+            "friday": [],
+            "saturday": [],
+            "sunday": []
+        }
+        
+        # Process each day's slots
+        days_of_week = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+        
+        for day in days_of_week:
+            if day in availability_data and isinstance(availability_data[day], list):
+                # Validate each slot
+                valid_slots = []
+                for slot in availability_data[day]:
+                    # Check if slot is in the correct format (e.g., "09-10")
+                    if isinstance(slot, str) and len(slot) == 5 and slot[2] == '-':
                         try:
-                            start_time = datetime.strptime(start_time_str, "%H:%M").time()
-                            end_time = datetime.strptime(end_time_str, "%H:%M").time()
+                            start_hour = int(slot[0:2])
+                            end_hour = int(slot[3:5])
+                            
+                            # Validate hours
+                            if 0 <= start_hour < 24 and 0 <= end_hour < 24 and start_hour < end_hour:
+                                valid_slots.append(slot)
+                            else:
+                                print(f"Warning: Invalid time range in slot '{slot}' for {day}")
                         except ValueError:
-                            continue
-                            
-                        # Create datetime objects for start and end
-                        slot_start = datetime.combine(date_obj, start_time)
-                        slot_end = datetime.combine(date_obj, end_time)
-                        
-                        # Handle existing appointments that conflict with this slot
-                        if not is_available:
-                            # If marking as unavailable, find and handle conflicts
-                            conflicts = Appointment.query.filter(
-                                Appointment.doctor_id == doctor_id,
-                                Appointment.date_time >= slot_start,
-                                Appointment.date_time < slot_end
-                            ).all()
-                            
-                            if conflicts:
-                                # For now, just log the conflicts
-                                for conflict in conflicts:
-                                    conflict_handling.append({
-                                        "appointment_id": conflict.appointment_id,
-                                        "patient_id": conflict.patient_id,
-                                        "date_time": conflict.date_time.strftime("%Y-%m-%d %H:%M"),
-                                        "action": "conflict_detected"
-                                    })
-                    
-                    # Mark this date as modified
-                    modified_dates.append(date_str)
-                    
-                except ValueError:
-                    # Skip invalid dates
-                    continue
-                    
-            # Commit any database changes
+                            print(f"Warning: Could not parse hours in slot '{slot}' for {day}")
+                    else:
+                        print(f"Warning: Slot '{slot}' is not in the correct format (HH-HH) for {day}")
+                
+                # Update with validated slots
+                new_availability_json[day] = valid_slots
+        
+        # Update the doctor's record
+        try:
+            doctor.availability = new_availability_json
             db.session.commit()
             
-            return jsonify({
+            return {
                 "message": "Doctor availability updated successfully",
                 "doctor_id": doctor_id,
                 "doctor_name": f"Dr. {doctor.user.first_name} {doctor.user.last_name}",
-                "modified_dates": modified_dates,
-                "conflicts": conflict_handling
-            }), 200
-            
+                "current_availability": doctor.availability
+            }, 200
         except Exception as e:
             db.session.rollback()
-            print(f"Error setting doctor availability: {str(e)}")
-            return jsonify({"error": f"Failed to set doctor availability: {str(e)}"}), 500
+            print(f"Database error updating availability for Doctor ID {doctor_id}: {e}")
+            return {"error": f"Failed to update availability: {e}"}, 500
 
     @staticmethod
     @jwt_required()

@@ -25,7 +25,7 @@ doctors_to_register = [
         "role": "PATIENT",
         "phone": "111-222-3333"
     },
-
+     
 
     {
         "email": "dr.therapist@.com",

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Enum, Integer, String, ForeignKey
+from sqlalchemy import Column, Enum, Integer, String, ForeignKey , JSON
 from sqlalchemy.orm import relationship
 from .base import *
 from .user import UserRole
@@ -8,6 +8,15 @@ class Doctor(Base):
     
     doctor_id = Column(Integer, ForeignKey('users.user_id'), primary_key=True)
     specialty = Column(Enum(UserRole), nullable=False) #  nurse ,  doctor , surgeon , therapist
+    availability = Column(JSON, nullable=True, default={
+    "monday": ["09-10", "10-11", "11-12", "12-13", "13-14", "14-15", "15-16", "16-17"],
+    "tuesday": ["09-10", "10-11", "11-12", "12-13", "13-14", "14-15", "15-16", "16-17"],
+    "wednesday": ["09-10", "10-11", "11-12", "12-13", "13-14", "14-15", "15-16", "16-17"],
+    "thursday": ["09-10", "10-11", "11-12", "12-13", "13-14", "14-15", "15-16", "16-17"],
+    "friday": ["09-10", "10-11", "11-12", "12-13", "13-14", "14-15", "15-16", "16-17"],
+    "saturday": [],
+    "sunday": []
+})
 
     # Relationships
     user = relationship("User", back_populates="doctor")

@@ -9,7 +9,6 @@ from .message import Message
 from .notification import Notification
 from .referral import Referral
 
-
 #  what gets imported with "from models import *"
 __all__ = [
     "InsuranceCoverage",
@@ -27,4 +26,5 @@ __all__ = [
     'Message',
     'Notification',
     'Referral',
+
 ]
