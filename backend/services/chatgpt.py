@@ -135,7 +135,7 @@ class ChatGPTAPIService:
                     "doctor_id": doctor.doctor_id,
                     "full_name": f"{doctor.user.first_name} {doctor.user.last_name}",
                     "specialty": str(doctor.specialty),
-                    "description": doctor.description if hasattr(doctor, 'description') else "",
+                    "description": doctor.description 
                 }
                 result.append(doctor_info)
                 

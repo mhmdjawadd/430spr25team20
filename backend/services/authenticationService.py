@@ -49,10 +49,13 @@ class AuthController:
             if not specialty:
                 specialty = role  # Default to their role as specialty if not provided
             
+            description = data.get('description')
+
             # Create doctor record
             doctor = Doctor(
                 doctor_id=new_user.user_id,
-                specialty=specialty
+                specialty=specialty,
+                description=description
             )
             db.session.add(doctor)
             

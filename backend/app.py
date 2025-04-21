@@ -164,6 +164,7 @@ def get_doctors():
                     'last_name': user.last_name,
                     'email': user.email,
                     "specialty": doctor.specialty.name,
+                    "description": doctor.description,
                     
                 })
         
