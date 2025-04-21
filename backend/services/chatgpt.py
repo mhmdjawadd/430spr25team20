@@ -95,7 +95,7 @@ class ChatGPTAPIService:
 
             # Send to GPT for recommendation
             response = self._send_to_api(prompt)
-            return(response)
+            
             if response["status"] == "success":
                 content = response["response"]["choices"][0]["message"]["content"]
                 return content
@@ -183,6 +183,7 @@ class ChatGPTAPIService:
             doctor_data = self.get_doctors_from_db()
             
             if not doctor_data or len(doctor_data) == 0:
+                self.logger.error("No doctors found in database")
                 return {"status": "error", "message": "No doctors found in database"}
                         
             today = datetime.now().date()
@@ -193,12 +194,12 @@ class ChatGPTAPIService:
                 "Consider the doctor's specialty, expertise, and experience in relation to the patient's needs. "
                 "Provide a brief explanation for your recommendation.\n\n"
                 f"please know that todays date is {today}"
-                "please just reposnd with the following  : "
+                "please just reposnd with the following and  use these formats stricly:  : "
                 "also note to let the appointment_datetime to be yyyy-mm-dd-hh"
                 "doctor_id=doctor.doctor_id"
                 "date_time=appointment_datetime,"
                 "please return both of them in 'doctor_id' : the id of doctor  and 'date_time':appointment_datetime  format\n\n"
-                
+                "if there is no date with the patients query please book it for tommorow at 9 am"
                 f"Patient Query: {patient_query}\n\n"
                 f"Available Doctors:\n{doctor_data}"
             )
@@ -212,7 +213,8 @@ class ChatGPTAPIService:
                 content = response["response"]["choices"][0]["message"]["content"]
                 doctor_data = json.loads(re.sub(r"```json|```", "", content).strip())
                 
-                
+            else:
+                self.logger.error("Failed to get doctor data from AI response")
             try:
                 
                 
@@ -220,6 +222,7 @@ class ChatGPTAPIService:
                 url = self.BASE_URL + "/appointments"
 
                 headers = {'Content-Type': 'application/json' , 'Authorization': f'Bearer {token}'}
+                self.logger.info(f"sent information to the api {doctor_data}")
                 try:
                     
                     doctor_data ["appointment_type"]= "REGULAR"
@@ -271,11 +274,11 @@ class ChatGPTAPIService:
             today = datetime.now().date()
             # Create prompt for GPT to analyze and cancel appointment
             prompt = (
-                "Based on the patient's request, cancel the specified appointment. "
-                f"the patients query is: {patient_query}\n\n"
-                f"Available Appointments:\n{appointments}"
-                "please return the id of the appointment to be cancelled in int value in json, i just want the appointment_id as in appointment_id : (actual id )\n"
-                f"note that todays date is {today}"
+                "Based on the patient's request, cancel the specified appointment. "\
+                f"the patients query is: {patient_query}\n\n"\
+                f"Available Appointments:\n{appointments}"\
+                "please return the id of the appointment to be cancelled in int value in json, i just want the appointment_id as in appointment_id : (actual id )\n"\
+                f"please use these formats stricly . note that todays date is {today}" \
             )
 
             # Send to GPT for cancellation
@@ -337,6 +340,7 @@ class ChatGPTAPIService:
                 "Based on the patient's request, cancel the specified appointment. "
                 f"the patients query is: {patient_query}\n\n"
                 f"Available Appointments:\n{appointments}"
+                "please use these formats stricly:"
                 "please return the id of the appointment and the date in yyyy-mm-dd-hh to be cancelled in int value in json, \n"
                 "i just want the appointment_id and new date to be rescheduled as in appointment_id : (actual id ) ,new_date_time = (actual new date in yyyy-mm-dd-hh)\n"
                 f"note that todays date is {today}"
@@ -373,7 +377,7 @@ class ChatGPTAPIService:
         
         except Exception as e:
             self.logger.error(f"Error cancelling appointment: {str(e)}")
-            return {"status": "error", "message": f"Failed to cancel appointment: {str(e)}"}
+            return {"status": "error", "message": f"Failed to reschuele appointment: {str(e)}"}
         
 
     def recommend_doctor_ai(self, patient_query: str, token: str) -> Dict:
@@ -405,7 +409,7 @@ class ChatGPTAPIService:
                     f"Today's date is {today}\n\n"
                     f"Patient Query: {patient_query}\n\n"
                     f"Available Doctors:\n{doctor_data}\n\n"
-                    "Please respond with a JSON object in the following format:\n"
+                    "Please respond with a JSON object in the following format. please use these formats stricly::\n"
                     "{\n"
                     '  "doctor_id": 123,\n'
                     '  "doctor_name": "Dr. Full Name",\n'
@@ -442,7 +446,7 @@ class ChatGPTAPIService:
                             # Combine AI recommendation with doctor details
                             result = {
                                 "status": "success",
-                                "recommendation": {
+                                "message": {
                                     "doctor_id": recommendation["doctor_id"],
                                     "doctor_name": recommendation["doctor_name"],
                                     "reason": recommendation["reason"],
@@ -454,7 +458,7 @@ class ChatGPTAPIService:
                             # Return just the basic recommendation if we can't get details
                             return {
                                 "status": "success",
-                                "recommendation": recommendation
+                                "message": recommendation
                             }
                             
                     except json.JSONDecodeError as e:
@@ -492,3 +496,134 @@ class ChatGPTAPIService:
             except requests.exceptions.RequestException as e:
                 self.logger.error(f"API request failed: {str(e)}")
                 return {"status": "error", "message": f"API request failed: {str(e)}"}
+    
+    def coordinator(self, patient_query: str, token: str) :
+        """
+        Main coordinator function to handle patient queries and recommend doctors or book appointments
+        
+        Args:
+            patient_query (str): Patient's description of symptoms or medical needs
+            token (str): Authentication token for API requests
+            
+        Returns:
+            Dict: Response containing recommended doctor information or appointment booking details
+        """
+       # Create prompt for GPT to analyze doctor profiles and recommend based on patient query
+        prompt = (
+                    "You are a medical assistant AI. Based on the patient's query decide whether the patient wants a doctor recomendation or to book an" \
+                    "appointment. cancel an appointment or reschdule an appointment " \
+                    "please decide and return in json format please use these formats stricly: " \
+                    "book_appointment: (true/false)" \
+                    "reschedule: (true/false)" \
+                    "cancel_appointment: (true/false)" \
+                    "doctor_recomendation: (true/false)" \
+                    "please note that only one of them can be true . also note that the patient query is: " \
+                    f"{patient_query}\n\n" \
+                )
+        
+                # Send to GPT for doctor recommendation
+        response = self._send_to_api(prompt)
+
+        if response["status"] == "success":
+                    content = response["response"]["choices"][0]["message"]["content"]
+                    
+                    # Clean up the response to extract the JSON
+                    content = re.sub(r"```json|```", "", content).strip()
+                    content = json.loads(content)
+                    
+                    
+                    if content["book_appointment"] == True:
+                        # Use the dedicated endpoint instead of direct method call
+                        try:
+                            url = f"{self.BASE_URL}/ai/book"
+                            headers = {
+                                'Content-Type': 'application/json',
+                                'Authorization': f'Bearer {token}'
+                            }
+                            payload = {"query": patient_query}
+                            
+                            self.logger.info(f"Redirecting to booking endpoint with query: {patient_query}")
+                            api_response = requests.post(url, headers=headers, json=payload)
+                            
+                            # Check if the request was successful
+                            if api_response.status_code == 200:
+                                return api_response.json()
+                            else:
+                                return {
+                                    "status": "error", 
+                                    "message": f"Booking request failed with status code: {api_response.status_code}"
+                                }
+                        except Exception as e:
+                            self.logger.error(f"Error redirecting to booking endpoint: {str(e)}")
+                            return {"status": "error", "message": f"Failed to book appointment: {str(e)}"}
+                    elif content["doctor_recomendation"] == True:
+                        try:
+                            url = f"{self.BASE_URL}/ai/recomendation"
+                            headers = {
+                                'Content-Type': 'application/json',
+                                'Authorization': f'Bearer {token}'
+                            }
+                            payload = {"query": patient_query}
+                            
+                            self.logger.info(f"Redirecting to recomendation endpoint with query: {patient_query}")
+                            api_response = requests.post(url, headers=headers, json=payload)
+                            
+                            # Check if the request was successful
+                            if api_response.status_code == 200:
+                                return api_response.json()
+                            else:
+                                return {
+                                    "status": "error", 
+                                    "message": f"recomendation request failed with status code: {api_response.status_code}"
+                                }
+                        except Exception as e:
+                            self.logger.error(f"Error redirecting to recomendation endpoint: {str(e)}")
+                            return {"status": "error", "message": f"Failed to recomendation appointment: {str(e)}"}
+                    elif content["cancel_appointment"] == True:
+                        try:
+                            url = f"{self.BASE_URL}/ai/cancel"
+                            headers = {
+                                'Content-Type': 'application/json',
+                                'Authorization': f'Bearer {token}'
+                            }
+                            payload = {"query": patient_query}
+                            
+                            self.logger.info(f"Redirecting to cancel endpoint with query: {patient_query}")
+                            api_response = requests.post(url, headers=headers, json=payload)
+                            
+                            # Check if the request was successful
+                            if api_response.status_code == 200:
+                                return api_response.json()
+                            else:
+                                return {
+                                    "status": "error", 
+                                    "message": f"cancel request failed with status code: {api_response.status_code}"
+                                }
+                        except Exception as e:
+                            self.logger.error(f"Error redirecting to cancel endpoint: {str(e)}")
+                            return {"status": "error", "message": f"Failed to cancel appointment: {str(e)}"}
+                    elif content["reschedule"] == True:
+                        try:
+                            url = f"{self.BASE_URL}/ai/reschedule"
+                            headers = {
+                                'Content-Type': 'application/json',
+                                'Authorization': f'Bearer {token}'
+                            }
+                            payload = {"query": patient_query}
+                            
+                            self.logger.info(f"Redirecting to reschdule endpoint with query: {patient_query}")
+                            api_response = requests.post(url, headers=headers, json=payload)
+                            
+                            # Check if the request was successful
+                            if api_response.status_code == 200:
+                                return api_response.json()
+                            else:
+                                return {
+                                    "status": "error", 
+                                    "message": f"reschudeling request failed with status code: {api_response.status_code}"
+                                }
+                        except Exception as e:
+                            self.logger.error(f"Error redirecting to reschdule endpoint: {str(e)}")
+                            return {"status": "error", "message": f"Failed to reschdule appointment: {str(e)}"}
+                    else:
+                        return {"status": "error", "message": "No valid action found"}

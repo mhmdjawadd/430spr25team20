@@ -20,8 +20,12 @@ api_key = os.getenv('API_KEY')
 
 # Initialize Flask application
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
-
+# Configure CORS properly with specific settings
+CORS(app, resources={r"/*": {
+    "origins": ["http://127.0.0.1:5500", "http://localhost:5500"],
+    "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "allow_headers": ["Content-Type", "Authorization"]
+}})
 # Configuration
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key")
 app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "dev-jwt-secret")
@@ -37,7 +41,17 @@ db =init_db(app)  # Initialize with our Flask app
 chatgpt = ChatGPTAPIService(api_key , db=db)
 
 
-
+@app.route('/ai/chat', methods=['POST'])
+def chat():
+    data = request.get_json()
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+    else:
+        return jsonify({"error": "Invalid token format"}), 401
+    query = data.get('query')
+    return chatgpt.coordinator(patient_query=query, token=token)
+    
 # Endpoint to get current user's ID
 @app.route('/ai/book', methods=['POST'])
 @jwt_required()

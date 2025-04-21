@@ -5,7 +5,9 @@ from services.db import db
 from models import User, Doctor, Patient, Appointment, AppointmentType, RecurrencePattern, Notification, Insurance, UserRole
 from services.referralService import ReferralController
 import calendar
+import logging
 
+logging.getLogger(__name__)
 class AppointmentController:
    
     @staticmethod
@@ -179,15 +181,6 @@ class AppointmentController:
         if not doctor_user:
             return jsonify({"error": "Doctor user record not found"}), 404
             
-        # Check if appointment with specialist (surgeon or therapist) requires a referral
-        if doctor_user.role in [UserRole.SURGEON, UserRole.THERAPIST]:
-            # Check if patient has a valid referral to this specialist
-            has_referral = ReferralController.patient_has_valid_referral(patient_id, doctor.doctor_id)
-            if not has_referral:
-                return jsonify({
-                    "error": "Cannot book appointment with this specialist. A referral from a general doctor is required.",
-                    "message": "Please consult with a general doctor first to get a referral."
-                }), 403
         
         # Parse appointment datetime
         try:
@@ -225,9 +218,7 @@ class AppointmentController:
         appointment_time = appointment_datetime.time()
         weekday_num = appointment_date.weekday()
         
-        # 1. Check if it's a weekday (doctor available)
-        if weekday_num >= 5:  # Weekend
-            return jsonify({"error": "Doctor is not available on weekends"}), 400
+        
         
         # 2. Check if the time is within working hours (8 AM to 5 PM)
         if appointment_time < time(8, 0) or appointment_time >= time(17, 0):
@@ -740,36 +731,11 @@ class AppointmentController:
         Get all appointments for the current patient
         """
         # Get the current user
-        current_user_id = get_jwt_identity()
-        current_user = User.query.get(current_user_id)
+        patient_id = get_jwt_identity()
         
-        if not current_user:
+        patient = Patient.query.get(patient_id)
+        if not patient:
             return jsonify({"error": "User not found"}), 404
-        
-        # Check if user is a patient
-        if current_user.role == UserRole.PATIENT:
-            patient_id = current_user.user_id
-        else:
-            # For non-patients, they must specify which patient's appointments to get
-            patient_id = request.args.get('patient_id')
-            if not patient_id:
-                return jsonify({"error": "patient_id parameter required for non-patient users"}), 400
-            
-            # Check if the non-patient user is authorized to view this patient's appointments
-            # Doctors can view their patients' appointments, caregivers can view their assigned patients
-            if current_user.role == UserRole.DOCTOR:
-                # Check if this patient is assigned to this doctor
-                patient = Patient.query.get(patient_id)
-                if not patient or patient.doctor_id != current_user.user_id:
-                    return jsonify({"error": "Not authorized to view this patient's appointments"}), 403
-            elif current_user.role == UserRole.CAREGIVER:
-                # Check if this patient is assigned to this caregiver
-                patient = Patient.query.get(patient_id)
-                if not patient or patient.caregiver_id != current_user.user_id:
-                    return jsonify({"error": "Not authorized to view this patient's appointments"}), 403
-            elif current_user.role != UserRole.RECEPTIONIST and current_user.role != UserRole.ADMIN:
-                # Other roles not authorized to view patient appointments
-                return jsonify({"error": "Not authorized to view patient appointments"}), 403
         
         # Query appointments for this patient
         appointments = Appointment.query.filter_by(patient_id=patient_id).order_by(Appointment.date_time).all()

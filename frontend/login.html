@@ -173,9 +173,7 @@
             </button>
         </form>
 
-        <div class="forgot-password">
-            <a href="forgot-password.html">Forgot Password?</a>
-        </div>
+        
 
         <div class="register-link">
             Don't have an account? <a href="register.html">Register Now</a>
@@ -215,6 +213,7 @@
                     // Successful login, store the token and redirect
                     const token = response.access_token;
                     localStorage.setItem('token', token);
+                    localStorage.setItem('authtoken', token);
                     
                     // Store user data if available
                     if (response.user) {
