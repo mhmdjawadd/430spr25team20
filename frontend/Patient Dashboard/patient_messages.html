@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +13,8 @@
             --primary-color: #1A76D1;
             --secondary-color: #0c5aa9;
             --accent-color: #ffa500;
+            --patient-msg-color: #cce5ff; /* Blue for patient messages */
+            --doctor-msg-color: #d4edda; /* Green for doctor messages */
         }
         
         .sidebar {
@@ -199,26 +202,27 @@
             max-width: 75%;
             padding: 10px 15px;
             border-radius: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 25px; /* Increased to make room for timestamp */
             position: relative;
             word-break: break-word;
         }
         
         .message.sent {
-            background: #cce5ff;
+            background: var(--patient-msg-color); /* Blue for patient messages */
             border-bottom-right-radius: 0;
             align-self: flex-end;
+            color: #004085;
         }
         
         .message.received {
-            background: #f1f3f5;
+            background: var(--doctor-msg-color); /* Green for doctor messages */
             border-bottom-left-radius: 0;
             align-self: flex-start;
+            color: #155724;
         }
         
         .message-time {
             font-size: 11px;
-            color: #6c757d;
             position: absolute;
             bottom: -18px;
             white-space: nowrap;
@@ -226,10 +230,12 @@
         
         .message.sent .message-time {
             right: 5px;
+            color: #6c757d;
         }
         
         .message.received .message-time {
             left: 5px;
+            color: #6c757d;
         }
         
         .chat-footer {
@@ -310,11 +316,11 @@
                 <h2>Nabad</h2>
             </div>
             <ul class="nav-links">
-                <li class="active"><a href="patient_dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="patient_dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li><a href="patient_appointments.html"><i class="fas fa-calendar-check"></i> My Appointments</a></li>
                 <li><a href="patient_medical_records.html"><i class="fas fa-file-medical"></i> Medical Records</a></li>
                 <li><a href="insurance-portal.html"><i class="fas fa-heartbeat"></i> Insurance</a></li>
-                <li><a href="patient_messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
+                <li class="active"><a href="patient_messages.html"><i class="fas fa-envelope"></i> Messages</a></li>
                 <li><a href="../index.html" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </div>
@@ -357,11 +363,11 @@
                         <ul class="contact-list" id="contactList">
                             <!-- Will be populated by JavaScript -->
                             <li class="contact-item" id="loading-contacts">
-                                <div class="text-center w-100 py-3">
-                                    <div class="spinner-border text-primary" role="status">
+                                <div style="text-align: center; width: 100%; padding: 15px 0;">
+                                    <div class="spinner-border text-primary" role="status" style="width: 1.5rem; height: 1.5rem;">
                                         <span class="sr-only">Loading...</span>
                                     </div>
-                                    <div class="mt-2">Loading contacts...</div>
+                                    <div style="margin-top: 10px;">Loading contacts...</div>
                                 </div>
                             </li>
                         </ul>
@@ -487,7 +493,7 @@
                 // Load contacts first - most important for UI
                 loadContacts().catch(err => {
                     console.warn('Error loading contacts, using sample data instead:', err);
-                    loadSampleData();
+                    
                 });
                 
                 // Try to fetch user profile only if we don't have it already - but don't block UI
@@ -601,30 +607,12 @@
                 }
                 
                 // Don't throw - fallback to sample data instead
-                loadSampleData();
+                
             }
         }
         
         // Load sample data for development/testing
-        function loadSampleData() {
-            // Sample contacts data - only doctors the patient has appointments with
-            contacts = [
-                { id: 1, name: 'Dr. Sarah Johnson', role: 'Cardiologist', unread_count: 3 },
-                { id: 2, name: 'Dr. James Wilson', role: 'Neurologist', unread_count: 0 },
-                { id: 3, name: 'Dr. Emily Chen', role: 'Dermatologist', unread_count: 1 },
-                { id: 4, name: 'Nurse Roberts', role: 'Head Nurse', unread_count: 0 }
-            ];
-            
-            // Remove loading indicator
-            const loadingElement = document.getElementById('loading-contacts');
-            if (loadingElement) {
-                loadingElement.remove();
-            }
-            
-            // Display contacts
-            renderContacts(contacts);
-        }
-        
+
         // Render contacts in sidebar
         function renderContacts(contactsArray) {
             if (contactsArray.length === 0) {
@@ -734,51 +722,13 @@
                 console.error('Error loading messages:', error);
                 
                 // For development - load sample messages if API fails
-                loadSampleMessages(contactId);
+                
             }
         }
         
         // Load sample messages for testing/development
-        function loadSampleMessages(contactId) {
-            // Sample messages based on contact
-            if (contactId === 1) {
-                messages = [
-                    { id: 1, content: "Hello, Dr. Johnson. I've been experiencing chest pain after exercising.", is_sent: true, timestamp: "2023-05-10T10:30:00" },
-                    { id: 2, content: "Hi Ahmed, could you describe the pain? Is it sharp or dull?", is_sent: false, timestamp: "2023-05-10T10:35:00" },
-                    { id: 3, content: "It's a sharp pain, right in the center of my chest.", is_sent: true, timestamp: "2023-05-10T10:38:00" },
-                    { id: 4, content: "How long does it last? Does it radiate to your arm or jaw?", is_sent: false, timestamp: "2023-05-10T10:40:00" },
-                    { id: 5, content: "It lasts about 10 minutes and sometimes radiates to my left arm.", is_sent: true, timestamp: "2023-05-10T10:45:00" },
-                    { id: 6, content: "I think we should schedule you for an in-person assessment. This could be angina. Please book an appointment as soon as possible.", is_sent: false, timestamp: "2023-05-10T10:50:00" }
-                ];
-            } else if (contactId === 2) {
-                messages = [
-                    { id: 1, content: "Dr. Wilson, I've been having frequent headaches since our last appointment.", is_sent: true, timestamp: "2023-05-05T14:20:00" },
-                    { id: 2, content: "Are you taking the medication I prescribed?", is_sent: false, timestamp: "2023-05-05T15:30:00" },
-                    { id: 3, content: "Yes, every day as directed.", is_sent: true, timestamp: "2023-05-05T15:45:00" },
-                    { id: 4, content: "Let's schedule a follow-up to adjust your dosage.", is_sent: false, timestamp: "2023-05-05T16:00:00" }
-                ];
-            } else if (contactId === 3) {
-                messages = [
-                    { id: 1, content: "Dr. Chen, the rash has improved with the cream you prescribed.", is_sent: true, timestamp: "2023-05-08T09:10:00" },
-                    { id: 2, content: "That's great news! Continue using it for another week as directed.", is_sent: false, timestamp: "2023-05-08T10:25:00" }
-                ];
-            } else if (contactId === 4) {
-                messages = [
-                    { id: 1, content: "Nurse Roberts, when should I come in for my next blood test?", is_sent: true, timestamp: "2023-05-09T11:00:00" },
-                    { id: 2, content: "You're due for another test next Monday. You can come anytime between 8 AM and 4 PM.", is_sent: false, timestamp: "2023-05-09T11:30:00" },
-                    { id: 3, content: "Do I need to fast before the test?", is_sent: true, timestamp: "2023-05-09T11:35:00" },
-                    { id: 4, content: "Yes, please fast for 8 hours before the test. You can drink water.", is_sent: false, timestamp: "2023-05-09T11:40:00" },
-                    { id: 5, content: "Thank you, I'll schedule for Monday morning.", is_sent: true, timestamp: "2023-05-09T11:45:00" }
-                ];
-            } else {
-                messages = [];
-            }
-            
-            // Display messages
-            renderMessages(messages);
-        }
-        
-        // Render messages in chat body
+
+        // Render messages in chat body with improved layout
         function renderMessages(messagesArray) {
             chatBody.innerHTML = '';
             
@@ -793,20 +743,32 @@
                 return;
             }
             
+            // Create message container to ensure proper spacing
+            const messageContainer = document.createElement('div');
+            messageContainer.style.width = '100%';
+            messageContainer.style.display = 'flex';
+            messageContainer.style.flexDirection = 'column';
+            messageContainer.style.paddingBottom = '10px';
+            
             messagesArray.forEach(msg => {
+                // Create message element
                 const messageElement = document.createElement('div');
-                messageElement.className = `message ${msg.is_sent ? 'sent' : 'received'}`;
-                messageElement.textContent = msg.content;
+                messageElement.className = msg.is_sent ? 'message sent' : 'message received';
                 
-                const timeElement = document.createElement('div');
-                timeElement.className = 'message-time';
-                timeElement.textContent = formatMessageTime(msg.timestamp);
-                messageElement.appendChild(timeElement);
+                // Create message content element
+                messageElement.innerHTML = `
+                    <div class="message-content">${msg.content}</div>
+                    <div class="message-time">${formatMessageTime(msg.timestamp)}</div>
+                `;
                 
-                chatBody.appendChild(messageElement);
+                // Add message element to container
+                messageContainer.appendChild(messageElement);
             });
             
-            // Scroll to bottom
+            // Add message container to chat body
+            chatBody.appendChild(messageContainer);
+            
+            // Scroll to bottom of chat
             chatBody.scrollTop = chatBody.scrollHeight;
         }
         
@@ -822,20 +784,19 @@
                 }
                 
                 // Add message to UI immediately (optimistic update)
-                const tempMessageElement = document.createElement('div');
-                tempMessageElement.className = 'message sent';
-                tempMessageElement.textContent = message;
+                const tempMessage = {
+                    id: Date.now(), // Temporary ID
+                    content: message,
+                    is_sent: true,
+                    timestamp: new Date().toISOString()
+                };
                 
-                const tempTimeElement = document.createElement('div');
-                tempTimeElement.className = 'message-time';
-                tempTimeElement.textContent = 'Sending...';
-                tempMessageElement.appendChild(tempTimeElement);
-                
-                chatBody.appendChild(tempMessageElement);
-                chatBody.scrollTop = chatBody.scrollHeight;
+                messages.push(tempMessage);
+                renderMessages(messages);
                 
                 // Clear input
                 messageInput.value = '';
+                messageInput.style.height = '40px';
                 
                 // Make API request to send message
                 const response = await fetch(`${API_URL}/messages/send`, {
@@ -854,31 +815,10 @@
                     throw new Error('Failed to send message');
                 }
                 
-                const data = await response.json();
-                
-                // Update the temporary message with the actual message data
-                tempTimeElement.textContent = 'Just now';
-                
-                // Reload messages to ensure we have the latest
-                await loadMessages(currentRecipient.id);
-                
-            } catch (error) {
-                console.error('Error sending message:', error);
-                
-                // For development - simulate successful send
-                // In a real app, you'd show an error message instead
-                const now = new Date();
-                messages.push({
-                    id: messages.length + 1,
-                    content: message,
-                    is_sent: true,
-                    timestamp: now.toISOString()
-                });
-                
-                // Auto-response for demo (simulate doctor response)
+                // For development - simulate doctor response
                 setTimeout(() => {
                     const autoResponse = {
-                        id: messages.length + 1,
+                        id: Date.now() + 1,
                         content: getAutoResponse(currentRecipient.id),
                         is_sent: false,
                         timestamp: new Date().toISOString()
@@ -887,21 +827,25 @@
                     renderMessages(messages);
                 }, 1500);
                 
-                renderMessages(messages);
+            } catch (error) {
+                console.error('Error sending message:', error);
+                
+                // For development - still show the message and auto-response
+                setTimeout(() => {
+                    const autoResponse = {
+                        id: Date.now() + 1,
+                        content: getAutoResponse(currentRecipient.id),
+                        is_sent: false,
+                        timestamp: new Date().toISOString()
+                    };
+                    messages.push(autoResponse);
+                    renderMessages(messages);
+                }, 1500);
             }
         }
         
-        // Simple auto-response based on doctor (for demo/development)
-        function getAutoResponse(doctorId) {
-            const responses = [
-                "I'll review this information. Thank you.",
-                "Thanks for the update. I'll note this in your chart.",
-                "Let me know if your symptoms change.",
-                "This is helpful information. Let's discuss this further at your next appointment.",
-                "I've received your message and will follow up soon."
-            ];
-            return responses[Math.floor(Math.random() * responses.length)];
-        }
+      
+        
         
         // Mark messages as read
         async function markMessagesAsRead(contactId) {
@@ -994,83 +938,6 @@
             // Older
             else {
                 return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-            }
-        }
-        
-        // Helper function to show error message
-        function showError(message) {
-            // Replace alert with a non-blocking toast or in-page notification
-            console.error(message);
-            
-            // Add a notification to the page instead of an alert
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                background-color: #f8d7da;
-                color: #721c24;
-                padding: 10px 20px;
-                border-radius: 4px;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-                z-index: 1000;
-                max-width: 300px;
-            `;
-            notification.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <span>${message}</span>
-                    <button style="background: none; border: none; cursor: pointer; margin-left: 10px; font-weight: bold;">&times;</button>
-                </div>
-            `;
-            document.body.appendChild(notification);
-            
-            // Auto-remove after 5 seconds
-            setTimeout(() => {
-                notification.remove();
-            }, 5000);
-            
-            // Remove on click
-            notification.querySelector('button').addEventListener('click', () => {
-                notification.remove();
-            });
-        }
-        
-        // Helper function to get current user profile (safe version that won't redirect)
-        async function getCurrentUserProfile() {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) return null;
-                
-                // First check if we already have user data in localStorage
-                const userData = JSON.parse(localStorage.getItem('user') || '{}');
-                if (userData && userData.id) {
-                    return userData;
-                }
-                
-                // If not, try to fetch it from the API
-                const response = await fetch(`${API_URL}/user/profile`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    // Don't automatically clear tokens on error
-                    console.warn('Error fetching profile:', response.status);
-                    return null;
-                }
-                
-                const data = await response.json();
-                
-                // Save user data to localStorage
-                localStorage.setItem('user', JSON.stringify(data.user));
-                
-                return data.user;
-            } catch (error) {
-                console.error('Error getting user profile:', error);
-                return null;
             }
         }
         

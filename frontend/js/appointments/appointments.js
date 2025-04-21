@@ -997,7 +997,7 @@ async function confirmAppointment() {
         const appointmentData = {
             doctor_id: selectedDoctor.id,
             date_time: `${selectedDate}-${selectedTime.split(':')[0]}`,
-            appointment_type: appointmentType.value,
+            appointment_type: "REGULAR",
             notes: appointmentNotes.value || ''
         };
         

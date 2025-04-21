@@ -220,9 +220,6 @@ class AppointmentController:
         
         
         
-        # 2. Check if the time is within working hours (8 AM to 5 PM)
-        if appointment_time < time(8, 0) or appointment_time >= time(17, 0):
-            return jsonify({"error": "Appointment time must be between 8:00 AM and 5:00 PM"}), 400
         
         # 3. Check if the slot is already booked
         # We'll define a 1-hour appointment slot (changed from 30 minutes)
