@@ -8,7 +8,7 @@ db = SQLAlchemy()
 def init_db(app , reset = False):
     """Initialize the database with the Flask app"""
     # Configure Flask app for SQLAlchemy
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://myuser:mypassword@localhost:5432/mydatabase')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/430lecture')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
     # Initialize app with SQLAlchemy
